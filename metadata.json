@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Remix Remix Remix Remix التخفيض الصح - تطبيق العميل",
+  "description": "واجهة تطبيق متجر التخفيض الصح للعميل مع شريط التصفح الأسود وإطار الموبايل وتصفح العروض",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

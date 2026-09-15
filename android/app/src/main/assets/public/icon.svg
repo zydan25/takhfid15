@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Mask that creates the clean black cutout gap in the white 'S' around the yellow swoosh -->
+    <mask id="cutout-mask">
+      <rect width="1024" height="1024" fill="#ffffff" />
+      <!-- The checkmark dilated by 18px stroke to carve a uniform gap into the S -->
+      <path d="
+        M 238 488
+        C 255 468, 290 460, 322 466
+        C 350 472, 385 520, 404 550
+        C 440 488, 515 390, 620 318
+        C 675 280, 725 258, 762 264
+        C 728 285, 638 355, 545 456
+        C 472 534, 426 605, 396 664
+        C 376 666, 350 635, 314 578
+        C 284 530, 252 500, 238 488
+        Z
+      " fill="#000000" stroke="#000000" stroke-width="36" stroke-linejoin="round" stroke-linecap="round" />
+    </mask>
+  </defs>
+
+  <!-- Pitch black background -->
+  <rect width="1024" height="1024" fill="#000000" />
+
+  <g transform="translate(0, 0) scale(1)">
+    <!-- White Letter 'S' with the cutout mask applied -->
+    <g mask="url(#cutout-mask)" fill="#ffffff">
+      <!-- Top open loop of S -->
+      <path d="
+        M 645 320
+        L 645 340
+        C 645 285, 600 220, 490 220
+        C 385 220, 335 280, 335 365
+        C 335 445, 390 495, 470 535
+        L 535 568
+        C 605 605, 660 655, 660 725
+        L 545 725
+        C 545 680, 505 650, 455 625
+        L 395 595
+        C 310 550, 235 480, 235 365
+        C 235 225, 345 120, 490 120
+        C 645 120, 745 215, 745 320
+        Z
+      " />
+
+      <!-- Bottom open loop of S -->
+      <path d="
+        M 379 704
+        L 379 684
+        C 379 739, 424 804, 534 804
+        C 639 804, 689 744, 689 659
+        C 689 579, 634 529, 554 489
+        L 489 456
+        C 419 419, 364 369, 364 299
+        L 479 299
+        C 479 344, 519 374, 569 399
+        L 629 429
+        C 714 474, 789 544, 789 659
+        C 789 799, 679 904, 534 904
+        C 379 904, 279 809, 279 704
+        Z
+      " />
+    </g>
+
+    <!-- Vibrant Golden-Amber Checkmark Swoosh (الصح ✓) -->
+    <path d="
+      M 238 488
+      C 255 468, 290 460, 322 466
+      C 350 472, 385 520, 404 550
+      C 440 488, 515 390, 620 318
+      C 675 280, 725 258, 762 264
+      C 728 285, 638 355, 545 456
+      C 472 534, 426 605, 396 664
+      C 376 666, 350 635, 314 578
+      C 284 530, 252 500, 238 488
+      Z
+    " fill="#F0A717" />
+  </g>
+</svg>

@@ -1,0 +1,1331 @@
+yse=({
+banners:s,categories:e,products:t=[],trendHashtags:n=["#أناقة_صيفية","#أناقة_كيرف","#رائع_وأنيق","#أناقة_محتشمة"],announcementSettings:a,onUpdateAnnouncementSettings:i,onAddBanner:l,onUpdateBanner:u,onDeleteBanner:A,onReorderBanners:d,onShowToast:f
+}
+)=>{
+var M,Z,ie;
+const[m,g]=S.useState(null),[x,y]=S.useState(!1),[D,_]=S.useState(a||m1()||bm),[k,V]=S.useState("all"),[R,Q]=S.useState(!1),[Y,te]=S.useState(null),[j,E]=S.useState({
+title:"شاشة عرض",subtitle:"",badge:"",code:"",floatingText:"",floatingTextPosition:"top-right",slideDuration:4,image:"",bgGradient:"from-[#5C2304] via-[#853409] to-[#AC4A0F]",themeColor:"#853409",buttonText:"",categoryId:"all",categoryTarget:"all",targetType:"category",targetSubCategory:"",targetStyleTab:"",targetTrend:"",pullToRefreshTitle:"SHEIN",pullToRefreshSubtitle:"أناقة للجميع",isActive:!0
+}
+),[N,L]=S.useState(!1),
+T=S.useRef(null),
+O=s.filter(G=>(G.categoryId||"all")===k),
+H=()=>{
+te(null),E({
+title:"شاشة عرض جديدة",subtitle:"",badge:"",code:"",floatingText:"",floatingTextPosition:"top-right",slideDuration:4,image:"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1000&auto=format&fit=crop&q=80",bgGradient:"from-[#5C2304] via-[#853409] to-[#AC4A0F]",themeColor:"#853409",customColor:"",isTransparent:!0,buttonText:"",categoryId:k,categoryTarget:k==="all"?"women":k,targetType:"category",targetSubCategory:"",targetStyleTab:"",targetTrend:n[0]||"#أناقة_صيفية",pullToRefreshTitle:"SHEIN",pullToRefreshSubtitle:k==="men"?"أناقة الرجل العصري":k==="girls"?"أناقة الصغار والعائلة":"أناقة للجميع",isActive:!0
+}
+),Q(!0)
+}
+,
+ee=G=>{
+te(G),E({
+...G,title:G.title||"شاشة عرض",floatingText:G.floatingText||"",floatingTextPosition:G.floatingTextPosition||"top-right",slideDuration:G.slideDuration&&G.slideDuration>0?G.slideDuration:4,customColor:G.customColor||"",isTransparent:G.isTransparent??!0,categoryId:G.categoryId||"all",targetType:G.targetType||"category",categoryTarget:G.categoryTarget||"all",targetSubCategory:G.targetSubCategory||"",targetStyleTab:G.targetStyleTab||"",targetTrend:G.targetTrend||"",pullToRefreshTitle:G.pullToRefreshTitle||"SHEIN",pullToRefreshSubtitle:G.pullToRefreshSubtitle||"أناقة للجميع",isActive:G.isActive??!0
+}
+),Q(!0)
+}
+,
+Be=G=>{
+var be;
+const J=(be=G.target.files)==null?void 0:be[0];
+if(!J)return;
+if(!J.type.startsWith("image/")){
+f("يرجى اختيار ملف صورة صالح","info");
+return
+}
+const Ce=new FileReader;
+Ce.onload=()=>{
+typeof Ce.result=="string"&&(E(je=>({
+...je,image:Ce.result
+}
+)),f("تم تحميل صورة الشاشة بنجاح 📸","success"))
+}
+,Ce.readAsDataURL(J)
+}
+,
+W=G=>{
+var Ce,be,je,Ge,pe,Ne,Ue;
+if(G.preventDefault(),!j.image){
+f("يرجى تحديد أو رفع صورة للشاشة","info");
+return
+}
+const J=((Ce=j.title)==null?void 0:Ce.trim())||"شاشة عرض";
+if(Y){
+const re={
+...Y,...j,title:J,floatingText:((be=j.floatingText)==null?void 0:be.trim())||"",floatingTextPosition:j.floatingTextPosition||"top-right",slideDuration:j.slideDuration&&j.slideDuration>0?Number(j.slideDuration):4,pullToRefreshTitle:((je=j.pullToRefreshTitle)==null?void 0:je.trim())||"SHEIN",pullToRefreshSubtitle:((Ge=j.pullToRefreshSubtitle)==null?void 0:Ge.trim())||"أناقة للجميع",id:Y.id
+}
+;
+u(re),f(`تم حفظ وتحديث الشاشة "${
+re.title
+}
+" بنجاح ✨`,"success")
+}
+else{
+const re={
+id:`banner-${
+Date.now()
+}
+`,title:J,subtitle:"",badge:"",code:"",floatingText:((pe=j.floatingText)==null?void 0:pe.trim())||"",floatingTextPosition:j.floatingTextPosition||"top-right",slideDuration:j.slideDuration&&j.slideDuration>0?Number(j.slideDuration):4,image:j.image||"",bgGradient:j.bgGradient||"from-[#5C2304] via-[#853409] to-[#AC4A0F]",themeColor:j.themeColor||"#853409",customColor:j.customColor||"",isTransparent:j.isTransparent??!0,buttonText:"",categoryId:j.categoryId||k,categoryTarget:j.categoryTarget||"all",targetType:j.targetType||"category",targetSubCategory:j.targetSubCategory||"",targetStyleTab:j.targetStyleTab||"",targetTrend:j.targetTrend||"",pullToRefreshTitle:((Ne=j.pullToRefreshTitle)==null?void 0:Ne.trim())||"SHEIN",pullToRefreshSubtitle:((Ue=j.pullToRefreshSubtitle)==null?void 0:Ue.trim())||"أناقة للجميع",isActive:j.isActive??!0,order:O.length+1
+}
+;
+l(re),f(`تمت إضافة وحفظ الشاشة بنجاح لفئة "${
+xe(re.categoryId||"all")
+}
+" ✨`,"success")
+}
+Q(!1)
+}
+,
+he=(G,J)=>{
+const Ce=J==="up"?G-1:G+1;
+if(Ce<0||Ce>=O.length)return;
+const be=[...s],
+je=O[G],
+Ge=O[Ce],
+pe=be.findIndex(Ue=>Ue.id===je.id),
+Ne=be.findIndex(Ue=>Ue.id===Ge.id);
+if(pe!==-1&&Ne!==-1){
+const Ue=be[pe];
+be[pe]=be[Ne],be[Ne]=Ue,d(be),f("تم تحديث ترتيب الشاشات 🎛️","success")
+}
+
+}
+,
+ue=G=>{
+const J={
+...G,isActive:!G.isActive
+}
+;
+u(J),f(`تم ${
+J.isActive?"تفعيل":"تعطيل"
+}
+ شاشة "${
+G.title
+}
+"`,"info")
+}
+,
+xe=G=>{
+if(G==="all")return"الشاشات العامة (الكل)";
+const J=e.find(Ce=>Ce.id===G);
+return J?J.name:G
+}
+,
+Me=e.find(G=>G.id===(j.categoryTarget||j.categoryId||"women"))||e.find(G=>G.id==="women")||e[0],
+z=(Me==null?void 0:Me.subCategories)||[],
+F=(Me==null?void 0:Me.styleTabs)||[];
+return r.jsxs("div",{
+className:"space-y-4 text-right font-['Cairo',sans-serif]",children:[r.jsxs("div",{
+className:"p-3.5 bg-gradient-to-r from-rose-50 to-amber-50 rounded-2xl border border-rose-100/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3",children:[r.jsxs("div",{
+children:[r.jsxs("div",{
+className:"flex items-center gap-2",children:[r.jsx("span",{
+className:"p-1.5 bg-rose-600 text-white rounded-xl shadow-xs",children:r.jsx(Zl,{
+className:"w-4 h-4"
+}
+)
+}
+),r.jsx("h3",{
+className:"text-sm font-black text-slate-900",children:"تخصيص شاشات وبانرات القائمة الرئيسية (متجر)"
+}
+)]
+}
+),r.jsx("p",{
+className:"text-xs text-slate-600 mt-1",children:"تحكم كامل في الشاشات العلوية، الصور، العناوين، الأزرار، وربط التوجيه التفاعلي عند النقر لكل فئة بشكل منفصل."
+}
+)]
+}
+),r.jsxs("button",{
+onClick:H,className:"inline-flex items-center justify-center gap-1.5 bg-black hover:bg-slate-800 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-md cursor-pointer transition-all active:scale-95 shrink-0",children:[r.jsx(ha,{
+className:"w-4 h-4"
+}
+),r.jsx("span",{
+children:"إضافة شاشة جديدة"
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"p-3.5 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-emerald-500/10 rounded-2xl border border-amber-300/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3",children:[r.jsxs("div",{
+className:"flex items-center gap-3",children:[r.jsx("span",{
+className:"p-2.5 bg-gradient-to-br from-amber-500 to-rose-600 text-white rounded-2xl shadow-xs shrink-0",children:r.jsx(Od,{
+className:"w-5 h-5"
+}
+)
+}
+),r.jsxs("div",{
+children:[r.jsxs("div",{
+className:"flex items-center gap-2 flex-wrap",children:[r.jsx("h4",{
+className:"text-xs sm:text-sm font-black text-slate-900",children:"إعدادات مستطيل الإعلانات الرئيسية والقسائم العائمة"
+}
+),r.jsx("span",{
+className:"text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full",children:"ألوان إكسل + تقليب تلقائي"
+}
+)]
+}
+),r.jsx("p",{
+className:"text-xs text-slate-600 mt-0.5",children:"تخصيص شاشات القسائم والشحن الأخضر، تعديل نصوص المستخدمين الجدد والخصومات، وضبط سرعة التقليب للأعلى."
+}
+)]
+}
+)]
+}
+),r.jsxs("button",{
+type:"button",onClick:()=>y(!0),className:"w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 text-white text-xs font-black rounded-xl shadow-sm hover:shadow transition-all active:scale-95 flex items-center justify-center gap-1.5 shrink-0 cursor-pointer",children:[r.jsx(Od,{
+className:"w-4 h-4"
+}
+),r.jsx("span",{
+children:"فتح إعدادات مستطيل الإعلانات"
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"space-y-1.5",children:[r.jsxs("label",{
+className:"text-xs font-black text-slate-800 flex items-center gap-1.5",children:[r.jsx(SM,{
+className:"w-3.5 h-3.5 text-rose-600"
+}
+),r.jsx("span",{
+children:"اختر الفئة الرئيسية لإدارة شاشاتها المنفصلة:"
+}
+)]
+}
+),r.jsxs("div",{
+className:"flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 pt-0.5",children:[r.jsxs("button",{
+onClick:()=>V("all"),className:`px-3.5 py-2 rounded-xl text-xs font-black shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+k==="all"?"bg-slate-950 text-white shadow-md shadow-slate-900/20 scale-102":"bg-slate-100 hover:bg-slate-200 text-slate-700"
+}
+`,children:[r.jsx("span",{
+children:"🌟 الشاشات العامة (الكل)"
+}
+),r.jsx("span",{
+className:"px-1.5 py-0.2 text-[10px] rounded-full bg-white/20 text-current font-black",children:s.filter(G=>!G.categoryId||G.categoryId==="all").length
+}
+)]
+}
+),e.filter(G=>G.id!=="all").map(G=>{
+const J=s.filter(be=>be.categoryId===G.id).length,
+Ce=k===G.id;
+return r.jsxs("button",{
+onClick:()=>V(G.id),className:`px-3.5 py-2 rounded-xl text-xs font-black shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+Ce?"bg-rose-600 text-white shadow-md shadow-rose-600/20 scale-102":"bg-slate-100 hover:bg-slate-200 text-slate-700"
+}
+`,children:[r.jsx("span",{
+children:G.name
+}
+),r.jsx("span",{
+className:`px-1.5 py-0.2 text-[10px] rounded-full font-black ${
+Ce?"bg-white/30 text-white":"bg-slate-200 text-slate-700"
+}
+`,children:J
+}
+)]
+}
+,G.id)
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"space-y-3",children:[r.jsxs("div",{
+className:"flex items-center justify-between",children:[r.jsxs("span",{
+className:"text-xs font-black text-slate-900",children:["شاشات فئة (",xe(k),"):"]
+}
+),r.jsxs("span",{
+className:"text-[11px] font-bold text-slate-500",children:["العدد: ",O.length," شاشة"]
+}
+)]
+}
+),O.length===0?r.jsxs("div",{
+className:"p-8 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200",children:[r.jsx(Zl,{
+className:"w-10 h-10 text-slate-300 mx-auto mb-2"
+}
+),r.jsx("p",{
+className:"text-xs font-bold text-slate-600",children:"لا توجد شاشات مخصصة لهذه الفئة حالياً."
+}
+),r.jsx("p",{
+className:"text-[11px] text-slate-400 mt-0.5",children:"سيتم عرض الشاشات العامة تلقائياً، أو يمكنك إضافة شاشات منفصلة خاصة بهذه الفئة."
+}
+),r.jsxs("button",{
+onClick:H,className:"mt-3 inline-flex items-center gap-1.5 bg-rose-600 text-white text-xs font-black px-4 py-2 rounded-xl shadow-xs cursor-pointer hover:bg-rose-700",children:[r.jsx(ha,{
+className:"w-3.5 h-3.5"
+}
+),r.jsxs("span",{
+children:["إضافة أول شاشة لفئة ",xe(k)]
+}
+)]
+}
+)]
+}
+):r.jsx("div",{
+className:"space-y-3",children:O.map((G,J)=>{
+const Ce=G.isActive??!0;
+return r.jsxs("div",{
+className:`relative p-3 bg-white rounded-2xl border transition-all shadow-xs flex flex-col md:flex-row gap-3 items-start md:items-center justify-between ${
+Ce?"border-slate-200 hover:border-rose-300":"border-slate-200/60 opacity-60 bg-slate-50/50"
+}
+`,children:[r.jsxs("div",{
+className:"relative w-full md:w-52 aspect-[1080/706] rounded-xl overflow-hidden shrink-0 shadow-inner group bg-slate-900",children:[r.jsx("img",{
+src:G.image,alt:G.title||"شاشة عرض",referrerPolicy:"no-referrer",className:"w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+}
+),r.jsx("div",{
+className:"absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent pointer-events-none"
+}
+),G.floatingText&&r.jsx("div",{
+className:`absolute top-2 ${
+G.floatingTextPosition==="top-left"?"left-2":"right-2"
+}
+ pointer-events-none`,children:r.jsx("span",{
+className:"text-[9px] font-black bg-black/60 backdrop-blur-md text-white px-2 py-0.5 rounded-full border border-white/25 shadow-xs",children:G.floatingText
+}
+)
+}
+)]
+}
+),r.jsxs("div",{
+className:"flex-1 space-y-1.5 w-full",children:[r.jsxs("div",{
+className:"flex items-center gap-2 flex-wrap",children:[r.jsx("h4",{
+className:"text-xs font-black text-slate-900",children:G.title||"شاشة عرض"
+}
+),G.floatingText?r.jsxs("span",{
+className:"text-[10px] font-black px-2.5 py-0.5 bg-slate-900 text-amber-300 rounded-md flex items-center gap-1 border border-slate-700",children:[r.jsxs("span",{
+className:"text-white/80",children:["نص عائم (",G.floatingTextPosition==="top-left"?"أعلى اليسار":"أعلى اليمين","):"]
+}
+),r.jsxs("span",{
+children:['"',G.floatingText,'"']
+}
+)]
+}
+):r.jsx("span",{
+className:"text-[10px] font-bold px-2.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200",children:"صورة نقية (بدون نصوص إضافية)"
+}
+)]
+}
+),r.jsxs("div",{
+className:"pt-1 flex items-center gap-1.5 flex-wrap text-[11px]",children:[r.jsxs("span",{
+className:"font-bold text-slate-600 flex items-center gap-1",children:[r.jsx(M3,{
+className:"w-3 h-3 text-rose-600"
+}
+),"التوجيه عند النقر:"]
+}
+),G.targetType==="subcategory"&&G.targetSubCategory?r.jsxs("span",{
+className:"bg-rose-50 text-rose-700 font-bold px-2 py-0.5 rounded-md border border-rose-200",children:["فئة فرعية: ",G.targetSubCategory]
+}
+):G.targetType==="styleTab"&&G.targetStyleTab?r.jsxs("span",{
+className:"bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded-md border border-purple-200",children:["إطلالة / ستايل: ",G.targetStyleTab]
+}
+):G.targetType==="trend"&&G.targetTrend?r.jsxs("span",{
+className:"bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded-md border border-amber-200",children:["ترند: ",G.targetTrend]
+}
+):G.targetType==="flashSale"?r.jsx("span",{
+className:"bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-md border border-red-200",children:"عروض الفلاش والتخفيضات الكبرى ⚡"
+}
+):r.jsxs("span",{
+className:"bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-md",children:["فئة: ",xe(G.categoryTarget||G.categoryId||"all")]
+}
+),r.jsxs("span",{
+className:"bg-sky-50 text-sky-700 font-bold px-2 py-0.5 rounded-md border border-sky-200 flex items-center gap-1",children:[r.jsx(ou,{
+className:"w-3 h-3 text-sky-600"
+}
+),r.jsxs("span",{
+children:[G.slideDuration&&G.slideDuration>0?G.slideDuration:4," ثوانٍ"]
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"pt-0.5 flex items-center gap-1.5 flex-wrap text-[10.5px] text-slate-700 bg-slate-50 border border-slate-200/80 px-2 py-0.5 rounded-md w-fit",children:[r.jsx("span",{
+className:"font-extrabold text-rose-600",children:"👇 عند سحب الشاشة للأسفل:"
+}
+),r.jsx("span",{
+className:"font-black text-black font-sans uppercase",children:G.pullToRefreshTitle||"SHEIN"
+}
+),r.jsx("span",{
+className:"text-slate-400",children:"•"
+}
+),r.jsx("span",{
+className:"text-slate-700 font-bold",children:G.pullToRefreshSubtitle||"أناقة للجميع"
+}
+)]
+}
+),r.jsx("div",{
+className:"pt-1.5",children:r.jsxs("button",{
+type:"button",onClick:()=>g(G),className:"inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100 border border-rose-200 text-rose-700 text-xs font-black transition-all cursor-pointer shadow-2xs group",children:[r.jsx(Zl,{
+className:"w-3.5 h-3.5 text-rose-600 group-hover:scale-110 transition-transform"
+}
+),r.jsxs("span",{
+children:["التحكم بالتبويبات الدائرية والأصناف (",G.subScreenTabs&&G.subScreenTabs.length>0?`${
+G.subScreenTabs.length
+}
+ تبويب مخصص`:"الافتراضية",")"]
+}
+),r.jsx(jn,{
+className:"w-3 h-3 text-amber-500"
+}
+)]
+}
+)
+}
+)]
+}
+),r.jsxs("div",{
+className:"flex items-center gap-1.5 self-end md:self-center shrink-0",children:[r.jsx("button",{
+disabled:J===0,onClick:()=>he(J,"up"),className:`p-2 rounded-xl border border-slate-200 transition-colors ${
+J===0?"opacity-30 cursor-not-allowed bg-slate-50":"hover:bg-slate-100 cursor-pointer text-slate-700"
+}
+`,title:"تحريك لأعلى",children:r.jsx(MO,{
+className:"w-3.5 h-3.5"
+}
+)
+}
+),r.jsx("button",{
+disabled:J===O.length-1,onClick:()=>he(J,"down"),className:`p-2 rounded-xl border border-slate-200 transition-colors ${
+J===O.length-1?"opacity-30 cursor-not-allowed bg-slate-50":"hover:bg-slate-100 cursor-pointer text-slate-700"
+}
+`,title:"تحريك لأسفل",children:r.jsx(FO,{
+className:"w-3.5 h-3.5"
+}
+)
+}
+),r.jsx("button",{
+onClick:()=>ue(G),className:`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+Ce?"bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100":"bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
+}
+`,children:Ce?"مفعلة":"معطلة"
+}
+),r.jsx("button",{
+onClick:()=>ee(G),className:"p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 cursor-pointer transition-colors",title:"تعديل الشاشة",children:r.jsx(ul,{
+className:"w-4 h-4"
+}
+)
+}
+),r.jsx("button",{
+onClick:()=>{
+confirm(`هل أنت متأكد من حذف شاشة "${
+G.title
+}
+"؟`)&&(A(G.id),f("تم حذف الشاشة بنجاح","info"))
+}
+,className:"p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 cursor-pointer transition-colors",title:"حذف الشاشة",children:r.jsx(gr,{
+className:"w-4 h-4"
+}
+)
+}
+)]
+}
+)]
+}
+,G.id)
+}
+)
+}
+)]
+}
+),R&&r.jsx("div",{
+className:"fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fadeIn",children:r.jsxs("div",{
+className:"bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col",children:[r.jsxs("div",{
+className:"px-5 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0",children:[r.jsxs("div",{
+className:"flex items-center gap-2",children:[r.jsx("span",{
+className:"p-2 bg-rose-600 text-white rounded-xl shadow-xs",children:r.jsx(Zl,{
+className:"w-4 h-4"
+}
+)
+}
+),r.jsxs("div",{
+children:[r.jsx("h3",{
+className:"text-sm font-black",children:Y?"تعديل شاشة المتجر":"إضافة شاشة متجر جديدة"
+}
+),r.jsx("p",{
+className:"text-[11px] text-slate-300",children:"تخصيص كامل للصورة، النصوص، والتوجيه الذكي عند النقر"
+}
+)]
+}
+)]
+}
+),r.jsx("button",{
+onClick:()=>Q(!1),className:"p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer",children:r.jsx(js,{
+className:"w-5 h-5"
+}
+)
+}
+)]
+}
+),r.jsxs("form",{
+onSubmit:W,className:"p-5 overflow-y-auto space-y-4.5 flex-1 text-right",children:[r.jsxs("div",{
+children:[r.jsxs("div",{
+className:"flex items-center justify-between mb-1.5",children:[r.jsxs("label",{
+className:"text-xs font-black text-slate-800 flex items-center gap-1.5",children:[r.jsx(lu,{
+className:"w-3.5 h-3.5 text-rose-600"
+}
+),r.jsx("span",{
+children:"معاينة حية فورية للشاشة:"
+}
+)]
+}
+),r.jsx("span",{
+className:"text-[10px] font-black text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200",children:"المقاس المعتمد: 1080 × 706 بكسل"
+}
+)]
+}
+),r.jsxs("div",{
+style:{
+backgroundColor:j.isTransparent?"transparent":j.customColor||j.themeColor||"#5C2304"
+}
+,className:"relative w-full aspect-[1080/706] max-h-60 rounded-2xl overflow-hidden shadow-lg border border-slate-200 group select-none transition-colors mx-auto",children:[j.isTransparent&&r.jsx("div",{
+className:"absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:8px_8px] opacity-40"
+}
+),j.image?r.jsx("img",{
+src:j.image,alt:"Preview",referrerPolicy:"no-referrer",className:"w-full h-full object-cover"
+}
+):r.jsxs("div",{
+className:"w-full h-full flex flex-col items-center justify-center text-white/70 gap-1.5 p-4 text-center",children:[r.jsx(Yh,{
+className:"w-8 h-8 opacity-60"
+}
+),r.jsx("span",{
+className:"text-xs font-bold",children:"لم يتم تحديد صورة بعد"
+}
+)]
+}
+),j.isTransparent?r.jsx("div",{
+className:"absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40"
+}
+):j.customColor?r.jsxs(r.Fragment,{
+children:[r.jsx("div",{
+className:"absolute inset-0 opacity-40 mix-blend-multiply",style:{
+backgroundColor:j.customColor
+}
+
+}
+),r.jsx("div",{
+className:"absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/50"
+}
+)]
+}
+):r.jsxs(r.Fragment,{
+children:[r.jsx("div",{
+className:`absolute inset-0 bg-gradient-to-t ${
+j.bgGradient||"from-[#5C2304] via-[#853409] to-[#AC4A0F]"
+}
+ opacity-80`
+}
+),r.jsx("div",{
+className:"absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/50"
+}
+)]
+}
+),j.floatingText&&j.floatingText.trim()!==""&&r.jsx("div",{
+className:`absolute z-10 top-3 ${
+j.floatingTextPosition==="top-left"?"left-3":"right-3"
+}
+`,children:r.jsx("span",{
+className:"inline-flex items-center px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-black shadow-md border border-white/25",children:j.floatingText
+}
+)
+}
+),r.jsxs("div",{
+className:"absolute inset-x-0 bottom-0 p-3 flex items-center justify-between text-white z-10 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex-wrap gap-2",children:[r.jsxs("span",{
+className:"text-[11px] font-bold text-white/90 flex items-center gap-2",children:[r.jsx("span",{
+children:j.title||"شاشة عرض"
+}
+),r.jsxs("span",{
+className:"text-[10px] font-black bg-sky-500/30 text-sky-200 border border-sky-400/40 px-2 py-0.5 rounded-full flex items-center gap-1",children:[r.jsx(ou,{
+className:"w-2.5 h-2.5"
+}
+),r.jsxs("span",{
+children:[j.slideDuration||4," ثوانٍ"]
+}
+)]
+}
+)]
+}
+),r.jsxs("span",{
+className:"text-[10px] font-bold bg-white/20 backdrop-blur-xs px-2.5 py-0.5 rounded-md border border-white/20",children:["🎯 التوجيه: ",j.targetType==="subcategory"?`تصنيف (${
+j.targetSubCategory||"غير محدد"
+}
+)`:j.targetType==="styleTab"?`إطلالة (${
+j.targetStyleTab||"غير محدد"
+}
+)`:j.targetType==="trend"?`ترند (${
+j.targetTrend||"غير محدد"
+}
+)`:j.targetType==="flashSale"?"عروض الفلاش ⚡":`فئة (${
+xe(j.categoryTarget||"all")
+}
+)`]
+}
+)]
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"grid grid-cols-1 sm:grid-cols-2 gap-3",children:[r.jsxs("div",{
+children:[r.jsxs("label",{
+className:"text-xs font-black text-slate-800 block mb-1",children:["الفئة الرئيسية التي تظهر فيها هذه الشاشة: ",r.jsx("span",{
+className:"text-rose-500",children:"*"
+}
+)]
+}
+),r.jsxs("select",{
+value:j.categoryId||"all",onChange:G=>E({
+...j,categoryId:G.target.value
+}
+),className:"w-full text-xs font-bold p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 focus:outline-hidden",children:[r.jsx("option",{
+value:"all",children:"🌟 الشاشات العامة (الكل)"
+}
+),e.filter(G=>G.id!=="all").map(G=>r.jsx("option",{
+value:G.id,children:G.name
+}
+,G.id))]
+}
+)]
+}
+),r.jsxs("div",{
+children:[r.jsx("label",{
+className:"text-xs font-black text-slate-800 block mb-1",children:"اسم الشاشة الداخلي (للإدارة فقط):"
+}
+),r.jsx("input",{
+type:"text",value:j.title||"",onChange:G=>E({
+...j,title:G.target.value
+}
+),placeholder:"مثال: شاشة فساتين الخريف، شاشة الأحذية",className:"w-full text-xs font-bold p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 focus:outline-hidden"
+}
+),r.jsx("p",{
+className:"text-[10px] text-slate-400 mt-1",children:"يُستخدم للتعرف على الشاشة وترتيبها داخل لوحة التحكم فقط"
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"p-4 bg-gradient-to-r from-amber-50/70 via-rose-50/40 to-slate-50 rounded-2xl border border-amber-200/80 space-y-3.5 shadow-2xs",children:[r.jsxs("div",{
+className:"flex items-center justify-between flex-wrap gap-2",children:[r.jsxs("label",{
+className:"text-xs font-black text-slate-900 flex items-center gap-1.5",children:[r.jsx(jn,{
+className:"w-4 h-4 text-amber-600"
+}
+),r.jsx("span",{
+children:"نص عائم اختياري على الشاشة (في أي زاوية عليا):"
+}
+)]
+}
+),r.jsx("span",{
+className:"text-[10px] font-black text-amber-800 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-300/60",children:"اختياري - يمين أو يسار"
+}
+)]
+}
+),r.jsxs("p",{
+className:"text-[11px] text-slate-600 leading-relaxed",children:["إذا كانت صورة الشاشة تحتوي بالفعل على كل الكتابات والتصميم، ",r.jsx("strong",{
+className:"text-slate-900",children:"اترك هذا الحقل فارغاً"
+}
+)," لتظهر الصورة نقية 100% دون أي نصوص إضافية. يمكنك لاحقاً كتابة أي عنوان هنا ليظهر كشارة عائمة في الزاوية العليا التي تختارها."]
+}
+),r.jsxs("div",{
+className:"grid grid-cols-1 sm:grid-cols-2 gap-3",children:[r.jsxs("div",{
+children:[r.jsx("label",{
+className:"text-xs font-black text-slate-800 block mb-1",children:"نص العنوان العائم (اختياري):"
+}
+),r.jsx("input",{
+type:"text",value:j.floatingText||"",onChange:G=>E({
+...j,floatingText:G.target.value
+}
+),placeholder:"اتركه فارغاً لعرض صورة نقية، أو اكتب عنواناً",className:"w-full text-xs font-bold p-2.5 bg-white border border-slate-200 rounded-xl focus:border-amber-500 focus:outline-hidden"
+}
+),r.jsx("p",{
+className:"text-[10px] text-slate-400 mt-1",children:"مثال: عروض الخريف، أو تصفيات حصرية"
+}
+)]
+}
+),r.jsxs("div",{
+children:[r.jsx("label",{
+className:"text-xs font-black text-slate-800 block mb-1",children:"موضع النص العائم على الشاشة:"
+}
+),r.jsxs("div",{
+className:"grid grid-cols-2 gap-2",children:[r.jsxs("button",{
+type:"button",onClick:()=>E({
+...j,floatingTextPosition:"top-right"
+}
+),className:`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+(j.floatingTextPosition||"top-right")==="top-right"?"bg-slate-900 text-white border-slate-900 shadow-xs":"bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+}
+`,children:[r.jsx("span",{
+children:"أعلى اليمين"
+}
+),r.jsx("span",{
+className:"text-[10px] opacity-70",children:"(افتراضي)"
+}
+)]
+}
+),r.jsx("button",{
+type:"button",onClick:()=>E({
+...j,floatingTextPosition:"top-left"
+}
+),className:`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+j.floatingTextPosition==="top-left"?"bg-slate-900 text-white border-slate-900 shadow-xs":"bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+}
+`,children:r.jsx("span",{
+children:"أعلى اليسار"
+}
+)
+}
+)]
+}
+),r.jsx("p",{
+className:"text-[10px] text-slate-400 mt-1",children:"يحدد الزاوية العليا التي يطفو فيها النص فوق الشاشة"
+}
+)]
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"p-4 bg-gradient-to-r from-sky-50/70 via-indigo-50/40 to-slate-50 rounded-2xl border border-sky-200/80 space-y-3 shadow-2xs",children:[r.jsxs("div",{
+className:"flex items-center justify-between flex-wrap gap-2",children:[r.jsxs("label",{
+className:"text-xs font-black text-slate-900 flex items-center gap-1.5",children:[r.jsx(ou,{
+className:"w-4 h-4 text-sky-600"
+}
+),r.jsx("span",{
+children:"مدة بقاء الشاشة التلقائي (بالثواني):"
+}
+)]
+}
+),r.jsx("span",{
+className:"text-[11px] font-black text-sky-800 bg-sky-100/90 px-3 py-0.5 rounded-full border border-sky-300/60 flex items-center gap-1",children:r.jsxs("span",{
+children:[j.slideDuration||4," ثوانٍ"]
+}
+)
+}
+)]
+}
+),r.jsx("p",{
+className:"text-[11px] text-slate-600 leading-relaxed font-medium",children:"حدد كم ثانية تظل هذه الشاشة معروضة قبل أن تقلب إلى الشاشة التالية تلقائياً (مثلاً: 4 ثوانٍ تجلس الشاشة 4 ثوانٍ ثم تقلب للأخرى)."
+}
+),r.jsxs("div",{
+className:"flex items-center gap-2 flex-wrap pt-1",children:[[2,3,4,5,6,8,10].map(G=>r.jsxs("button",{
+type:"button",onClick:()=>E({
+...j,slideDuration:G
+}
+),className:`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+(j.slideDuration??4)===G?"bg-sky-700 text-white border-sky-800 shadow-xs scale-105":"bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+}
+`,children:[G," ثوانٍ"]
+}
+,G)),r.jsxs("div",{
+className:"flex items-center gap-1.5 ml-auto",children:[r.jsx("span",{
+className:"text-[10px] font-bold text-slate-500",children:"أو وقت مخصص:"
+}
+),r.jsx("input",{
+type:"number",min:"1",max:"60",value:j.slideDuration??4,onChange:G=>{
+const J=parseInt(G.target.value,10);
+E({
+...j,slideDuration:isNaN(J)?4:Math.max(1,Math.min(60,J))
+}
+)
+}
+,className:"w-16 text-center text-xs font-black p-1.5 bg-white border border-slate-300 rounded-lg focus:border-sky-500 focus:outline-hidden"
+}
+),r.jsx("span",{
+className:"text-[11px] font-bold text-slate-600",children:"ثانية"
+}
+)]
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"p-4 bg-gradient-to-r from-slate-900 via-slate-800 to-zinc-900 text-white rounded-2xl border border-slate-700/80 space-y-3.5 shadow-md",children:[r.jsxs("div",{
+className:"flex items-center justify-between flex-wrap gap-2",children:[r.jsxs("label",{
+className:"text-xs font-black text-amber-300 flex items-center gap-1.5",children:[r.jsx(jn,{
+className:"w-4 h-4 text-amber-400"
+}
+),r.jsx("span",{
+children:"ميزة السحب لأسفل للشاشة (نفس طريقة تطبيق SHEIN بالصورة):"
+}
+)]
+}
+),r.jsx("span",{
+className:"text-[10px] font-black text-emerald-300 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30",children:"كتابة مباشرة على الصورة دون مستطيل أبيض وبدون إشعار 👇"
+}
+)]
+}
+),r.jsx("p",{
+className:"text-[11px] text-slate-300 leading-relaxed font-medium",children:"تظهر هذه الكتابة باللون الأبيض مباشرة فوق الصورة الأصلية للشاشة عند قيام العميل بسحب الشاشة لأسفل، بدون أي مستطيل أبيض خلفها وبدون أي إشعار."
+}
+),r.jsxs("div",{
+className:"grid grid-cols-1 sm:grid-cols-2 gap-3",children:[r.jsxs("div",{
+children:[r.jsx("label",{
+className:"text-xs font-black text-slate-100 block mb-1",children:"العنوان الأصلي (العلوي) - بخط عريض:"
+}
+),r.jsx("input",{
+type:"text",value:j.pullToRefreshTitle??"SHEIN",onChange:G=>E({
+...j,pullToRefreshTitle:G.target.value
+}
+),placeholder:"مثال: SHEIN أو اسم متجرك",className:"w-full text-xs font-black tracking-widest uppercase p-2.5 bg-slate-950/80 border border-slate-700 text-white rounded-xl focus:border-amber-400 focus:outline-hidden placeholder:text-slate-500"
+}
+),r.jsx("p",{
+className:"text-[10px] text-slate-400 mt-1",children:"العنوان العلوي بالخط العريض البارز (نفس الصورة الأولى: SHEIN)"
+}
+)]
+}
+),r.jsxs("div",{
+children:[r.jsx("label",{
+className:"text-xs font-black text-slate-100 block mb-1",children:"العنوان الفرعي (تحته):"
+}
+),r.jsx("input",{
+type:"text",value:j.pullToRefreshSubtitle??"أناقة للجميع",onChange:G=>E({
+...j,pullToRefreshSubtitle:G.target.value
+}
+),placeholder:"مثال: أناقة للجميع، أو أي عنوان مناسب",className:"w-full text-xs font-bold p-2.5 bg-slate-950/80 border border-slate-700 text-white rounded-xl focus:border-amber-400 focus:outline-hidden placeholder:text-slate-500"
+}
+),r.jsx("p",{
+className:"text-[10px] text-slate-400 mt-1",children:"العنوان الفرعي يظهر تحته مباشرة (الافتراضي: أناقة للجميع)"
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"pt-2 border-t border-slate-700/80 flex items-center gap-1.5 flex-wrap",children:[r.jsx("span",{
+className:"text-[10px] font-bold text-slate-400",children:"اقتراحات سريعة:"
+}
+),r.jsx("button",{
+type:"button",onClick:()=>E({
+...j,pullToRefreshTitle:"SHEIN",pullToRefreshSubtitle:"أناقة للجميع"
+}
+),className:"text-[10px] font-bold px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-600 transition-colors cursor-pointer",children:"SHEIN | أناقة للجميع"
+}
+),r.jsx("button",{
+type:"button",onClick:()=>E({
+...j,pullToRefreshTitle:"SHEIN",pullToRefreshSubtitle:"أناقة الرجل العصري"
+}
+),className:"text-[10px] font-bold px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-600 transition-colors cursor-pointer",children:"SHEIN | أناقة الرجل"
+}
+),r.jsx("button",{
+type:"button",onClick:()=>E({
+...j,pullToRefreshTitle:"SHEIN",pullToRefreshSubtitle:"عروض حصرية متجددة"
+}
+),className:"text-[10px] font-bold px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-600 transition-colors cursor-pointer",children:"SHEIN | عروض حصرية"
+}
+),r.jsx("button",{
+type:"button",onClick:()=>E({
+...j,pullToRefreshTitle:"SHEIN",pullToRefreshSubtitle:"أناقة الصغار والعائلة"
+}
+),className:"text-[10px] font-bold px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-600 transition-colors cursor-pointer",children:"SHEIN | أناقة العائلة"
+}
+)]
+}
+),r.jsxs("div",{
+className:"p-3 bg-black/40 rounded-xl border border-slate-700 flex items-center justify-between shadow-inner",children:[r.jsxs("div",{
+className:"text-right",children:[r.jsx("span",{
+className:"text-[11px] font-extrabold text-amber-300 block",children:"معاينة ظهور النص عند سحب الشاشة:"
+}
+),r.jsx("span",{
+className:"text-[10px] text-slate-400",children:"تظهر الكتابة بيضاء مباشرة فوق صورة الشاشة دون أي مستطيل أبيض"
+}
+)]
+}
+),r.jsxs("div",{
+className:"px-6 py-2.5 bg-gradient-to-b from-amber-950/70 to-slate-900/90 rounded-lg border border-amber-500/20 shadow-sm flex flex-col items-center justify-center",children:[r.jsx("span",{
+className:"text-base font-black tracking-[0.2em] text-white font-sans uppercase drop-shadow-md",children:j.pullToRefreshTitle||"SHEIN"
+}
+),r.jsx("span",{
+className:"text-[11px] font-bold text-white/95 mt-0.5 font-['Cairo',sans-serif] drop-shadow-sm",children:j.pullToRefreshSubtitle||"أناقة للجميع"
+}
+)]
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3",children:[r.jsxs("div",{
+className:"flex items-center justify-between flex-wrap gap-2",children:[r.jsxs("label",{
+className:"text-xs font-black text-slate-800 flex items-center gap-1.5",children:[r.jsx(Yh,{
+className:"w-4 h-4 text-rose-600"
+}
+),r.jsx("span",{
+children:"صورة الشاشة (إضافة / رفع / حذف الصورة):"
+}
+)]
+}
+),r.jsxs("div",{
+className:"flex items-center gap-1.5",children:[r.jsx("input",{
+type:"file",ref:T,onChange:Be,accept:"image/*",className:"hidden"
+}
+),r.jsxs("button",{
+type:"button",onClick:()=>{
+var G;
+return(G=T.current)==null?void 0:G.click()
+}
+,className:"text-[11px] font-black bg-rose-50 hover:bg-rose-100 text-rose-700 px-2.5 py-1.5 rounded-xl border border-rose-200 flex items-center gap-1 cursor-pointer transition-colors",children:[r.jsx(yo,{
+className:"w-3.5 h-3.5"
+}
+),r.jsx("span",{
+children:"رفع صورة من جهازك"
+}
+)]
+}
+),r.jsxs("button",{
+type:"button",onClick:()=>L(!N),className:"text-[11px] font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 px-2.5 py-1.5 rounded-xl flex items-center gap-1 cursor-pointer shadow-2xs",children:[r.jsx(jn,{
+className:"w-3 h-3 text-amber-500"
+}
+),r.jsx("span",{
+children:N?"إخفاء المعرض":"مكتبة الصور"
+}
+)]
+}
+),j.image&&r.jsxs("button",{
+type:"button",onClick:()=>{
+E({
+...j,image:""
+}
+),f("تم حذف صورة الشاشة","info")
+}
+,className:"text-[11px] font-bold text-rose-600 hover:text-rose-700 bg-white border border-rose-200 px-2 py-1.5 rounded-xl flex items-center gap-1 cursor-pointer shadow-2xs",title:"حذف الصورة الحالية",children:[r.jsx(gr,{
+className:"w-3.5 h-3.5"
+}
+),r.jsx("span",{
+children:"حذف الصورة"
+}
+)]
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"space-y-1.5",children:[r.jsxs("div",{
+className:"relative",children:[r.jsx("input",{
+type:"url",value:j.image||"",onChange:G=>E({
+...j,image:G.target.value
+}
+),placeholder:"أو الصق رابط صورة مباشرة: https://images.unsplash.com/...",className:"w-full text-xs font-bold p-2.5 bg-white border border-slate-200 rounded-xl focus:border-rose-500 focus:outline-hidden"
+}
+),j.image&&r.jsx("button",{
+type:"button",onClick:()=>E({
+...j,image:""
+}
+),className:"absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-600 text-xs p-1",title:"مسح الرابط",children:r.jsx(js,{
+className:"w-3.5 h-3.5"
+}
+)
+}
+)]
+}
+),r.jsxs("div",{
+className:"flex items-center gap-2 px-3 py-2 bg-amber-50/90 rounded-xl border border-amber-200/80 text-[11px] text-amber-950 font-medium",children:[r.jsx("span",{
+className:"shrink-0 text-base",children:"📐"
+}
+),r.jsxs("span",{
+children:[r.jsx("strong",{
+className:"font-black text-amber-900",children:"المقاس القياسي المعتمد للشاشات:"
+}
+)," دائماً ",r.jsx("strong",{
+className:"font-black text-rose-700",children:"1080 × 706"
+}
+)," بكسل (العرض 1080px × الارتفاع 706px) لضمان ظهور كامل الصورة في واجهة المتجر بدقة متناهية وبدون أي قص أو تشويه."]
+}
+)]
+}
+)]
+}
+),N&&r.jsxs("div",{
+className:"p-2.5 bg-white rounded-xl border border-slate-200 space-y-2 animate-fadeIn",children:[r.jsxs("div",{
+className:"flex items-center justify-between",children:[r.jsx("p",{
+className:"text-[11px] font-bold text-slate-700",children:"اختر صورة مناسبة من المكتبة بنقرة واحدة:"
+}
+),r.jsx("button",{
+type:"button",onClick:()=>L(!1),className:"text-[10px] text-slate-400 hover:text-slate-600",children:"إغلاق"
+}
+)]
+}
+),r.jsx("div",{
+className:"grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-44 overflow-y-auto p-1",children:wse.map((G,J)=>r.jsxs("button",{
+type:"button",onClick:()=>{
+E({
+...j,image:G.url
+}
+),L(!1),f(`تم اختيار صورة "${
+G.name
+}
+" ✨`,"info")
+}
+,className:`relative h-16 rounded-xl overflow-hidden border transition-all group cursor-pointer ${
+j.image===G.url?"border-rose-600 ring-2 ring-rose-500":"border-slate-200 hover:border-rose-400"
+}
+`,children:[r.jsx("img",{
+src:G.url,alt:G.name,referrerPolicy:"no-referrer",className:"w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+}
+),r.jsx("div",{
+className:"absolute inset-0 bg-black/40 flex items-end p-1",children:r.jsx("span",{
+className:"text-[9px] font-bold text-white leading-tight",children:G.name
+}
+)
+}
+)]
+}
+,J))
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3",children:[r.jsxs("div",{
+className:"flex items-center justify-between flex-wrap gap-2",children:[r.jsxs("label",{
+className:"text-xs font-black text-slate-800 flex items-center gap-1.5",children:[r.jsx(Rm,{
+className:"w-4 h-4 text-rose-600"
+}
+),r.jsx("span",{
+children:"تخصيص ألوان الشاشة وثيم الخلفية:"
+}
+)]
+}
+),r.jsxs("button",{
+type:"button",onClick:()=>{
+E({
+...j,isTransparent:!j.isTransparent
+}
+),j.isTransparent||f("تم تفعيل وضع الشاشة الشفافة بدون ألوان 🪟","info")
+}
+,className:`text-[11px] font-black px-3 py-1.5 rounded-xl border flex items-center gap-1.5 cursor-pointer transition-all ${
+j.isTransparent?"bg-purple-600 text-white border-purple-600 shadow-xs":"bg-white text-slate-700 border-slate-200 hover:border-purple-300"
+}
+`,children:[r.jsx(RM,{
+className:"w-3.5 h-3.5"
+}
+),r.jsx("span",{
+children:j.isTransparent?"✓ بدون ألوان (شاشة شفافة)":"جعل الشاشة شفافة (بدون لون)"
+}
+)]
+}
+)]
+}
+),!j.isTransparent&&r.jsxs("div",{
+className:"space-y-3 animate-fadeIn",children:[r.jsxs("div",{
+className:"p-2.5 bg-white rounded-xl border border-slate-200 space-y-2",children:[r.jsxs("div",{
+className:"flex items-center justify-between",children:[r.jsxs("span",{
+className:"text-[11px] font-black text-slate-800 flex items-center gap-1",children:[r.jsx(sP,{
+className:"w-3.5 h-3.5 text-rose-600"
+}
+),r.jsx("span",{
+children:"تحديد لون مخصص عبر كود اللون (HEX Code / Color Picker):"
+}
+)]
+}
+),j.customColor&&r.jsx("button",{
+type:"button",onClick:()=>E({
+...j,customColor:""
+}
+),className:"text-[10px] text-rose-600 hover:underline cursor-pointer",children:"إلغاء واستخدام التدرجات الجاهزة"
+}
+)]
+}
+),r.jsxs("div",{
+className:"flex items-center gap-2",children:[r.jsx("div",{
+className:"relative shrink-0",children:r.jsx("input",{
+type:"color",value:j.customColor||j.themeColor||"#853409",onChange:G=>{
+E({
+...j,customColor:G.target.value,themeColor:G.target.value
+}
+)
+}
+,className:"w-10 h-10 rounded-xl cursor-pointer border border-slate-300 p-0.5 bg-white"
+}
+)
+}
+),r.jsx("div",{
+className:"flex-1 relative",children:r.jsx("input",{
+type:"text",value:j.customColor||"",onChange:G=>{
+const J=G.target.value;
+E({
+...j,customColor:J,themeColor:J.startsWith("#")?J:`#${
+J
+}
+`
+}
+)
+}
+,placeholder:"اكتب كود اللون (مثال: #853409 أو #9D174D أو #2563EB)",className:"w-full text-xs font-mono font-bold p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 focus:outline-hidden"
+}
+)
+}
+),r.jsx("div",{
+className:"flex items-center gap-1 shrink-0",children:["#000000","#E11D48","#2563EB","#059669","#D97706","#7C3AED"].map(G=>r.jsx("button",{
+type:"button",onClick:()=>{
+E({
+...j,customColor:G,themeColor:G
+}
+)
+}
+,style:{
+backgroundColor:G
+}
+,className:`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer ${
+j.customColor===G?"scale-115 border-white ring-2 ring-rose-500":"border-white/80 hover:scale-105"
+}
+`,title:G
+}
+,G))
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+children:[r.jsx("span",{
+className:"text-[11px] font-bold text-slate-700 block mb-1.5",children:"أو اختر من تشكيلة التدرجات اللونية الجاهزة:"
+}
+),r.jsx("div",{
+className:"grid grid-cols-2 sm:grid-cols-4 gap-2",children:Cse.map((G,J)=>{
+const Ce=!j.customColor&&j.bgGradient===G.gradient;
+return r.jsxs("button",{
+type:"button",onClick:()=>E({
+...j,customColor:"",bgGradient:G.gradient,themeColor:G.theme
+}
+),className:`p-2 rounded-xl border text-right transition-all cursor-pointer flex items-center gap-2 ${
+Ce?"border-rose-600 ring-2 ring-rose-600/30 bg-rose-50/50":"border-slate-200 hover:bg-slate-50 bg-white"
+}
+`,children:[r.jsx("span",{
+className:`w-5 h-5 rounded-lg bg-gradient-to-tr ${
+G.gradient
+}
+ shrink-0 shadow-2xs`
+}
+),r.jsx("span",{
+className:"text-[11px] font-bold text-slate-800 line-clamp-1",children:G.name
+}
+)]
+}
+,J)
+}
+)
+}
+)]
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"p-3.5 bg-rose-50/70 border border-rose-200/80 rounded-2xl space-y-3",children:[r.jsxs("div",{
+className:"flex items-center gap-1.5 text-rose-900",children:[r.jsx(M3,{
+className:"w-4 h-4 text-rose-600"
+}
+),r.jsx("h4",{
+className:"text-xs font-black",children:"ربط التوجيه التفاعلي عند النقر على الشاشة (Action Target):"
+}
+)]
+}
+),r.jsxs("div",{
+className:"grid grid-cols-1 sm:grid-cols-2 gap-3",children:[r.jsxs("div",{
+children:[r.jsx("label",{
+className:"text-[11px] font-black text-slate-800 block mb-1",children:"نوع التوجيه المستهدف:"
+}
+),r.jsxs("select",{
+value:j.targetType||"category",onChange:G=>{
+var Ce,be;
+const J=G.target.value;
+E({
+...j,targetType:J,targetSubCategory:J==="subcategory"&&((Ce=z[0])==null?void 0:Ce.name)||"",targetStyleTab:J==="styleTab"&&((be=F[0])==null?void 0:be.name)||"",targetTrend:J==="trend"&&n[0]||""
+}
+)
+}
+,className:"w-full text-xs font-bold p-2.5 bg-white border border-rose-200 rounded-xl focus:border-rose-500 focus:outline-hidden",children:[r.jsx("option",{
+value:"category",children:"1. فتح فئة رئيسية (Main Category)"
+}
+),r.jsx("option",{
+value:"subcategory",children:"2. فتح فئة فرعية / تصنيف دائري (Subcategory)"
+}
+),r.jsx("option",{
+value:"styleTab",children:"3. فتح تبويب إطلالة / مربعات الستايل (Style Tab)"
+}
+),r.jsx("option",{
+value:"trend",children:"4. فتح وسم ترند محدد (Trend Hashtag)"
+}
+),r.jsx("option",{
+value:"flashSale",children:"5. فتح عروض الفلاش والتخفيضات الكبرى (Flash Sale ⚡)"
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+children:[j.targetType==="category"&&r.jsxs("div",{
+children:[r.jsx("label",{
+className:"text-[11px] font-black text-slate-800 block mb-1",children:"اختر الفئة الرئيسية المستهدفة:"
+}
+),r.jsxs("select",{
+value:j.categoryTarget||"all",onChange:G=>E({
+...j,categoryTarget:G.target.value
+}
+),className:"w-full text-xs font-bold p-2.5 bg-white border border-rose-200 rounded-xl focus:border-rose-500 focus:outline-hidden",children:[r.jsx("option",{
+value:"all",children:"الكل (الصفحة العامة)"
+}
+),e.filter(G=>G.id!=="all").map(G=>r.jsx("option",{
+value:G.id,children:G.name
+}
+,G.id))]
+}
+)]
+}
+),j.targetType==="subcategory"&&r.jsxs("div",{
+children:[r.jsx("label",{
+className:"text-[11px] font-black text-slate-800 block mb-1",children:"اختر التبويب الدائري / الفئة الفرعية:"
+}
+),z.length>0?r.jsx("select",{
+value:j.targetSubCategory||((M=z[0])==null?void 0:M.name)||"",onChange:G=>E({
+...j,targetSubCategory:G.target.value
+}
+),className:"w-full text-xs font-bold p-2.5 bg-white border border-rose-200 rounded-xl focus:border-rose-500 focus:outline-hidden",children:z.map(G=>r.jsx("option",{
+value:G.name,children:G.name
+}
+,G.id))
+}
+):r.jsx("input",{
+type:"text",value:j.targetSubCategory||"",onChange:G=>E({
+...j,targetSubCategory:G.target.value
+}
+),placeholder:"اكتب اسم الفئة الفرعية (مثال: فساتين، عبايات)",className:"w-full text-xs font-bold p-2.5 bg-white border border-rose-200 rounded-xl focus:border-rose-500 focus:outline-hidden"
+}
+)]
+}
+),j.targetType==="styleTab"&&r.jsxs("div",{
+children:[r.jsx("label",{
+className:"text-[11px] font-black text-slate-800 block mb-1",children:"اختر تبويب الإطلالة / المربع المستهدف:"
+}
+),F.length>0?r.jsx("select",{
+value:j.targetStyleTab||((Z=F[0])==null?void 0:Z.name)||"",onChange:G=>E({
+...j,targetStyleTab:G.target.value
+}
+),className:"w-full text-xs font-bold p-2.5 bg-white border border-rose-200 rounded-xl focus:border-rose-500 focus:outline-hidden",children:F.map(G=>r.jsx("option",{
+value:G.name,children:G.name
+}
+,G.id))
+}
+):r.jsx("input",{
+type:"text",value:j.targetStyleTab||"",onChange:G=>E({
+...j,targetStyleTab:G.target.value
+}
+),placeholder:"اكتب اسم الإطلالة (مثال: إطلالات صيفية، إطلالات يومية)",className:"w-full text-xs font-bold p-2.5 bg-white border border-rose-200 rounded-xl focus:border-rose-500 focus:outline-hidden"
+}
+)]
+}
+),j.targetType==="trend"&&r.jsxs("div",{
+children:[r.jsx("label",{
+className:"text-[11px] font-black text-slate-800 block mb-1",children:"اختر وسم الترند:"
+}
+),r.jsx("select",{
+value:j.targetTrend||n[0]||"",onChange:G=>E({
+...j,targetTrend:G.target.value
+}
+),className:"w-full text-xs font-bold p-2.5 bg-white border border-rose-200 rounded-xl focus:border-rose-500 focus:outline-hidden",children:n.map(G=>r.jsx("option",{
+value:G,children:G
+}
+,G))
+}
+)]
+}
+),j.targetType==="flashSale"&&r.jsxs("div",{
+className:"p-2.5 bg-white rounded-xl border border-rose-200 text-xs font-bold text-rose-700 flex items-center gap-1.5",children:[r.jsx(_c,{
+className:"w-4 h-4 text-rose-600 shrink-0"
+}
+),r.jsx("span",{
+children:"سيتم توجيه العميل فوراً إلى قسم عروض التخفيض الكبرى والتخفيضات الفلاشية."
+}
+)]
+}
+)]
+}
+)]
+}
+)]
+}
+),r.jsxs("div",{
+className:"flex items-center justify-between gap-2 pt-3 border-t border-slate-100 flex-wrap",children:[r.jsx("div",{
+className:"flex items-center gap-2",children:Y&&r.jsxs(r.Fragment,{
+children:[r.jsxs("button",{
+type:"button",onClick:()=>{
+g(Y)
+}
+,className:"px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100 text-rose-700 text-xs font-black border border-rose-200 flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs",children:[r.jsx(Zl,{
+className:"w-4 h-4 text-rose-600"
+}
+),r.jsxs("span",{
+children:["إدارة التبويبات الدائرية والأصناف (",(ie=Y.subScreenTabs)!=null&&ie.length?`${
+Y.subScreenTabs.length
+}
+ تبويب`:"الافتراضية",")"]
+}
+)]
+}
+),r.jsxs("button",{
+type:"button",onClick:()=>{
+window.confirm(`هل أنت متأكد من حذف شاشة "${
+Y.title
+}
+"؟`)&&(A(Y.id),Q(!1),f(`تم حذف الشاشة "${
+Y.title
+}
+" بنجاح 🗑️`,"info"))
+}
+,className:"px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 flex items-center gap-1.5 cursor-pointer transition-colors",children:[r.jsx(gr,{
+className:"w-4 h-4"
+}
+),r.jsx("span",{
+children:"حذف هذه الشاشة"
+}
+)]
+}
+)]
+}
+)
+}
+),r.jsxs("div",{
+className:"flex items-center gap-2",children:[r.jsx("button",{
+type:"button",onClick:()=>Q(!1),className:"px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-100 cursor-pointer transition-colors",children:"إلغاء"
+}
+),r.jsxs("button",{
+type:"submit",className:"px-5 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white text-xs font-black shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5",children:[r.jsx(vs,{
+className:"w-4 h-4"
+}
+),r.jsx("span",{
+children:Y?"حفظ وتطبيق التعديلات":"إضافة وحفظ الشاشة"
+}
+)]
+}
+)]
+}
+)]
+}
+)]
+}
+)]
+}
+)
+}
+),r.jsx(J9,{
+isOpen:x,onClose:()=>y(!1),settings:a||D,onSaveSettings:G=>{
+_(G),
+i==null||i(G),fb(G),f("تم تحديث وحفظ شاشات مستطيل الإعلانات بنجاح ✨","success")
+}
+,onShowToast:(G,J)=>f(G,
+J==="favorite"?"info":J)
+}
+),m&&r.jsx(bse,{
+isOpen:!!m,onClose:()=>g(null),banner:m,products:t||[],onSave:G=>{
+u(G),Y&&Y.id===G.id&&(te(G),E(J=>({
+...J,subScreenTabs:G.subScreenTabs
+}
+))),g(null)
+}
+,onShowToast:f
+}
+)]
+}
+)
+}
+,

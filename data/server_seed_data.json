@@ -1,0 +1,3750 @@
+{
+  "categories": [
+    {
+      "id": "all",
+      "name": "كل",
+      "iconName": "Sparkles",
+      "itemCount": 1420,
+      "image": "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600&auto=format&fit=crop&q=80",
+      "badge": "شامل",
+      "styleTabs": [
+        {
+          "id": "all-st-daily",
+          "name": "إطلالات يومية",
+          "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-st-modest",
+          "name": "محتشمة",
+          "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-st-work",
+          "name": "عمل",
+          "image": "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-st-party",
+          "name": "حفلات",
+          "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-st-glam",
+          "name": "أطلالة ساحره",
+          "image": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-st-usage",
+          "name": "أستخدام يومي",
+          "image": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-st-vacation",
+          "name": "عطلات وسفر",
+          "image": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        }
+      ],
+      "subCategories": [
+        {
+          "id": "all-dresses",
+          "name": "فساتين",
+          "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-tops",
+          "name": "ملابس علوية",
+          "image": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-tees",
+          "name": "تيشيرتات",
+          "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-blouses",
+          "name": "بلايز",
+          "image": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-suits",
+          "name": "بدلات",
+          "image": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-bottoms",
+          "name": "ملابس سفلية",
+          "image": "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-knit",
+          "name": "ملابس منسوجة",
+          "image": "https://images.unsplash.com/photo-1584273143981-41c073dfe8f8?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-sets",
+          "name": "أطقم منسقة",
+          "image": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-denim",
+          "name": "الدنيم",
+          "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-arabic",
+          "name": "ملابس عربية",
+          "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-jackets",
+          "name": "معاطف وجاكيتات",
+          "image": "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-sweaters",
+          "name": "بلايز ثقيلة",
+          "image": "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-pants",
+          "name": "بناطيل",
+          "image": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-jumpsuit",
+          "name": "جمبسوت وبوديسوت",
+          "image": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        },
+        {
+          "id": "all-maxidresses",
+          "name": "فساتين طويلة",
+          "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "all"
+        }
+      ]
+    },
+    {
+      "id": "women",
+      "name": "نساء",
+      "iconName": "Shirt",
+      "itemCount": 480,
+      "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80",
+      "styleTabs": [
+        {
+          "id": "w-st-daily",
+          "name": "إطلالات يومية",
+          "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-st-modest",
+          "name": "محتشمة",
+          "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-st-work",
+          "name": "عمل",
+          "image": "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-st-party",
+          "name": "حفلات",
+          "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-st-glam",
+          "name": "أطلالة ساحره",
+          "image": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-st-usage",
+          "name": "أستخدام يومي",
+          "image": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-st-vacation",
+          "name": "عطلات وسفر",
+          "image": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        }
+      ],
+      "subCategories": [
+        {
+          "id": "w-dresses",
+          "name": "فساتين",
+          "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women",
+          "badge": "الأكثر طلباً"
+        },
+        {
+          "id": "w-tops",
+          "name": "ملابس علوية",
+          "image": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-tees",
+          "name": "تيشيرتات",
+          "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-blouses",
+          "name": "بلايز",
+          "image": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-suits",
+          "name": "بدلات",
+          "image": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-bottoms",
+          "name": "ملابس سفلية",
+          "image": "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-knit",
+          "name": "ملابس منسوجة",
+          "image": "https://images.unsplash.com/photo-1584273143981-41c073dfe8f8?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-sets",
+          "name": "أطقم منسقة",
+          "image": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women",
+          "badge": "جديد"
+        },
+        {
+          "id": "w-denim",
+          "name": "الدنيم",
+          "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-abayas",
+          "name": "ملابس عربية",
+          "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-jackets",
+          "name": "معاطف وجاكيتات",
+          "image": "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-sweaters",
+          "name": "بلايز ثقيلة",
+          "image": "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-pants",
+          "name": "بناطيل",
+          "image": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-jumpsuit",
+          "name": "جمبسوت وبوديسوت",
+          "image": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        },
+        {
+          "id": "w-maxidresses",
+          "name": "فساتين طويلة",
+          "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "women"
+        }
+      ]
+    },
+    {
+      "id": "girls",
+      "name": "مقاسات كبيرة",
+      "iconName": "Heart",
+      "itemCount": 210,
+      "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&auto=format&fit=crop&q=80",
+      "styleTabs": [
+        {
+          "id": "g-st-plus1",
+          "name": "إطلالات كلاسيك",
+          "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "girls"
+        },
+        {
+          "id": "g-st-plus2",
+          "name": "راحة يومية",
+          "image": "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "girls"
+        },
+        {
+          "id": "g-st-plus3",
+          "name": "مناسبات وسهرة",
+          "image": "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "girls"
+        }
+      ],
+      "subCategories": [
+        {
+          "id": "g-dresses",
+          "name": "فساتين مقاسات كبيرة",
+          "image": "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "girls"
+        },
+        {
+          "id": "g-sets",
+          "name": "أطقم راقية",
+          "image": "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "girls"
+        },
+        {
+          "id": "g-tops",
+          "name": "بلوزات وتوبات واسعة",
+          "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "girls"
+        },
+        {
+          "id": "g-pants",
+          "name": "بناطيل مريحة",
+          "image": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "girls"
+        }
+      ]
+    },
+    {
+      "id": "men",
+      "name": "رجال",
+      "iconName": "UserCheck",
+      "itemCount": 390,
+      "image": "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=600&auto=format&fit=crop&q=80",
+      "styleTabs": [
+        {
+          "id": "m-st-casual",
+          "name": "كاجوال شبابي",
+          "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "men"
+        },
+        {
+          "id": "m-st-formal",
+          "name": "عمل ورسمي",
+          "image": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "men"
+        },
+        {
+          "id": "m-st-sport",
+          "name": "رياضي ومريح",
+          "image": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "men"
+        }
+      ],
+      "subCategories": [
+        {
+          "id": "m-shirts",
+          "name": "قمصان كاجوال",
+          "image": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "men"
+        },
+        {
+          "id": "m-tees",
+          "name": "تيشيرتات وبولو",
+          "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "men"
+        },
+        {
+          "id": "m-pants",
+          "name": "بناطيل وجينز",
+          "image": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "men"
+        },
+        {
+          "id": "m-jackets",
+          "name": "معاطف وجواكت",
+          "image": "https://images.unsplash.com/photo-1548883354-7622d03aca27?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "men"
+        }
+      ]
+    },
+    {
+      "id": "perfumes",
+      "name": "لانجري وملابس النوم",
+      "iconName": "Flame",
+      "itemCount": 165,
+      "image": "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=600&auto=format&fit=crop&q=80",
+      "styleTabs": [
+        {
+          "id": "p-st-soft",
+          "name": "نعومة وراحة",
+          "image": "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "perfumes"
+        },
+        {
+          "id": "p-st-satin",
+          "name": "ساتان وحرير",
+          "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "perfumes"
+        }
+      ],
+      "subCategories": [
+        {
+          "id": "p-sleep",
+          "name": "أرواب وبيجامات",
+          "image": "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "perfumes"
+        },
+        {
+          "id": "p-lingerie",
+          "name": "لانجري فاخر",
+          "image": "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "perfumes"
+        }
+      ]
+    },
+    {
+      "id": "bags",
+      "name": "المنزل والمعيشة",
+      "iconName": "Briefcase",
+      "itemCount": 140,
+      "image": "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=600&auto=format&fit=crop&q=80",
+      "styleTabs": [
+        {
+          "id": "b-st-decor",
+          "name": "ديكور عصري",
+          "image": "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "bags"
+        }
+      ],
+      "subCategories": [
+        {
+          "id": "b-home",
+          "name": "ديكور ومفروشات",
+          "image": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "bags"
+        },
+        {
+          "id": "b-kitchen",
+          "name": "أدوات مطبخ",
+          "image": "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "bags"
+        }
+      ]
+    },
+    {
+      "id": "shoes",
+      "name": "أحذية",
+      "iconName": "Footprints",
+      "itemCount": 310,
+      "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&auto=format&fit=crop&q=80",
+      "styleTabs": [
+        {
+          "id": "s-st-snk",
+          "name": "أحذية رياضية",
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "shoes"
+        },
+        {
+          "id": "s-st-heels",
+          "name": "كعوب ومناسبات",
+          "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "shoes"
+        }
+      ],
+      "subCategories": [
+        {
+          "id": "s-sneakers",
+          "name": "أحذية كاجوال",
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "shoes"
+        },
+        {
+          "id": "s-boots",
+          "name": "بوتات وأحذية شتوية",
+          "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "shoes"
+        }
+      ]
+    },
+    {
+      "id": "accessories",
+      "name": "إكسسوارات",
+      "iconName": "Watch",
+      "itemCount": 160,
+      "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&auto=format&fit=crop&q=80",
+      "styleTabs": [
+        {
+          "id": "a-st-jewel",
+          "name": "مجوهرات فاخرة",
+          "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&auto=format&fit=crop&q=80",
+          "categoryId": "accessories"
+        }
+      ],
+      "subCategories": [
+        {
+          "id": "a-jewelry",
+          "name": "مجوهرات وساعات",
+          "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=300&auto=format&fit=crop&q=80",
+          "categoryId": "accessories"
+        }
+      ]
+    }
+  ],
+  "banners": [
+    {
+      "id": "banner-1",
+      "categoryId": "all",
+      "title": "خصم حتى 90%",
+      "subtitle": "الخريف ينادي، فأجيبوا بأناقة وتخفيضات",
+      "badge": "#عروض_الموسم",
+      "code": "SAH90",
+      "image": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-[#5C2304] via-[#853409] to-[#AC4A0F]",
+      "themeColor": "#853409",
+      "buttonText": "وفر الآن",
+      "targetType": "flashSale",
+      "categoryTarget": "all",
+      "pullToRefreshTitle": "SHEIN",
+      "pullToRefreshSubtitle": "أناقة الجميع",
+      "slideDuration": 4,
+      "isActive": true,
+      "order": 1,
+      "subScreenTabs": [
+        {
+          "id": "tab-brand-deals",
+          "name": "عروض العلامات",
+          "title": "عروض العلامات",
+          "image": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=200&auto=format&fit=crop&q=80",
+          "badge": "تخفيضات ⚡",
+          "order": 1
+        },
+        {
+          "id": "tab-denim-jeans",
+          "name": "تشكيلة الجنز",
+          "title": "تشكيلة الجنز",
+          "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=200&auto=format&fit=crop&q=80",
+          "badge": "أكثر طلباً 🔥",
+          "linkedProductIds": [
+            "p-shein-2",
+            "p-trend-2",
+            "p-shein-3"
+          ],
+          "order": 2
+        },
+        {
+          "id": "tab-low-prices",
+          "name": "أسعار منخفضة",
+          "title": "أسعار منخفضة",
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&auto=format&fit=crop&q=80",
+          "badge": "وفر 90%",
+          "order": 3
+        },
+        {
+          "id": "tab-home",
+          "name": "المنزل والمطبخ",
+          "title": "المنزل والمطبخ",
+          "image": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=200&auto=format&fit=crop&q=80",
+          "order": 4
+        },
+        {
+          "id": "tab-beauty",
+          "name": "عالم الجمال",
+          "title": "عالم الجمال",
+          "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=200&auto=format&fit=crop&q=80",
+          "order": 5
+        },
+        {
+          "id": "tab-dresses",
+          "name": "أروع الفساتين",
+          "title": "أروع الفساتين",
+          "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200&auto=format&fit=crop&q=80",
+          "linkedProductIds": [
+            "p-shein-1",
+            "p-shein-5",
+            "p-shein-6",
+            "p-trend-3",
+            "p-trend-4"
+          ],
+          "order": 6
+        },
+        {
+          "id": "tab-shoes",
+          "name": "أحذية وسنيكرز",
+          "title": "أحذية وسنيكرز",
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&auto=format&fit=crop&q=80",
+          "order": 7
+        },
+        {
+          "id": "tab-electronics",
+          "name": "التقنية والأجهزة",
+          "title": "التقنية والأجهزة",
+          "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&auto=format&fit=crop&q=80",
+          "order": 8
+        }
+      ]
+    },
+    {
+      "id": "banner-2",
+      "categoryId": "all",
+      "title": "عروض الأناقة والجاذبية النسائية",
+      "subtitle": "أحدث فساتين وعبايات الموضة بأسعار لا تُنافس",
+      "badge": "عرض حصري ⚡",
+      "code": "WOMEN35",
+      "image": "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-[#831843] via-[#9D174D] to-[#BE185D]",
+      "themeColor": "#9D174D",
+      "buttonText": "استكشفي التشكيلة",
+      "targetType": "subcategory",
+      "categoryTarget": "women",
+      "targetSubCategory": "فساتين",
+      "pullToRefreshTitle": "SHEIN",
+      "pullToRefreshSubtitle": "أناقة الجميع",
+      "slideDuration": 4,
+      "isActive": true,
+      "order": 2
+    },
+    {
+      "id": "banner-3",
+      "categoryId": "all",
+      "title": "عروض الأناقة الرجالية الكلاسيكية",
+      "subtitle": "اشتر قطعتين واحصل على الثالثة مجاناً + توصيل مجاني",
+      "badge": "كلاسيك ⚡",
+      "code": "MENFREE",
+      "image": "https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-[#0F172A] via-[#1E293B] to-[#334155]",
+      "themeColor": "#1E293B",
+      "buttonText": "استكشف التشكيلة",
+      "targetType": "category",
+      "categoryTarget": "men",
+      "pullToRefreshTitle": "SHEIN",
+      "pullToRefreshSubtitle": "أناقة الرجل العصري",
+      "isActive": true,
+      "order": 3
+    },
+    {
+      "id": "banner-4",
+      "categoryId": "all",
+      "title": "أزياء الأطفال والأحذية",
+      "subtitle": "أحدث الموديلات بأسعار تبدأ من 39 ر.س فقط",
+      "badge": "وفر أكثر 🏷️",
+      "code": "KIDS30",
+      "image": "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-[#78350F] via-[#92400E] to-[#B45309]",
+      "themeColor": "#92400E",
+      "buttonText": "شاهد العروض",
+      "targetType": "category",
+      "categoryTarget": "girls",
+      "pullToRefreshTitle": "SHEIN",
+      "pullToRefreshSubtitle": "أناقة الصغار والعائلة",
+      "isActive": true,
+      "order": 4
+    },
+    {
+      "id": "w-ban-1",
+      "categoryId": "women",
+      "title": "إطلالات الصيف النسائية الحصرية",
+      "subtitle": "فساتين، بلوزات وأطقم بتخفيضات حتى 65%",
+      "badge": "إطلالات صيفية ✨",
+      "code": "WOMEN65",
+      "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-rose-600 via-pink-600 to-red-600",
+      "themeColor": "#be185d",
+      "buttonText": "تسوقي القسم النسائي",
+      "targetType": "styleTab",
+      "categoryTarget": "women",
+      "targetStyleTab": "إطلالات يومية",
+      "pullToRefreshTitle": "SHEIN",
+      "pullToRefreshSubtitle": "أناقة الجميع",
+      "isActive": true,
+      "order": 1
+    },
+    {
+      "id": "w-ban-2",
+      "categoryId": "women",
+      "title": "تشكيلة العبايات والجلابيات الراقية",
+      "subtitle": "أقمشة كورية فاخرة مع شيلة مجانية",
+      "badge": "تخفيض كاسح 💎",
+      "code": "ABAYA30",
+      "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-purple-950 via-slate-900 to-rose-900",
+      "themeColor": "#581c87",
+      "buttonText": "اكتشفي العبايات",
+      "targetType": "subcategory",
+      "categoryTarget": "women",
+      "targetSubCategory": "ملابس عربية",
+      "pullToRefreshTitle": "SHEIN",
+      "pullToRefreshSubtitle": "أناقة العبايات والجلابيات",
+      "isActive": true,
+      "order": 2
+    },
+    {
+      "id": "w-ban-3",
+      "categoryId": "women",
+      "title": "ترندات الفساتين والحفلات الساحرة",
+      "subtitle": "فساتين سهرة وأناقة تلفت الأنظار",
+      "badge": "ترندات 🔥",
+      "code": "GLAM20",
+      "image": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-amber-900 via-rose-900 to-slate-950",
+      "themeColor": "#7c2d12",
+      "buttonText": "شاهد ترندات الفساتين",
+      "targetType": "trend",
+      "targetTrend": "#أناقة_صيفية",
+      "categoryTarget": "women",
+      "isActive": true,
+      "order": 3
+    },
+    {
+      "id": "m-ban-1",
+      "categoryId": "men",
+      "title": "الأناقة الرجالية الكاجوال والرسمية",
+      "subtitle": "قمصان كتان، هوديز، وبناطيل بأفضل الأسعار",
+      "badge": "قسم رجالي 👔",
+      "code": "MEN40",
+      "image": "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-slate-900 via-blue-950 to-rose-900",
+      "themeColor": "#1e293b",
+      "buttonText": "تسوق القسم الرجالي",
+      "targetType": "category",
+      "categoryTarget": "men",
+      "isActive": true,
+      "order": 1
+    },
+    {
+      "id": "m-ban-2",
+      "categoryId": "men",
+      "title": "بناطيل وتيشيرتات صيفية رجالية",
+      "subtitle": "خامات مريحة وتصاميم تواكب أحدث خطوط الموضة",
+      "badge": "جديد الرجالي ⚡",
+      "code": "SUMMER_MEN",
+      "image": "https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-sky-950 via-slate-900 to-indigo-950",
+      "themeColor": "#0f172a",
+      "buttonText": "استكشف التشكيلة",
+      "targetType": "subcategory",
+      "categoryTarget": "men",
+      "targetSubCategory": "تيشيرتات صيفية مطبوعة",
+      "isActive": true,
+      "order": 2
+    },
+    {
+      "id": "g-ban-1",
+      "categoryId": "girls",
+      "title": "تشكيلة المقاسات الكبيرة العصرية",
+      "subtitle": "أناقة لا متناهية ومقاسات مريحة لكل الأوقات",
+      "badge": "مقاسات كبيرة 💖",
+      "code": "CURVE25",
+      "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-pink-600 via-rose-500 to-amber-500",
+      "themeColor": "#db2777",
+      "buttonText": "تسوق المقاسات الكبيرة",
+      "targetType": "trend",
+      "targetTrend": "#أناقة_كيرف",
+      "categoryTarget": "girls",
+      "isActive": true,
+      "order": 1
+    },
+    {
+      "id": "s-ban-1",
+      "categoryId": "shoes",
+      "title": "مهرجان الأحذية الرياضية والكلاسيكية",
+      "subtitle": "سنيكرز خفيف، كعوب مريحة، وصنادل طبية",
+      "badge": "تخفيض الأحذية 👟",
+      "code": "SHOES50",
+      "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-red-700 via-rose-600 to-amber-600",
+      "themeColor": "#b91c1c",
+      "buttonText": "تسوق الأحذية",
+      "targetType": "category",
+      "categoryTarget": "shoes",
+      "isActive": true,
+      "order": 1
+    },
+    {
+      "id": "acc-ban-1",
+      "categoryId": "accessories",
+      "title": "إكسسوارات وساعات ونظارات فاخرة",
+      "subtitle": "لمسات تكتمل بها أناقتك بأسعار مذهلة",
+      "badge": "إكسسوارات ✨",
+      "code": "ACCESS20",
+      "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-amber-600 via-orange-600 to-rose-700",
+      "themeColor": "#d97706",
+      "buttonText": "تسوق الإكسسوارات",
+      "targetType": "category",
+      "categoryTarget": "accessories",
+      "isActive": true,
+      "order": 1
+    },
+    {
+      "id": "prf-ban-1",
+      "categoryId": "perfumes",
+      "title": "العطور الشرقية والفرنسية الملكية",
+      "subtitle": "دهن العود، والمسك، والورد بثبات يدوم طويلاً",
+      "badge": "عطور راقية 🌟",
+      "code": "PERFUME30",
+      "image": "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=1000&auto=format&fit=crop&q=80",
+      "bgGradient": "from-amber-700 via-rose-900 to-slate-950",
+      "themeColor": "#78350f",
+      "buttonText": "تسوق العطور",
+      "targetType": "category",
+      "categoryTarget": "perfumes",
+      "isActive": true,
+      "order": 1
+    }
+  ],
+  "campaigns": [
+    {
+      "id": "tc-heritage",
+      "hashtag": "#عودة_التراث",
+      "title": "كشف جمال التراث بأناقة لا تقاوم!",
+      "badge": "جديد",
+      "daysLeft": "خلال 8 يوم",
+      "bgImage": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1200&auto=format&fit=crop&q=80",
+      "productIds": [
+        "p-trend-retro-1",
+        "p-trend-retro-2",
+        "p-trend-retro-3",
+        "p-trend-1"
+      ],
+      "isActive": true,
+      "order": 1
+    },
+    {
+      "id": "tc-long-dress",
+      "hashtag": "#فستان_أنيق_كم_طويل",
+      "title": "أنيق وأنثوي، تصميم كلاسيكي لإطلالة مميزة.",
+      "badge": "جديد",
+      "daysLeft": "خلال 6 يوم",
+      "bgImage": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&auto=format&fit=crop&q=80",
+      "productIds": [
+        "p-trend-3",
+        "p-trend-4",
+        "p-trend-2"
+      ],
+      "isActive": true,
+      "order": 2
+    },
+    {
+      "id": "tc-ethereal",
+      "hashtag": "#جاذبية_أثيرية",
+      "title": "عانق الأناقة المشرقة مع تصاميم ناعمة تخطف القلوب.",
+      "badge": "مفضل",
+      "daysLeft": "خلال 5 يوم",
+      "bgImage": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=1200&auto=format&fit=crop&q=80",
+      "productIds": [
+        "p-trend-1",
+        "p-trend-2",
+        "p-trend-5"
+      ],
+      "isActive": true,
+      "order": 3
+    },
+    {
+      "id": "tc-coquette",
+      "hashtag": "#زي_كوكيت",
+      "title": "رفيق أنثوي مبهر بتفاصيل رقيقة ورومانسية لا تقاوم.",
+      "badge": "جديد",
+      "daysLeft": "خلال 7 يوم",
+      "bgImage": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=1200&auto=format&fit=crop&q=80",
+      "productIds": [
+        "p-trend-6",
+        "p-trend-retro-2",
+        "p-trend-3"
+      ],
+      "isActive": true,
+      "order": 4
+    },
+    {
+      "id": "tc-kaftan",
+      "hashtag": "#تراث_قفطان_جلابية",
+      "title": "تألق بالأصالة والأناقة العربية الفاخرة لكل المناسبات.",
+      "badge": "فاخر",
+      "daysLeft": "خلال 9 يوم",
+      "bgImage": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200&auto=format&fit=crop&q=80",
+      "productIds": [
+        "p-trend-7",
+        "p-trend-4",
+        "p-trend-retro-1"
+      ],
+      "isActive": true,
+      "order": 5
+    },
+    {
+      "id": "tc-retro",
+      "hashtag": "#ريترو_ريمكس",
+      "title": "استعد ذكريات الماضي مع ألوان الحنين وتفاصيل ريترو رائعة.",
+      "badge": "جديد",
+      "daysLeft": "خلال 8 يوم",
+      "bgImage": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=1200&auto=format&fit=crop&q=80",
+      "productIds": [
+        "p-trend-retro-1",
+        "p-trend-retro-2",
+        "p-trend-retro-3"
+      ],
+      "isActive": true,
+      "order": 6
+    },
+    {
+      "id": "tc-fashion",
+      "hashtag": "#أزياء_الموضة",
+      "title": "تألقي بإطلالات عصرية دافئة وتفاصيل تفيض بالجاذبية والرقي.",
+      "badge": "جديد",
+      "daysLeft": "خلال 5 يوم",
+      "bgImage": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=1200&auto=format&fit=crop&q=80",
+      "productIds": [
+        "p-trend-3",
+        "p-trend-4",
+        "p-trend-2"
+      ],
+      "isActive": true,
+      "order": 7
+    },
+    {
+      "id": "tc-curvy",
+      "hashtag": "#أناقة_كيرف",
+      "title": "منحنيات كلاسيكية ساحرة وراحة لا مثيل لها تناسب كل قوام.",
+      "badge": "رائج",
+      "daysLeft": "خلال 6 يوم",
+      "bgImage": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=1200&auto=format&fit=crop&q=80",
+      "productIds": [
+        "p-trend-1",
+        "p-trend-2",
+        "p-trend-3"
+      ],
+      "isActive": true,
+      "order": 8
+    },
+    {
+      "id": "tc-modest",
+      "hashtag": "#أناقة_محتشمة",
+      "title": "عبايات وفساتين طويلة بتطريزات فاخرة ومحتشمة لكل الأوقات.",
+      "badge": "فاخر",
+      "daysLeft": "خلال 4 يوم",
+      "bgImage": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=1200&auto=format&fit=crop&q=80",
+      "productIds": [
+        "p-trend-7",
+        "p-trend-3",
+        "p-trend-retro-2"
+      ],
+      "isActive": true,
+      "order": 9
+    },
+    {
+      "id": "tc-2026",
+      "hashtag": "#موديلات_2026",
+      "title": "أحدث صيحات الموضة العالمية من منصات عروض الأزياء العالمية.",
+      "badge": "حصري",
+      "daysLeft": "خلال 12 يوم",
+      "bgImage": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1200&auto=format&fit=crop&q=80",
+      "productIds": [
+        "p-trend-1",
+        "p-trend-4",
+        "p-trend-7"
+      ],
+      "isActive": true,
+      "order": 10
+    }
+  ],
+  "trendHashtags": [
+    "#ريترو_ريمكس",
+    "#أزياء_الموضة",
+    "#أناقة_صيفية",
+    "#بهجة_العيد_الزهري",
+    "#ميسي_شيك",
+    "#أناقة_محتشمة",
+    "#أناقة_كيرف",
+    "#رائع_وأنيق",
+    "#موديلات_2026",
+    "#إطلالة_المشاهير"
+  ],
+  "products": [
+    {
+      "id": "p-brand-blender",
+      "name": "قطعة واحدة خلاط محمول لاسلكي 450 مل، عصارة فواكه كهربائية قابلة للشحن",
+      "brand": "SHEIN Home",
+      "salesText": "+40. تم بيع",
+      "storeBadgeTag": "SHEIN Kitchen 🏪",
+      "cardAspect": "medium",
+      "isNewBadgeEnabled": true,
+      "newBadgeText": "NEW",
+      "category": "home",
+      "categories": [
+        "all",
+        "home",
+        "electronics"
+      ],
+      "subCategory": "أدوات مطبخ",
+      "originalPrice": 48,
+      "discountPrice": 35.04,
+      "discountPercentage": 27,
+      "couponTag": "بعد القسيمة",
+      "rating": 4.8,
+      "reviewsCount": 320,
+      "image": "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=800&auto=format&fit=crop&q=80",
+      "galleryImages": [
+        "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1589733955941-5eeaf752f6dd?w=800&auto=format&fit=crop&q=80"
+      ],
+      "colors": [
+        {
+          "name": "أبيض لؤلؤي",
+          "hex": "#F8FAFC"
+        },
+        {
+          "name": "وردي ناعم",
+          "hex": "#FBCFE8"
+        }
+      ],
+      "sizes": [
+        "450ml"
+      ],
+      "inStock": true,
+      "description": "خلاط فواكه محمول مزود بست شفرات فولاذية مقاومة للصدأ وبطارية قابلة لإعادة الشحن عبر USB.",
+      "sku": "BLN-WRL-001",
+      "soldCount": 0
+    },
+    {
+      "id": "p-brand-ugreen-mousepad",
+      "name": "وسادة ماوس كمبيوتر محمول للألعاب سوداء بسمك للألعاب والعمل من UGREEN",
+      "brand": "UGREEN",
+      "storeBadgeTag": "UGREEN 🏪 تأسست منذ عام واحد",
+      "salesText": "+400. تم بيع",
+      "cardAspect": "tall",
+      "isBestSeller": true,
+      "category": "electronics",
+      "categories": [
+        "all",
+        "electronics",
+        "accessories"
+      ],
+      "subCategory": "إكسسوارات كمبيوتر",
+      "originalPrice": 7,
+      "discountPrice": 5.74,
+      "discountPercentage": 18,
+      "couponTag": "توفير 1.26 ﷼",
+      "rating": 4.9,
+      "reviewsCount": 530,
+      "image": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=800&auto=format&fit=crop&q=80",
+      "galleryImages": [
+        "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1629429408209-1f912961dbd8?w=800&auto=format&fit=crop&q=80"
+      ],
+      "colors": [
+        {
+          "name": "أسود مطفي",
+          "hex": "#18181B"
+        }
+      ],
+      "sizes": [
+        "26x21cm",
+        "30x25cm"
+      ],
+      "inStock": true,
+      "description": "وسادة ماوس مطاطية مانعة للانزلاق بسطح قماشي ميكروفيبر ناعم لحركة انسيابية فائقة الدقة.",
+      "sku": "UGR-MPD-002",
+      "soldCount": 0
+    },
+    {
+      "id": "p-brand-attack-shark",
+      "name": "فأرة ألعاب لاسلكية خفيفة الوزن جداً Attack Shark X3 بمستشعر بصري عالي الدقة",
+      "brand": "ATTACK SHARK",
+      "storeBadgeTag": "ATTACK SHARK 🏪 عرض براند",
+      "stockUrgency": "انتهت الكمية تقريباً!",
+      "salesText": "+600. تم بيع",
+      "sellersCount": 7,
+      "cardAspect": "medium",
+      "category": "electronics",
+      "categories": [
+        "all",
+        "electronics"
+      ],
+      "subCategory": "إكسسوارات كمبيوتر",
+      "originalPrice": 105,
+      "discountPrice": 70.35,
+      "discountPercentage": 33,
+      "couponTag": "تم التوفير 34.65 ﷼",
+      "rating": 4.9,
+      "reviewsCount": 680,
+      "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&auto=format&fit=crop&q=80",
+      "galleryImages": [
+        "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=800&auto=format&fit=crop&q=80"
+      ],
+      "colors": [
+        {
+          "name": "أبيض ثلجي",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "أسود فحمي",
+          "hex": "#18181B"
+        }
+      ],
+      "sizes": [
+        "لاسلكي 2.4G"
+      ],
+      "inStock": true,
+      "description": "فأرة ألعاب تزن 49 غرام فقط بمعدل استجابة 1ms ومستشعر PixArt 3395 بدقة تصل إلى 26,000 DPI.",
+      "sku": "ATK-MS-003",
+      "soldCount": 0
+    },
+    {
+      "id": "p-brand-ugreen-cable",
+      "name": "كابل شحن سريع ونقل بيانات UGREEN Uno 100W Type-C مجدول فائق التحمل",
+      "brand": "UGREEN",
+      "storeBadgeTag": "UGREEN 🏪 عملاء متكررون بشكل كبير",
+      "salesText": "+300. تم بيع",
+      "cardAspect": "compact",
+      "category": "electronics",
+      "categories": [
+        "all",
+        "electronics"
+      ],
+      "subCategory": "كابلات وشواحن",
+      "originalPrice": 21,
+      "discountPrice": 19.32,
+      "discountPercentage": 8,
+      "couponTag": "توفير 1.68 ﷼",
+      "rating": 4.9,
+      "reviewsCount": 1100,
+      "image": "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=800&auto=format&fit=crop&q=80",
+      "galleryImages": [
+        "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1544652478-6653e09f18a2?w=800&auto=format&fit=crop&q=80"
+      ],
+      "colors": [
+        {
+          "name": "بنفسجي فاتح",
+          "hex": "#C084FC"
+        },
+        {
+          "name": "رمادي فضي",
+          "hex": "#94A3B8"
+        }
+      ],
+      "sizes": [
+        "1 متر",
+        "2 متر"
+      ],
+      "inStock": true,
+      "description": "كابل Type-C إلى Type-C يدعم تقنية توصيل الطاقة PD 100W مع شريحة E-marker لحماية الأجهزة.",
+      "sku": "UGR-CBL-004",
+      "soldCount": 0
+    },
+    {
+      "id": "p-brand-hyundai-irrigator",
+      "name": "جهاز تنظيف الأسنان الكهربائي القابل للشحن، خيط مائي محمول من HYUNDAI",
+      "brand": "HYUNDAI",
+      "storeBadgeTag": "HYUNDAI 🏪 علامة تجارية",
+      "stockUrgency": "انتهت الكمية تقريباً!",
+      "salesText": "+600. تم بيع",
+      "cardAspect": "tall",
+      "category": "electronics",
+      "categories": [
+        "all",
+        "electronics",
+        "beauty"
+      ],
+      "subCategory": "عناية وصحة",
+      "originalPrice": 59,
+      "discountPrice": 42,
+      "discountPercentage": 28,
+      "couponTag": "عرض محدود",
+      "rating": 4.8,
+      "reviewsCount": 650,
+      "image": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&auto=format&fit=crop&q=80",
+      "galleryImages": [
+        "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=800&auto=format&fit=crop&q=80"
+      ],
+      "colors": [
+        {
+          "name": "أبيض طبي",
+          "hex": "#FFFFFF"
+        }
+      ],
+      "sizes": [
+        "مع 4 رؤوس بديلة"
+      ],
+      "inStock": true,
+      "description": "خيط أسنان مائي بنبضات عالية التردد لإزالة الرواسب بفعالية مع 3 أوضاع تشغيل وخزان مياه مدمج.",
+      "sku": "HYU-IRR-005",
+      "soldCount": 0
+    },
+    {
+      "id": "p-brand-casio-watch",
+      "name": "ساعة يد كوارتز كلاسيكية بسوار معدني مقاومة للماء Casio MTP",
+      "brand": "Casio",
+      "storeBadgeTag": "Casio 🏪 علامة تجارية",
+      "salesText": "+500. تم بيع",
+      "cardAspect": "medium",
+      "category": "accessories",
+      "categories": [
+        "all",
+        "accessories",
+        "men"
+      ],
+      "subCategory": "ساعات ومجوهرات",
+      "originalPrice": 120,
+      "discountPrice": 84,
+      "discountPercentage": 30,
+      "couponTag": "قسيمة خاصة",
+      "rating": 4.9,
+      "reviewsCount": 520,
+      "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800&auto=format&fit=crop&q=80",
+      "galleryImages": [
+        "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop&q=80"
+      ],
+      "colors": [
+        {
+          "name": "فضي ميناء أزرق",
+          "hex": "#1E3A8A"
+        }
+      ],
+      "sizes": [
+        "مقاس موحد"
+      ],
+      "inStock": true,
+      "description": "ساعة كاسيو أصلية مع عرض التاريخ وإطار متين من الفولاذ المقاوم للصدأ وعقارب مضيئة.",
+      "sku": "CSO-WTC-006",
+      "soldCount": 0
+    },
+    {
+      "id": "p-shein-1",
+      "name": "Dazy Plus فستان انزلاقي بدون أكمام بكسرات ناعمة ولون وردي ترابي",
+      "brand": "Dazy Plus",
+      "hasCurveLogo": true,
+      "storeBadgeTag": "Dazy CURVE 🏪",
+      "isTrend": true,
+      "trends": [
+        "#جاذبية_أثيرية",
+        "#أناقة_كيرف",
+        "#أناقة_صيفية"
+      ],
+      "trendTag": "#جاذبية_أثيرية",
+      "stockUrgency": "فقط 1 بقي",
+      "salesText": "+100. تم بيع",
+      "cardAspect": "tall",
+      "isNewBadgeEnabled": true,
+      "newBadgeText": "NEW",
+      "category": "women",
+      "categories": [
+        "all",
+        "women",
+        "girls"
+      ],
+      "subCategory": "w-dresses",
+      "subCategories": [
+        "فساتين",
+        "فساتين طويلة"
+      ],
+      "styleTabs": [
+        "إطلالات يومية",
+        "أطلالة ساحره",
+        "أستخدام يومي"
+      ],
+      "originalPrice": 65.14,
+      "discountPrice": 50.16,
+      "discountPercentage": 18,
+      "couponTag": "بعد القسيمة",
+      "rating": 4.9,
+      "reviewsCount": 420,
+      "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=80",
+      "colors": [
+        {
+          "name": "وردي ترابي",
+          "hex": "#D4A5A5"
+        },
+        {
+          "name": "أسود كلاسيك",
+          "hex": "#1F2937"
+        },
+        {
+          "name": "بيج ناعم",
+          "hex": "#E5D4C0"
+        }
+      ],
+      "sizes": [
+        "L",
+        "XL",
+        "2XL",
+        "3XL"
+      ],
+      "inStock": true,
+      "description": "فستان انزلاقي بدون أكمام من ماركة Dazy Plus بتصميم كسرات انسيابي فائق النعومة والأنوثة.",
+      "sku": "DZY-PLS-001",
+      "soldCount": 0,
+      "isRecommended": true,
+      "isMostPopular": false,
+      "productType": "فستان",
+      "material": "بوليستر ناعم",
+      "fabric": "شيفون ناعم",
+      "ageGroup": "كبار"
+    },
+    {
+      "id": "p-shein-2",
+      "name": "Dazy Plus بنطلون جينز نسائي واسع الأرجل بخصر مرتفع وتفاصيل مهترئة خفيفة",
+      "brand": "Dazy Plus",
+      "hasCurveLogo": false,
+      "cardAspect": "tall",
+      "isRecommended": true,
+      "isMostPopular": true,
+      "isBestSeller": true,
+      "productType": "بنطلون جينز",
+      "material": "دينيم (جينز)",
+      "fabric": "جينز دنيم مغسول",
+      "ageGroup": "شبابي",
+      "priceDropBadge": {
+        "title": "العناصر التي تهمك أصبحت الآن أرخص! >",
+        "discountText": "8% خصم منذ مشاهدتك"
+      },
+      "category": "women",
+      "categories": [
+        "all",
+        "women",
+        "girls"
+      ],
+      "subCategory": "w-bottoms",
+      "subCategories": [
+        "الدنيم",
+        "بناطيل"
+      ],
+      "styleTabs": [
+        "أستخدام يومي",
+        "إطلالات يومية",
+        "كاجوال شبابي"
+      ],
+      "originalPrice": 79.04,
+      "discountPrice": 47.42,
+      "discountPercentage": 40,
+      "couponTag": "بعد القسيمة",
+      "rating": 4.8,
+      "reviewsCount": 560,
+      "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&auto=format&fit=crop&q=80",
+      "colors": [
+        {
+          "name": "دينيم أزرق غامق",
+          "hex": "#1E3A8A"
+        },
+        {
+          "name": "أزرق كلاسيك",
+          "hex": "#3B82F6"
+        },
+        {
+          "name": "أسود فحمي",
+          "hex": "#111827"
+        }
+      ],
+      "sizes": [
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL"
+      ],
+      "inStock": true,
+      "description": "جينز فلير واسع الأرجل بخصر عالي يمنحك قواماً جذاباً وراحة تامة طوال اليوم.",
+      "sku": "DZY-JNS-002",
+      "soldCount": 0
+    },
+    {
+      "id": "p-shein-3",
+      "name": "DAZY تنورة جينز نسائية بلون موحد وكسرات بليسيه عصرية",
+      "brand": "DAZY",
+      "storeBadgeTag": "DAZY Weekend 🏪",
+      "cardAspect": "compact",
+      "isRecommended": false,
+      "isMostPopular": true,
+      "productType": "تنورة جينز",
+      "material": "دينيم (جينز)",
+      "fabric": "جينز دنيم مغسول",
+      "ageGroup": "شبابي",
+      "isTrend": true,
+      "trends": [
+        "#ميسي_شيك",
+        "#موديلات_2026"
+      ],
+      "trendTag": "#ميسي_شيك",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-bottoms",
+      "subCategories": [
+        "الدنيم",
+        "تنانير"
+      ],
+      "styleTabs": [
+        "كاجوال شبابي",
+        "إطلالات يومية"
+      ],
+      "originalPrice": 86,
+      "discountPrice": 57.75,
+      "discountPercentage": 33,
+      "couponTag": "قسيمة فئة 11.00 ر.س",
+      "rating": 4.9,
+      "reviewsCount": 380,
+      "image": "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=800&auto=format&fit=crop&q=80",
+      "colors": [
+        {
+          "name": "أزرق دنيم مغسول",
+          "hex": "#475569"
+        },
+        {
+          "name": "أسود جينز",
+          "hex": "#1E293B"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "inStock": true,
+      "description": "تنورة جينز بكسرات أنيقة وقصة خصر ضيقة تمنحك إطلالة عصرية شبابية مفعمة بالحيوية.",
+      "sku": "DZY-SKT-003",
+      "soldCount": 0
+    },
+    {
+      "id": "p-shein-4",
+      "name": "Dazy Plus بلوزة كاجوال بياقة على شكل V مع ربطة ناعمة وأكمام قصيرة",
+      "brand": "Dazy Plus",
+      "hasCurveLogo": true,
+      "storeBadgeTag": "Dazy CURVE 🏪",
+      "cardAspect": "medium",
+      "category": "women",
+      "categories": [
+        "all",
+        "women",
+        "girls"
+      ],
+      "subCategory": "w-tops",
+      "subCategories": [
+        "ملابس علوية",
+        "بلايز"
+      ],
+      "styleTabs": [
+        "إطلالات يومية",
+        "أستخدام يومي"
+      ],
+      "originalPrice": 39,
+      "discountPrice": 30.03,
+      "discountPercentage": 23,
+      "couponTag": "بعد القسيمة",
+      "rating": 4.7,
+      "reviewsCount": 290,
+      "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80",
+      "colors": [
+        {
+          "name": "أبيض ناصع",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "وردي بودري",
+          "hex": "#FBCFE8"
+        },
+        {
+          "name": "بيج عاجي",
+          "hex": "#FEF3C7"
+        }
+      ],
+      "sizes": [
+        "L",
+        "XL",
+        "2XL",
+        "3XL"
+      ],
+      "inStock": true,
+      "description": "بلوزة رقيقة من القطن المضلع مع تفاصيل رباط جذاب وياقة مضلعة لمظهر أنيق يومي.",
+      "sku": "DZY-TOP-004",
+      "soldCount": 0
+    },
+    {
+      "id": "p-shein-5",
+      "name": "Dazy Plus فستان نوم نسائي أنيق بتطريز دانتيل فاخر وقصة راب ملوكية",
+      "brand": "Dazy Plus",
+      "hasCurveLogo": true,
+      "storeBadgeTag": "Dazy CURVE 🏪",
+      "cardAspect": "tall",
+      "salesText": "+50. تم بيع",
+      "colorCount": 17,
+      "category": "women",
+      "categories": [
+        "all",
+        "women",
+        "girls"
+      ],
+      "subCategory": "w-dresses",
+      "subCategories": [
+        "فساتين سهرة ومناسبات",
+        "فساتين"
+      ],
+      "styleTabs": [
+        "أطلالة ساحره",
+        "حفلات"
+      ],
+      "originalPrice": 82,
+      "discountPrice": 55.19,
+      "discountPercentage": 33,
+      "couponTag": "قسيمة فئة 10.33 ر.س",
+      "rating": 4.9,
+      "reviewsCount": 780,
+      "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&auto=format&fit=crop&q=80",
+      "colors": [
+        {
+          "name": "أحمر عنابي ملكي",
+          "hex": "#881337"
+        },
+        {
+          "name": "أسود كلاسيك",
+          "hex": "#0F172A"
+        },
+        {
+          "name": "أبيض لؤلؤي",
+          "hex": "#F8FAFC"
+        }
+      ],
+      "sizes": [
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL"
+      ],
+      "inStock": true,
+      "description": "فستان بتطريزات دانتيل فرنسي فاخرة على الياقة والأكمام وأطراف القصة لمنحك إطلالة ملكية ساحرة.",
+      "sku": "DZY-DRS-005",
+      "soldCount": 0
+    },
+    {
+      "id": "p-shein-6",
+      "name": "Vibekara فستان أوف شولدر بنقشة زهور كلاسيكية ساحرة وأكتاف مكشوفة",
+      "brand": "Vibekara",
+      "hasCurveLogo": true,
+      "cardAspect": "medium",
+      "salesText": "+150. تم بيع",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-dresses",
+      "subCategories": [
+        "فساتين",
+        "أطقم منسقة"
+      ],
+      "styleTabs": [
+        "أطلالة ساحره",
+        "عطلات وسفر"
+      ],
+      "originalPrice": 77.52,
+      "discountPrice": 52.46,
+      "discountPercentage": 32,
+      "couponTag": "قسيمة فئة 9.39 ر.س",
+      "rating": 4.8,
+      "reviewsCount": 310,
+      "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&auto=format&fit=crop&q=80",
+      "colors": [
+        {
+          "name": "أصفر مشجر",
+          "hex": "#FDE047"
+        },
+        {
+          "name": "وردي مشجر",
+          "hex": "#F472B6"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL"
+      ],
+      "inStock": true,
+      "description": "فستان صيفي بنقوشات زهور ناعمة وأكتاف مكشوفة، مثالي للنزهات والعطلات الصيفية الممتعة.",
+      "sku": "VBK-FLR-006",
+      "soldCount": 0
+    },
+    {
+      "id": "p-shein-7",
+      "name": "SHEIN EZwear توب رياضي نسائي للياقة والتمارين مع نسيج قابل للتنفس",
+      "brand": "SHEIN EZwear",
+      "cardAspect": "compact",
+      "salesText": "+240. تم بيع",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-tops",
+      "subCategories": [
+        "ملابس علوية",
+        "بلايز"
+      ],
+      "styleTabs": [
+        "أستخدام يومي",
+        "كاجوال شبابي"
+      ],
+      "originalPrice": 45,
+      "discountPrice": 28.5,
+      "discountPercentage": 36,
+      "couponTag": "بعد القسيمة",
+      "rating": 4.9,
+      "reviewsCount": 650,
+      "image": "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&auto=format&fit=crop&q=80",
+      "colors": [
+        {
+          "name": "أسود رياضي",
+          "hex": "#111827"
+        },
+        {
+          "name": "رمادي غامق",
+          "hex": "#4B5563"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "inStock": true,
+      "description": "صدرية رياضية داعمة ومريحة للتمارين والأنشطة الرياضية اليومية بملمس مرن فائق النعومة.",
+      "sku": "SHN-SPT-007",
+      "soldCount": 0
+    },
+    {
+      "id": "p-trend-2",
+      "name": "Dazy Plus بنطلون جينز نسائي مقاس كبير واسع الأرجل بخصر مرتفع وتفاصيل مهترئة",
+      "brand": "Dazy Plus",
+      "isRecommended": true,
+      "isMostPopular": true,
+      "productType": "بنطلون جينز",
+      "fabric": "جينز دنيم مغسول",
+      "ageGroup": "كبار",
+      "isTrend": true,
+      "trends": [
+        "#أناقة_كيرف",
+        "#ميسي_شيك",
+        "#أناقة_صيفية"
+      ],
+      "trendTag": "#أناقة_كيرف",
+      "trendBadge": "⌛ انتهت الكمية تقريباً!",
+      "salesText": "+200. تم بيع",
+      "couponText": "قسيمة فئة 9.39 ر.س",
+      "category": "women",
+      "categories": [
+        "all",
+        "women",
+        "girls"
+      ],
+      "subCategory": "w-bottoms",
+      "subCategories": [
+        "الدنيم",
+        "بناطيل"
+      ],
+      "styleTabs": [
+        "أستخدام يومي",
+        "إطلالات يومية",
+        "كاجوال شبابي"
+      ],
+      "originalPrice": 74.48,
+      "discountPrice": 57.35,
+      "discountPercentage": 24,
+      "rating": 4.8,
+      "reviewsCount": 450,
+      "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "الأكثر مبيعاً ⚡",
+      "isFlashSale": false,
+      "colors": [
+        {
+          "name": "أزرق دنيم غامق",
+          "hex": "#1E3A8A"
+        },
+        {
+          "name": "أزرق ثلجي",
+          "hex": "#93C5FD"
+        },
+        {
+          "name": "أسود كربوني",
+          "hex": "#1F2937"
+        }
+      ],
+      "sizes": [
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL"
+      ],
+      "inStock": true,
+      "description": "جينز مريح وعصري بقصة أرجل واسعة كلاسيكية تناسب جميع المقاسات الكبيرة وتمنحك قواماً رشيقاً ومظهراً تريند جذاب.",
+      "material": "دينيم قطني مرن 98% + 2% ليكرا",
+      "sku": "TR-DZY-002",
+      "soldCount": 0
+    },
+    {
+      "id": "p-trend-3",
+      "name": "Elenzga CURVE فستان سهرة ماكسي ببريق ذهبي ملوكي وثنيات فاخرة",
+      "brand": "Elenzga CURVE",
+      "isTrend": true,
+      "trends": [
+        "#رائع_وأنيق",
+        "#أناقة_كيرف",
+        "#بهجة_العيد_الزهري"
+      ],
+      "trendTag": "#رائع_وأنيق",
+      "trendBadge": "🔥 الأكثر طلباً",
+      "salesText": "+180. تم بيع",
+      "couponText": "قسيمة فئة 12.50 ر.س",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-dresses",
+      "subCategories": [
+        "فساتين سهرة ومناسبات",
+        "فساتين طويلة"
+      ],
+      "styleTabs": [
+        "أطلالة ساحره",
+        "حفلات"
+      ],
+      "originalPrice": 120,
+      "discountPrice": 80.56,
+      "discountPercentage": 33,
+      "rating": 4.9,
+      "reviewsCount": 280,
+      "image": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "أناقة فاخرة ✨",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "ذهبي ميتاليك",
+          "hex": "#D97706"
+        },
+        {
+          "name": "فضي بلاتيني",
+          "hex": "#94A3B8"
+        }
+      ],
+      "sizes": [
+        "M",
+        "L",
+        "XL",
+        "2XL"
+      ],
+      "inStock": true,
+      "description": "فستان سهرة فاخر ببريق استثنائي وتصميم مجسم أنيق مناسب للحفلات والمناسبات الراقية.",
+      "material": "قماش سهرة لامع مطاطي",
+      "sku": "TR-ELZ-003",
+      "soldCount": 0
+    },
+    {
+      "id": "p-trend-4",
+      "name": "Rometta فستان أحمر عنابي بقصة أوف شولدر ملوكية وأكمام شيفون متدرجة",
+      "brand": "Rometta",
+      "isTrend": true,
+      "trends": [
+        "#رائع_وأنيق",
+        "#بهجة_العيد_الزهري",
+        "#موديلات_2026"
+      ],
+      "trendTag": "#رائع_وأنيق",
+      "trendBadge": "✨ متصدر الترند",
+      "salesText": "+320. تم بيع",
+      "couponText": "قسيمة فئة 10.00 ر.س",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-dresses",
+      "subCategories": [
+        "فساتين سهرة ومناسبات",
+        "فساتين"
+      ],
+      "styleTabs": [
+        "أطلالة ساحره",
+        "حفلات"
+      ],
+      "originalPrice": 98,
+      "discountPrice": 68.88,
+      "discountPercentage": 30,
+      "rating": 5,
+      "reviewsCount": 390,
+      "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "تخفيض 30% 💎",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "أحمر عنابي ملكي",
+          "hex": "#881337"
+        },
+        {
+          "name": "أسود ملكي",
+          "hex": "#0F172A"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "inStock": true,
+      "description": "فستان أحمر عنابي مميز بقصة أوف شولدر جذابة وأكمام شيفون واسعة تمنحك إطلالة أميرة الحفل.",
+      "material": "كريب حريري ناعم + شيفون",
+      "sku": "TR-RMT-004",
+      "soldCount": 0
+    },
+    {
+      "id": "p-trend-5",
+      "name": "Maweii فستان طويل بطبعة النمر الجريئة الراقية بقصة حورية البحر",
+      "brand": "Maweii",
+      "isTrend": true,
+      "trends": [
+        "#رائع_وأنيق",
+        "#ميسي_شيك",
+        "#موديلات_2026"
+      ],
+      "trendTag": "#رائع_وأنيق",
+      "trendBadge": "⚡ عرض حصري",
+      "salesText": "+95. تم بيع",
+      "couponText": "قسيمة فئة 8.50 ر.س",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-dresses",
+      "subCategories": [
+        "فساتين سهرة ومناسبات",
+        "فساتين طويلة"
+      ],
+      "styleTabs": [
+        "أطلالة ساحره",
+        "حفلات"
+      ],
+      "originalPrice": 110,
+      "discountPrice": 72.2,
+      "discountPercentage": 34,
+      "rating": 4.8,
+      "reviewsCount": 160,
+      "image": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "طبعة الفهد 🐆",
+      "isFlashSale": false,
+      "colors": [
+        {
+          "name": "طبعة تايجر كلاسيك",
+          "hex": "#B45309"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "inStock": true,
+      "description": "فستان طويل بطبعة النمر الجذابة والراقية مع ياقة مفتوحة وقصة مجسمة تبرز القوام بأسلوب فاخر.",
+      "material": "ساتان مرن ناعم الملمس",
+      "sku": "TR-MWI-005",
+      "soldCount": 0
+    },
+    {
+      "id": "p-trend-6",
+      "name": "Dazy بلوزة كاجوال بأكمام قصيرة وتطريز زهري خفيف",
+      "brand": "Dazy",
+      "isTrend": true,
+      "trends": [
+        "#أناقة_صيفية",
+        "#بهجة_العيد_الزهري",
+        "#ميسي_شيك"
+      ],
+      "trendTag": "#بهجة_العيد_الزهري",
+      "trendBadge": "✨ تشكيلة الصيف",
+      "salesText": "+150. تم بيع",
+      "couponText": "قسيمة فئة 5.00 ر.س",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-blouses",
+      "subCategories": [
+        "بلايز",
+        "ملابس علوية"
+      ],
+      "styleTabs": [
+        "إطلالات يومية",
+        "أستخدام يومي"
+      ],
+      "originalPrice": 45,
+      "discountPrice": 32.5,
+      "discountPercentage": 28,
+      "rating": 4.7,
+      "reviewsCount": 210,
+      "image": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "صيفي ناعم 🌸",
+      "isFlashSale": false,
+      "colors": [
+        {
+          "name": "وردي فاتح",
+          "hex": "#FBCFE8"
+        },
+        {
+          "name": "أبيض ناصع",
+          "hex": "#FFFFFF"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "inStock": true,
+      "description": "بلوزة صيفية ناعمة وخفيفة تناسب الاستخدام اليومي والتنسيقات الكاجوال مع الجينز والتنانير.",
+      "material": "قطن 100%",
+      "sku": "TR-DZY-006",
+      "soldCount": 0
+    },
+    {
+      "id": "p-trend-7",
+      "name": "Lumina عباية كيمونو فاخرة مطرزة بقماش كريب كوري ملكي وشيلة مجانية",
+      "brand": "Lumina Modest",
+      "isTrend": true,
+      "trends": [
+        "#أناقة_محتشمة",
+        "#رائع_وأنيق",
+        "#بهجة_العيد_الزهري"
+      ],
+      "trendTag": "#أناقة_محتشمة",
+      "trendBadge": "💎 فخامة خليجية",
+      "salesText": "+280. تم بيع",
+      "couponText": "قسيمة فئة 15.00 ر.س",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-abayas",
+      "subCategories": [
+        "ملابس عربية",
+        "فساتين طويلة"
+      ],
+      "styleTabs": [
+        "محتشمة",
+        "أطلالة ساحره"
+      ],
+      "originalPrice": 160,
+      "discountPrice": 99,
+      "discountPercentage": 38,
+      "rating": 4.9,
+      "reviewsCount": 512,
+      "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "عباية ملكية 👑",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "أسود فحمي فاخر",
+          "hex": "#09090B"
+        }
+      ],
+      "sizes": [
+        "52",
+        "54",
+        "56",
+        "58",
+        "60"
+      ],
+      "inStock": true,
+      "description": "عباية خليجية أنيقة مطرزة بأيدي محترفة مع قماش كريب بارد ومريح ومقاوم للتجعد.",
+      "material": "كريب كوري أصلي درجة أولى",
+      "sku": "TR-LUM-007",
+      "soldCount": 0
+    },
+    {
+      "id": "p-trend-retro-1",
+      "name": "LYSMO بلوزة تريكو نسائية مضلعة بأكمام مفتوحة وأزرار أمامية كلاسيكية",
+      "brand": "LYSMO",
+      "isTrend": true,
+      "trends": [
+        "#ريترو_ريمكس",
+        "#أناقة_صيفية",
+        "#ميسي_شيك"
+      ],
+      "trendTag": "#ريترو_ريمكس",
+      "trendBadge": "✨ تريند الأسبوع",
+      "salesText": "+350. تم بيع",
+      "couponText": "قسيمة فئة 5.00 ر.س",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-tops",
+      "subCategories": [
+        "ملابس علوية",
+        "تريكو",
+        "كنزات"
+      ],
+      "styleTabs": [
+        "ريترو كلاسيكي",
+        "كاجوال شبابي",
+        "إطلالات يومية"
+      ],
+      "originalPrice": 75,
+      "discountPrice": 51,
+      "discountPercentage": 32,
+      "rating": 4.9,
+      "reviewsCount": 420,
+      "image": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "ريترو ريمكس 🔥",
+      "isFlashSale": false,
+      "colors": [
+        {
+          "name": "رمادي متموج",
+          "hex": "#475569"
+        },
+        {
+          "name": "أسود كلاسيك",
+          "hex": "#1E293B"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "inStock": true,
+      "description": "بلوزة تريكو بتصميم ريترو ساحر مع أكمام ممتدة وأزرار ريترو وتفاصيل مضلعة تضفي لمسة عصرية مستوحاة من التسعينات.",
+      "material": "تريكو قطني محبوك عالي المرونة",
+      "sku": "TR-LYS-001",
+      "soldCount": 420
+    },
+    {
+      "id": "p-trend-retro-2",
+      "name": "LSVTR Fashion ساعة نسائية مستطيلة مرصعة بالكريستال وسوار فضي كلاسيكي",
+      "brand": "LSVTR Fashion",
+      "isTrend": true,
+      "trends": [
+        "#ريترو_ريمكس",
+        "#رائع_وأنيق",
+        "#إطلالة_المشاهير"
+      ],
+      "trendTag": "#ريترو_ريمكس",
+      "trendBadge": "💎 الأكثر طلباً",
+      "salesText": "+610. تم بيع",
+      "couponText": "قسيمة فئة 3.50 ر.س",
+      "category": "accessories",
+      "categories": [
+        "all",
+        "accessories",
+        "women"
+      ],
+      "subCategory": "w-watches",
+      "subCategories": [
+        "ساعات",
+        "إكسسوارات نسائية",
+        "مجوهرات"
+      ],
+      "styleTabs": [
+        "كلاسيك فاخر",
+        "أطلالة ساحره"
+      ],
+      "originalPrice": 45,
+      "discountPrice": 24.83,
+      "discountPercentage": 45,
+      "rating": 4.8,
+      "reviewsCount": 310,
+      "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "ساعة ريترو فاخرة ✨",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "فضي بلاتين",
+          "hex": "#E2E8F0"
+        },
+        {
+          "name": "ذهبي كلاسيك",
+          "hex": "#F59E0B"
+        }
+      ],
+      "sizes": [
+        "مقاس قياسي مريح"
+      ],
+      "inStock": true,
+      "description": "ساعة يد نسائية بحركة كوارتز دقيقة وتصميم مربع مرصع بأحجار الكريستال اللامعة وسوار ستانلس ستيل مصقول.",
+      "material": "ستانلس ستيل ومينا كريستال زجاجي",
+      "sku": "TR-LSV-002",
+      "soldCount": 310
+    },
+    {
+      "id": "p-trend-retro-3",
+      "name": "Athîral بنطلون نسائي واسع الأرجل بخصر مرتفع ونقشة كلاسيكية بطبعة ريترو",
+      "brand": "Athîral",
+      "isTrend": true,
+      "trends": [
+        "#ريترو_ريمكس",
+        "#أزياء_الموضة",
+        "#ميسي_شيك"
+      ],
+      "trendTag": "#ريترو_ريمكس",
+      "trendBadge": "🔥 إصدار محدود",
+      "salesText": "+240. تم بيع",
+      "couponText": "قسيمة فئة 15.00 ر.س",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-bottoms",
+      "subCategories": [
+        "بناطيل",
+        "أزياء ريترو"
+      ],
+      "styleTabs": [
+        "ريترو ستايل",
+        "كاجوال واسع",
+        "إطلالات يومية"
+      ],
+      "originalPrice": 155,
+      "discountPrice": 111,
+      "discountPercentage": 28,
+      "rating": 4.9,
+      "reviewsCount": 560,
+      "image": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "طبعة ريترو مميزة 🌟",
+      "isFlashSale": false,
+      "colors": [
+        {
+          "name": "بيج رملي بنقاط",
+          "hex": "#D6C7A1"
+        },
+        {
+          "name": "بني عسلي",
+          "hex": "#854D0E"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL"
+      ],
+      "inStock": true,
+      "description": "بنطلون نسائي بقصة أرجل واسعة كلاسيكية بخصر عالي وتصميم منقط ريترو ساحر يمنحك حضوراً متميزاً وأناقة لا تفنى.",
+      "material": "قطن كتان مريح فائق النعومة",
+      "sku": "TR-ATH-003",
+      "soldCount": 560
+    },
+    {
+      "id": "p-1",
+      "name": "فستان صيفي نسائي مطرز أنيق بقصة واسعة",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-dresses",
+      "subCategories": [
+        "فساتين",
+        "فساتين طويلة",
+        "أطقم منسقة"
+      ],
+      "styleTabs": [
+        "إطلالات يومية",
+        "عمل",
+        "أطلالة ساحره",
+        "أستخدام يومي"
+      ],
+      "originalPrice": 289,
+      "discountPrice": 119,
+      "discountPercentage": 59,
+      "rating": 4.8,
+      "reviewsCount": 142,
+      "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "الأكثر مبيعاً 🔥",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "وردي ناعم",
+          "hex": "#FDA4AF"
+        },
+        {
+          "name": "أبيض لؤلؤي",
+          "hex": "#F8FAFC"
+        },
+        {
+          "name": "أزرق سماوي",
+          "hex": "#7DD3FC"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "inStock": true,
+      "description": "فستان صيفي خفيف وأنيق مصنوع من القطن الطبيعي 100%، بتطريز يدوي فاخر على الأكمام وتصميم مريح يناسب جميع الإطلالات اليومية والمناسبات.",
+      "material": "قطن خالص 100%",
+      "sku": "TS-WMN-001",
+      "soldCount": 0
+    },
+    {
+      "id": "p-2",
+      "name": "قميص كتان رجالي كاجوال بأزرار كلاسيكية",
+      "category": "men",
+      "categories": [
+        "all",
+        "men"
+      ],
+      "subCategory": "m-shirts",
+      "subCategories": [
+        "قمصان كاجوال",
+        "تيشيرتات",
+        "ملابس علوية"
+      ],
+      "styleTabs": [
+        "كاجوال شبابي",
+        "عمل ورسمي",
+        "أستخدام يومي",
+        "إطلالات يومية"
+      ],
+      "originalPrice": 199,
+      "discountPrice": 89,
+      "discountPercentage": 55,
+      "rating": 4.9,
+      "reviewsCount": 98,
+      "image": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "تخفيض 55% ⚡",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "بيج رملي",
+          "hex": "#E5E0D8"
+        },
+        {
+          "name": "كحلي داكن",
+          "hex": "#1E293B"
+        },
+        {
+          "name": "زيتي هادئ",
+          "hex": "#4D7C0F"
+        }
+      ],
+      "sizes": [
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "inStock": true,
+      "description": "قميص كتان رجالي بتهوية ممتازة وجودة تصنيع عالية، مثالي للأجواء الدافئة ويمنحك مظهراً راقياً ومريحاً طوال اليوم.",
+      "material": "كتان طبيعي عالي الجودة",
+      "sku": "TS-MEN-042",
+      "soldCount": 0
+    },
+    {
+      "id": "p-3",
+      "name": "حذاء رياضي عصري فائق الخفة للجري والمشي",
+      "category": "shoes",
+      "categories": [
+        "all",
+        "shoes",
+        "men"
+      ],
+      "subCategory": "s-sneakers",
+      "subCategories": [
+        "أحذية كاجوال",
+        "أحذية رياضية"
+      ],
+      "styleTabs": [
+        "رياضي ومريح",
+        "أحذية رياضية",
+        "أستخدام يومي"
+      ],
+      "originalPrice": 349,
+      "discountPrice": 149,
+      "discountPercentage": 57,
+      "rating": 4.7,
+      "reviewsCount": 215,
+      "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=800&auto=format&fit=crop&q=80"
+      ],
+      "badgeText": "أقوى التخفيضات ⭐",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "أحمر ناري",
+          "hex": "#DC2626"
+        },
+        {
+          "name": "أسود فحمي",
+          "hex": "#0F172A"
+        },
+        {
+          "name": "رمادي رياضي",
+          "hex": "#64748B"
+        }
+      ],
+      "sizes": [
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45"
+      ],
+      "inStock": true,
+      "description": "سنيكرز رياضي بتقنية امتصاص الصدمات المتقدمة ونعل طبي مرن لراحة فائقة في التمارين والمشاوير اليومية الطويلة.",
+      "material": "نسيج شبكي مسامي + نعل مطاطي مقوى",
+      "sku": "TS-SHO-112",
+      "soldCount": 0
+    },
+    {
+      "id": "p-4",
+      "name": "فستان بناتي مورد ناعم بأكمام منفوخة وطوق شعر",
+      "category": "girls",
+      "categories": [
+        "all",
+        "girls"
+      ],
+      "subCategory": "g-dresses",
+      "subCategories": [
+        "فساتين مقاسات كبيرة",
+        "أطقم راقية",
+        "فساتين"
+      ],
+      "styleTabs": [
+        "إطلالات كلاسيك",
+        "راحة يومية",
+        "حفلات"
+      ],
+      "originalPrice": 169,
+      "discountPrice": 69,
+      "discountPercentage": 59,
+      "rating": 4.9,
+      "reviewsCount": 76,
+      "image": "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=800&auto=format&fit=crop&q=80",
+      "badgeText": "تشكيلة العيد 🌸",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "زهري وردي",
+          "hex": "#FB7185"
+        },
+        {
+          "name": "أصفر مشمس",
+          "hex": "#FDE047"
+        }
+      ],
+      "sizes": [
+        "3-4Y",
+        "5-6Y",
+        "7-8Y",
+        "9-10Y"
+      ],
+      "inStock": true,
+      "description": "فستان بناتي جميل جداً برسومات ورود رقيقة مع طوق شعر مطابق، قماش قطني آمن وناعم على بشرة الأطفال الحساسة.",
+      "material": "قطن ناعم 100%",
+      "sku": "TS-GRL-009",
+      "soldCount": 0
+    },
+    {
+      "id": "p-5",
+      "name": "طقم ولادي قطعتين (تيشيرت بولو + شورت برمودا)",
+      "category": "boys",
+      "categories": [
+        "all",
+        "boys"
+      ],
+      "subCategory": "b-sets",
+      "subCategories": [
+        "أطقم منسقة",
+        "تيشيرتات"
+      ],
+      "styleTabs": [
+        "راحة يومية",
+        "كاجوال شبابي"
+      ],
+      "originalPrice": 189,
+      "discountPrice": 79,
+      "discountPercentage": 58,
+      "rating": 4.8,
+      "reviewsCount": 64,
+      "image": "https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=800&auto=format&fit=crop&q=80",
+      "badgeText": "تخفيض صح 🏷️",
+      "isFlashSale": false,
+      "colors": [
+        {
+          "name": "كحلي وأصفر",
+          "hex": "#1E3A8A"
+        },
+        {
+          "name": "أبيض وزيتي",
+          "hex": "#F1F5F9"
+        }
+      ],
+      "sizes": [
+        "4-5Y",
+        "6-7Y",
+        "8-9Y",
+        "10-12Y"
+      ],
+      "inStock": true,
+      "description": "طقم عملي وأنيق للأولاد مناسب للمدارس والرحلات، مقاوم للغسيل المتكرر وألوان ثابتة ومظهر عصري.",
+      "material": "مزيج قطن بيكيه متين",
+      "sku": "TS-BOY-033",
+      "soldCount": 0
+    },
+    {
+      "id": "p-6",
+      "name": "حقيبة يد نسائية جلدية فاخرة بحزام كتف قابل للتعديل",
+      "category": "bags",
+      "categories": [
+        "all",
+        "bags",
+        "women"
+      ],
+      "subCategory": "b-home",
+      "subCategories": [
+        "ديكور ومفروشات",
+        "إكسسوارات"
+      ],
+      "styleTabs": [
+        "عمل",
+        "حفلات",
+        "أطلالة ساحره"
+      ],
+      "originalPrice": 320,
+      "discountPrice": 129,
+      "discountPercentage": 60,
+      "rating": 4.9,
+      "reviewsCount": 168,
+      "image": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&auto=format&fit=crop&q=80",
+      "badgeText": "خصم 60% 💎",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "جملي دافئ",
+          "hex": "#B45309"
+        },
+        {
+          "name": "أسود كلاسيك",
+          "hex": "#000000"
+        },
+        {
+          "name": "بيج كريمي",
+          "hex": "#FEF3C7"
+        }
+      ],
+      "sizes": [
+        "مقاس موحد"
+      ],
+      "inStock": true,
+      "description": "حقيبة راقية بتشطيبات معدنية ذهبية ومساحة داخلية منظمة مع جيوب سرية، تضفي لمسة فخامة على أي إطلالة.",
+      "material": "جلد صناعي فاخر مقاوم للخدش",
+      "sku": "TS-BAG-088",
+      "soldCount": 0
+    },
+    {
+      "id": "p-7",
+      "name": "ساعة يد كلاسيكية أنيقة بسوار جلدي وإطار ذهبي",
+      "category": "accessories",
+      "categories": [
+        "all",
+        "accessories",
+        "men",
+        "women"
+      ],
+      "subCategory": "a-jewelry",
+      "subCategories": [
+        "مجوهرات وساعات",
+        "إكسسوارات"
+      ],
+      "styleTabs": [
+        "مجوهرات فاخرة",
+        "عمل ورسمي",
+        "عمل",
+        "حفلات"
+      ],
+      "originalPrice": 260,
+      "discountPrice": 99,
+      "discountPercentage": 62,
+      "rating": 4.6,
+      "reviewsCount": 88,
+      "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800&auto=format&fit=crop&q=80",
+      "badgeText": "عرض خاص ⏳",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "بني ملكي",
+          "hex": "#78350F"
+        },
+        {
+          "name": "أسود مطفي",
+          "hex": "#18181B"
+        }
+      ],
+      "sizes": [
+        "مقاس موحد"
+      ],
+      "inStock": true,
+      "description": "ساعة يد كوارتز دقيقة ومقاومة لرذاذ الماء، تصميم مينيمالي عصري يناسب المناسبات والعمل اليومي.",
+      "material": "ستانلس ستيل مطلي بالذهب + جلد أصلي",
+      "sku": "TS-ACC-015",
+      "soldCount": 0
+    },
+    {
+      "id": "p-8",
+      "name": "عطر عود ملكي شرقي مركز للجنسين (100 مل)",
+      "category": "perfumes",
+      "categories": [
+        "all",
+        "perfumes",
+        "women",
+        "men"
+      ],
+      "subCategory": "p-sleep",
+      "subCategories": [
+        "أرواب وبيجامات",
+        "لانجري فاخر"
+      ],
+      "styleTabs": [
+        "نعومة وراحة",
+        "ساتان وحرير",
+        "حفلات"
+      ],
+      "originalPrice": 420,
+      "discountPrice": 179,
+      "discountPercentage": 57,
+      "rating": 5,
+      "reviewsCount": 312,
+      "image": "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800&auto=format&fit=crop&q=80",
+      "badgeText": "تقييم 5 نجوم 🌟",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "عنبري ذهبي",
+          "hex": "#D97706"
+        }
+      ],
+      "sizes": [
+        "100ml"
+      ],
+      "inStock": true,
+      "description": "توليفة عطرية آسرة تمزج بين دهن العود الكمبودي النقي والعنبر والورد الدمشقي، ثبات يدوم لأكثر من 48 ساعة.",
+      "material": "أو دو بارفان مركز",
+      "sku": "TS-PRF-007",
+      "soldCount": 0
+    },
+    {
+      "id": "p-9",
+      "name": "هودي رجالي قطني ثقيل بقبعة وجيب كانغارو",
+      "category": "men",
+      "categories": [
+        "all",
+        "men"
+      ],
+      "subCategory": "m-jackets",
+      "subCategories": [
+        "معاطف وجواكت",
+        "تيشيرتات وبولو",
+        "ملابس علوية"
+      ],
+      "styleTabs": [
+        "كاجوال شبابي",
+        "رياضي ومريح",
+        "أستخدام يومي"
+      ],
+      "originalPrice": 210,
+      "discountPrice": 95,
+      "discountPercentage": 55,
+      "rating": 4.8,
+      "reviewsCount": 130,
+      "image": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&auto=format&fit=crop&q=80",
+      "badgeText": "شتوي مميز ❄️",
+      "isFlashSale": false,
+      "colors": [
+        {
+          "name": "رمادي غامق",
+          "hex": "#334155"
+        },
+        {
+          "name": "عنابي دافئ",
+          "hex": "#881337"
+        },
+        {
+          "name": "زيتوني",
+          "hex": "#3F6212"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "inStock": true,
+      "description": "سويت شيرت هودي دافئ مصنوع من أجود أنواع القطن المبطن بالصوف الناعم، مناسب للأيام الباردة والنزهات.",
+      "material": "80% قطن، 20% بوليستر مبطن صوف",
+      "sku": "TS-MEN-089",
+      "soldCount": 0
+    },
+    {
+      "id": "p-10",
+      "name": "عباية كلوش سوداء ناعمة بتطريز كريستال على الأكمام",
+      "category": "women",
+      "categories": [
+        "all",
+        "women"
+      ],
+      "subCategory": "w-abayas",
+      "subCategories": [
+        "ملابس عربية",
+        "فساتين",
+        "فساتين طويلة",
+        "معاطف وجاكيتات"
+      ],
+      "styleTabs": [
+        "محتشمة",
+        "عمل",
+        "حفلات",
+        "أطلالة ساحره"
+      ],
+      "originalPrice": 380,
+      "discountPrice": 159,
+      "discountPercentage": 58,
+      "rating": 4.9,
+      "reviewsCount": 204,
+      "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&auto=format&fit=crop&q=80",
+      "badgeText": "تخفيض كاسح 🔥",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "أسود داكن",
+          "hex": "#030712"
+        }
+      ],
+      "sizes": [
+        "52",
+        "54",
+        "56",
+        "58",
+        "60"
+      ],
+      "inStock": true,
+      "description": "عباية خليجية بتصميم كلوش أنيق وقماش كريب كوري فاخر غير شفاف مع شيلة مجانية مطابقة.",
+      "material": "كريب كوري ممتاز",
+      "sku": "TS-WMN-077",
+      "soldCount": 0
+    },
+    {
+      "id": "p-11",
+      "name": "نظارة شمسية بولارايزد كلاسيكية بحماية UV400",
+      "category": "accessories",
+      "categories": [
+        "all",
+        "accessories",
+        "men",
+        "women"
+      ],
+      "subCategory": "a-jewelry",
+      "subCategories": [
+        "مجوهرات وساعات",
+        "إكسسوارات"
+      ],
+      "styleTabs": [
+        "مجوهرات فاخرة",
+        "كاجوال شبابي",
+        "إطلالات يومية"
+      ],
+      "originalPrice": 150,
+      "discountPrice": 49,
+      "discountPercentage": 67,
+      "rating": 4.7,
+      "reviewsCount": 92,
+      "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
+      "badgeText": "خصم 67% 🕶️",
+      "isFlashSale": true,
+      "colors": [
+        {
+          "name": "أسود مع إطار ذهبي",
+          "hex": "#1E293B"
+        },
+        {
+          "name": "بني تايجر",
+          "hex": "#9A3412"
+        }
+      ],
+      "sizes": [
+        "مقاس موحد"
+      ],
+      "inStock": true,
+      "description": "نظارة شمسية خفيفة الوزن بعدسات مستقطبة تمنع الوهج وتوفر حماية كاملة 100% من الأشعة فوق البنفسجية.",
+      "material": "إطار ألمنيوم مغنيسيوم فائق المتانة",
+      "sku": "TS-ACC-094",
+      "soldCount": 0
+    },
+    {
+      "id": "p-12",
+      "name": "حذاء كعب نسائي مريح للمناسبات بتشطيب لامع",
+      "category": "shoes",
+      "categories": [
+        "all",
+        "shoes",
+        "women"
+      ],
+      "subCategory": "s-sneakers",
+      "subCategories": [
+        "أحذية كاجوال",
+        "بوتات وأحذية شتوية"
+      ],
+      "styleTabs": [
+        "كعوب ومناسبات",
+        "حفلات",
+        "أطلالة ساحره"
+      ],
+      "originalPrice": 290,
+      "discountPrice": 119,
+      "discountPercentage": 59,
+      "rating": 4.8,
+      "reviewsCount": 110,
+      "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=800&auto=format&fit=crop&q=80",
+      "badgeText": "أناقة لا تقاوم 👠",
+      "isFlashSale": false,
+      "colors": [
+        {
+          "name": "بيج نيود",
+          "hex": "#D6C0B3"
+        },
+        {
+          "name": "فضي لامع",
+          "hex": "#E2E8F0"
+        },
+        {
+          "name": "أسود مخملي",
+          "hex": "#1E1E1E"
+        }
+      ],
+      "sizes": [
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41"
+      ],
+      "inStock": true,
+      "description": "حذاء كعب متوسط الارتفاع (6 سم) مريح جداً للوقوف الطويل والمناسبات السعيدة مع وسادة باطن القدم الميموري فوم.",
+      "material": "جلد ناعم + وسادة قدم مبطنة",
+      "sku": "TS-SHO-045",
+      "soldCount": 0
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev-p1-1",
+      "productId": "product-1",
+      "userName": "جميلة الهاشمي",
+      "userPhone": "771234567",
+      "rating": 5,
+      "colorName": "كحلي وأصفر",
+      "sizeName": "1XL",
+      "comment": "📸 هذا الفستان هو المفضل لدي على الإطلاق، فهو يمنحك قواماً رائعاً وجودة القماش فاخرة جداً!",
+      "date": "2026-09-06",
+      "helpfulCount": 8,
+      "overallFit": "مناسب"
+    },
+    {
+      "id": "rev-p1-2",
+      "productId": "product-1",
+      "userName": "رهف العتيبي",
+      "userPhone": "739887766",
+      "rating": 5,
+      "colorName": "كحلي وأصفر",
+      "sizeName": "2XL",
+      "comment": "واووووو مرههه حلووووو ومريح جداً والتطريز متقن تماماً نفس الصورة بالظبط!",
+      "date": "2026-09-04",
+      "helpfulCount": 5,
+      "overallFit": "مناسب"
+    },
+    {
+      "id": "rev-p1-3",
+      "productId": "product-1",
+      "userName": "أروى باحميد",
+      "userPhone": "774433221",
+      "rating": 5,
+      "colorName": "كحلي وأصفر",
+      "sizeName": "0XL",
+      "comment": "مرة يجنن لونه طبيعي وخامته فاخرة ومريحة، شكراً على المصداقية والتعامل الراقي.",
+      "date": "2026-08-31",
+      "helpfulCount": 3,
+      "overallFit": "مناسب"
+    },
+    {
+      "id": "rev-p2-1",
+      "productId": "product-2",
+      "userName": "سارة عبدالحكيم",
+      "userPhone": "775511223",
+      "rating": 5,
+      "colorName": "وردي ناعم",
+      "sizeName": "M",
+      "comment": "الخامة راقية جداً والخياطة نظيفة 100% والمقاس مضبوط بالملي حسب جدول المقاسات.",
+      "date": "2026-09-05",
+      "helpfulCount": 4,
+      "overallFit": "مناسب"
+    }
+  ],
+  "announcements": {
+    "isEnabled": true,
+    "autoFlip": true,
+    "intervalSeconds": 4,
+    "screens": [
+      {
+        "id": "screen-1-coupons",
+        "title": "شاشة قسائم المستخدمين الجدد والخصومات",
+        "badgeText": "للمستخدمين الجدد فقط",
+        "mainTitle": "قسائم حصرية",
+        "subTitle": "عروض جيدة",
+        "iconType": "tag",
+        "coupons": [
+          {
+            "id": "c1",
+            "code": "NEW30",
+            "discount": "خصم 30%",
+            "minSpend": "أكثر من SR149"
+          },
+          {
+            "id": "c2",
+            "code": "NEW25",
+            "discount": "خصم 25%",
+            "minSpend": "أكثر من SR379"
+          }
+        ],
+        "backgroundColor": "#FEF6EE",
+        "cardBackgroundColor": "#FFF0F2",
+        "textColor": "#9F1239",
+        "badgeBackgroundColor": "#FF385C",
+        "badgeTextColor": "#FFFFFF",
+        "borderColor": "#FED7AA",
+        "excelPresetId": "shein-rose",
+        "isActive": true,
+        "order": 1
+      },
+      {
+        "id": "screen-2-shipping",
+        "title": "شاشة الشحن السريع والمجاني",
+        "badgeText": "شحن سريع وآمن ⚡",
+        "mainTitle": "شحن مجاني",
+        "subTitle": "تسليم سريع لباب منزلك",
+        "iconType": "truck",
+        "coupons": [
+          {
+            "id": "c3",
+            "code": "FREESHIP",
+            "discount": "شحن مجاني",
+            "minSpend": "للطلبات فوق SR199"
+          },
+          {
+            "id": "c4",
+            "code": "FAST48",
+            "discount": "توصيل خلال 48 س",
+            "minSpend": "تتبع لحظي مضمون 🛡️"
+          }
+        ],
+        "backgroundColor": "#E2EFDA",
+        "cardBackgroundColor": "#D9EAD3",
+        "textColor": "#1B5E20",
+        "badgeBackgroundColor": "#166534",
+        "badgeTextColor": "#FFFFFF",
+        "borderColor": "#A9D08E",
+        "excelPresetId": "excel-green",
+        "isActive": true,
+        "order": 2
+      }
+    ]
+  },
+  "categoryTabsConfig": {
+    "shape": "circle",
+    "size": "medium",
+    "isSquareRatio": true
+  },
+  "recommendationTabs": [
+    {
+      "id": "all",
+      "label": "التوصية",
+      "matchType": "all_smart",
+      "keywords": [],
+      "targetCategories": [],
+      "targetSubCategories": [],
+      "linkedProductIds": [],
+      "isActive": true,
+      "order": 1
+    },
+    {
+      "id": "lingerie",
+      "label": "ملابس داخلية & ملابس نوم",
+      "matchType": "keywords",
+      "keywords": [
+        "نوم",
+        "بيجامة",
+        "دانتيل",
+        "داخلية",
+        "لانجري",
+        "سليب",
+        "شورت",
+        "روب"
+      ],
+      "targetCategories": [
+        "women"
+      ],
+      "targetSubCategories": [
+        "ملابس نوم"
+      ],
+      "linkedProductIds": [],
+      "isActive": true,
+      "order": 2
+    },
+    {
+      "id": "clothing",
+      "label": "ملابس واكسسوارات",
+      "matchType": "keywords",
+      "keywords": [
+        "فستان",
+        "تي شيرت",
+        "قميص",
+        "بلوزة",
+        "بنطال",
+        "طقم",
+        "حقيبة",
+        "شال"
+      ],
+      "targetCategories": [
+        "women",
+        "men",
+        "kids",
+        "accessories"
+      ],
+      "targetSubCategories": [
+        "فساتين",
+        "ملابس كاجوال"
+      ],
+      "linkedProductIds": [],
+      "isActive": true,
+      "order": 3
+    },
+    {
+      "id": "jewelry",
+      "label": "مجوهرات & ساعات",
+      "matchType": "keywords",
+      "keywords": [
+        "ساعة",
+        "سوار",
+        "مجوهرات",
+        "قلادة",
+        "خاتم",
+        "سلسال",
+        "ذهب",
+        "فضة",
+        "اكسسوار",
+        "أقراط"
+      ],
+      "targetCategories": [
+        "accessories"
+      ],
+      "targetSubCategories": [
+        "ساعات",
+        "مجوهرات"
+      ],
+      "linkedProductIds": [],
+      "isActive": true,
+      "order": 4
+    }
+  ],
+  "sideCategories": [
+    {
+      "id": "side-new",
+      "name": "جديد في",
+      "iconName": "Sparkles",
+      "badge": "NEW",
+      "subCategories": [
+        {
+          "id": "sub-new-1",
+          "name": "بناطيل جينز حجم كبير",
+          "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-2",
+          "name": "تنانير مقاسات كبيرة",
+          "image": "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-3",
+          "name": "تي شيرت حجم كبير",
+          "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-4",
+          "name": "تنانير دينيم نسائية",
+          "image": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-5",
+          "name": "كابلات",
+          "image": "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-6",
+          "name": "بناطيل مقاسات كبيرة",
+          "image": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-7",
+          "name": "تنانير جينز حجم كبير",
+          "image": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-8",
+          "name": "فساتين مقاسات كبيرة",
+          "image": "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-9",
+          "name": "فساتين نوم مقاسات كبيرة",
+          "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-10",
+          "name": "البسة علوية نسائية حجم كبير",
+          "image": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-11",
+          "name": "طقم بيجامة مقاس كبير",
+          "image": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        },
+        {
+          "id": "sub-new-12",
+          "name": "جمبسوت مقاسات كبيرة",
+          "image": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "all",
+          "sideCategoryId": "side-new"
+        }
+      ]
+    },
+    {
+      "id": "side-women",
+      "name": "ملابس نسائية",
+      "iconName": "Shirt",
+      "subCategories": [
+        {
+          "id": "sub-w-1",
+          "name": "فساتين سهرة ومناسبات",
+          "image": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "women",
+          "sideCategoryId": "side-women"
+        },
+        {
+          "id": "sub-w-2",
+          "name": "تنانير دينيم نسائية",
+          "image": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "women",
+          "sideCategoryId": "side-women"
+        },
+        {
+          "id": "sub-w-3",
+          "name": "تي شيرت وتوبات كاجوال",
+          "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "women",
+          "sideCategoryId": "side-women"
+        },
+        {
+          "id": "sub-w-4",
+          "name": "بناطيل جينز ستريت",
+          "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "women",
+          "sideCategoryId": "side-women"
+        },
+        {
+          "id": "sub-w-5",
+          "name": "عبايات وجلابيات خليجية",
+          "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "women",
+          "sideCategoryId": "side-women"
+        },
+        {
+          "id": "sub-w-6",
+          "name": "أطقم قطعتين منسقة",
+          "image": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "women",
+          "sideCategoryId": "side-women"
+        }
+      ]
+    },
+    {
+      "id": "side-home",
+      "name": "المنزل والمعيشة",
+      "iconName": "Home",
+      "subCategories": [
+        {
+          "id": "sub-h-1",
+          "name": "ديكور ومفروشات",
+          "image": "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "bags",
+          "sideCategoryId": "side-home"
+        },
+        {
+          "id": "sub-h-2",
+          "name": "أدوات تنظيم ومطبخ",
+          "image": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "bags",
+          "sideCategoryId": "side-home"
+        },
+        {
+          "id": "sub-h-3",
+          "name": "شموع وإضاءات منزلية",
+          "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "bags",
+          "sideCategoryId": "side-home"
+        }
+      ]
+    },
+    {
+      "id": "side-kids",
+      "name": "الأطفال",
+      "iconName": "Baby",
+      "subCategories": [
+        {
+          "id": "sub-k-1",
+          "name": "فساتين بنات صغار",
+          "image": "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "girls",
+          "sideCategoryId": "side-kids"
+        },
+        {
+          "id": "sub-k-2",
+          "name": "أطقم ولادي كاجوال",
+          "image": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "girls",
+          "sideCategoryId": "side-kids"
+        },
+        {
+          "id": "sub-k-3",
+          "name": "أحذية مواليد وأطفال",
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "girls",
+          "sideCategoryId": "side-kids"
+        }
+      ]
+    },
+    {
+      "id": "side-men",
+      "name": "الملابس الرجالية",
+      "iconName": "UserCheck",
+      "subCategories": [
+        {
+          "id": "sub-m-1",
+          "name": "قمصان وبولو رجالي",
+          "image": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "men",
+          "sideCategoryId": "side-men"
+        },
+        {
+          "id": "sub-m-2",
+          "name": "بناطيل جينز وكارجو",
+          "image": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "men",
+          "sideCategoryId": "side-men"
+        },
+        {
+          "id": "sub-m-3",
+          "name": "تيشيرتات صيفية مطبوعة",
+          "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "men",
+          "sideCategoryId": "side-men"
+        },
+        {
+          "id": "sub-m-4",
+          "name": "جاكيتات ومعاطف رسمية",
+          "image": "https://images.unsplash.com/photo-1548883354-7622d03aca27?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "men",
+          "sideCategoryId": "side-men"
+        }
+      ]
+    },
+    {
+      "id": "side-beauty",
+      "name": "الصحة و الجمال",
+      "iconName": "Sparkles",
+      "subCategories": [
+        {
+          "id": "sub-b-1",
+          "name": "مستحضرات عناية بالبشرة",
+          "image": "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "perfumes",
+          "sideCategoryId": "side-beauty"
+        },
+        {
+          "id": "sub-b-2",
+          "name": "عطور وبخور شرقي",
+          "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "perfumes",
+          "sideCategoryId": "side-beauty"
+        }
+      ]
+    },
+    {
+      "id": "side-lingerie",
+      "name": "ملابس داخلية، وملابس نوم",
+      "iconName": "Flame",
+      "subCategories": [
+        {
+          "id": "sub-l-1",
+          "name": "فساتين نوم حرير وساتان",
+          "image": "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "perfumes",
+          "sideCategoryId": "side-lingerie"
+        },
+        {
+          "id": "sub-l-2",
+          "name": "أطقم بيجامات مريحة",
+          "image": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "perfumes",
+          "sideCategoryId": "side-lingerie"
+        }
+      ]
+    },
+    {
+      "id": "side-jewelry",
+      "name": "مجوهرات واكسسوارات",
+      "iconName": "Gem",
+      "subCategories": [
+        {
+          "id": "sub-j-1",
+          "name": "سلاسل وأساور ذهبية",
+          "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "accessories",
+          "sideCategoryId": "side-jewelry"
+        },
+        {
+          "id": "sub-j-2",
+          "name": "ساعات يد نسائية ورجالية",
+          "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "accessories",
+          "sideCategoryId": "side-jewelry"
+        }
+      ]
+    },
+    {
+      "id": "side-shoes",
+      "name": "أحذية",
+      "iconName": "Footprints",
+      "subCategories": [
+        {
+          "id": "sub-s-1",
+          "name": "أحذية سنيكرز رياضية",
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "shoes",
+          "sideCategoryId": "side-shoes"
+        },
+        {
+          "id": "sub-s-2",
+          "name": "كعوب وصنادل سهرة",
+          "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "shoes",
+          "sideCategoryId": "side-shoes"
+        }
+      ]
+    },
+    {
+      "id": "side-plus",
+      "name": "مقاسات كبيرة",
+      "iconName": "Heart",
+      "subCategories": [
+        {
+          "id": "sub-p-1",
+          "name": "بناطيل جينز حجم كبير",
+          "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "girls",
+          "sideCategoryId": "side-plus"
+        },
+        {
+          "id": "sub-p-2",
+          "name": "تنانير مقاسات كبيرة",
+          "image": "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "girls",
+          "sideCategoryId": "side-plus"
+        },
+        {
+          "id": "sub-p-3",
+          "name": "تي شيرت حجم كبير",
+          "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "girls",
+          "sideCategoryId": "side-plus"
+        },
+        {
+          "id": "sub-p-4",
+          "name": "فساتين مقاسات كبيرة",
+          "image": "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "girls",
+          "sideCategoryId": "side-plus"
+        },
+        {
+          "id": "sub-p-5",
+          "name": "طقم بيجامة مقاس كبير",
+          "image": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "girls",
+          "sideCategoryId": "side-plus"
+        },
+        {
+          "id": "sub-p-6",
+          "name": "جمبسوت مقاسات كبيرة",
+          "image": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "girls",
+          "sideCategoryId": "side-plus"
+        }
+      ]
+    },
+    {
+      "id": "side-maternity",
+      "name": "الأطفال والأمومة",
+      "iconName": "Baby",
+      "subCategories": [
+        {
+          "id": "sub-mat-1",
+          "name": "ملابس حمل وأمومة",
+          "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "women",
+          "sideCategoryId": "side-maternity"
+        },
+        {
+          "id": "sub-mat-2",
+          "name": "مستلزمات رعاية الرضع",
+          "image": "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "girls",
+          "sideCategoryId": "side-maternity"
+        }
+      ]
+    },
+    {
+      "id": "side-bags",
+      "name": "الحقائب والأمتعة",
+      "iconName": "Briefcase",
+      "subCategories": [
+        {
+          "id": "sub-bag-1",
+          "name": "حقائب يد نسائية فاخرة",
+          "image": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "accessories",
+          "sideCategoryId": "side-bags"
+        },
+        {
+          "id": "sub-bag-2",
+          "name": "حقائب سفر وظهر",
+          "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "accessories",
+          "sideCategoryId": "side-bags"
+        }
+      ]
+    },
+    {
+      "id": "side-sports",
+      "name": "الرياضة والأنشطة الخارجية",
+      "iconName": "Flame",
+      "subCategories": [
+        {
+          "id": "sub-sp-1",
+          "name": "ملابس تمارين ولياقة",
+          "image": "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "women",
+          "sideCategoryId": "side-sports"
+        },
+        {
+          "id": "sub-sp-2",
+          "name": "أحذية جري ومشي",
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "shoes",
+          "sideCategoryId": "side-sports"
+        }
+      ]
+    },
+    {
+      "id": "side-phones",
+      "name": "هواتف خليوية & إكسسوارات",
+      "iconName": "Tv",
+      "subCategories": [
+        {
+          "id": "sub-ph-1",
+          "name": "كابلات وشواحن سريعة",
+          "image": "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "accessories",
+          "sideCategoryId": "side-phones"
+        },
+        {
+          "id": "sub-ph-2",
+          "name": "كفرات وحافظات جوال",
+          "image": "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=400&auto=format&fit=crop&q=80",
+          "categoryId": "accessories",
+          "sideCategoryId": "side-phones"
+        }
+      ]
+    }
+  ],
+  "pricingSettings": {
+    "baseCurrency": "SAR",
+    "sarToUsdRate": 3.75,
+    "enableGovernoratePricing": true,
+    "defaultDeliveryFee": 1500,
+    "welcomeDiscountPercent": 15,
+    "governorates": {
+      "عدن": {
+        "governorate": "عدن",
+        "region": "south",
+        "sarToYerRate": 535,
+        "usdToYerRate": 2040,
+        "markupType": "percentage",
+        "markupValue": 0,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني فوري وسريع داخل عدن",
+        "isActive": true
+      },
+      "حضرموت": {
+        "governorate": "حضرموت",
+        "region": "south",
+        "sarToYerRate": 535,
+        "usdToYerRate": 2040,
+        "markupType": "percentage",
+        "markupValue": 3,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "شحن وتوصيل مجاني لباب البيت (المكلا وسيئون)",
+        "isActive": true
+      },
+      "شبوة": {
+        "governorate": "شبوة",
+        "region": "south",
+        "sarToYerRate": 535,
+        "usdToYerRate": 2040,
+        "markupType": "percentage",
+        "markupValue": 4,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني لمدينة عتق وباقي المديريات",
+        "isActive": true
+      },
+      "المهرة": {
+        "governorate": "المهرة",
+        "region": "south",
+        "sarToYerRate": 535,
+        "usdToYerRate": 2040,
+        "markupType": "percentage",
+        "markupValue": 5,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني للغيضة وشحن آمن",
+        "isActive": true
+      },
+      "لحج": {
+        "governorate": "لحج",
+        "region": "south",
+        "sarToYerRate": 535,
+        "usdToYerRate": 2040,
+        "markupType": "percentage",
+        "markupValue": 2,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني للحوطة وتبن",
+        "isActive": true
+      },
+      "أبين": {
+        "governorate": "أبين",
+        "region": "south",
+        "sarToYerRate": 535,
+        "usdToYerRate": 2040,
+        "markupType": "percentage",
+        "markupValue": 2,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني لزنجبار وجعار",
+        "isActive": true
+      },
+      "الضالع": {
+        "governorate": "الضالع",
+        "region": "south",
+        "sarToYerRate": 535,
+        "usdToYerRate": 2040,
+        "markupType": "percentage",
+        "markupValue": 3,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني آمن ومباشر",
+        "isActive": true
+      },
+      "سقطرى": {
+        "governorate": "سقطرى",
+        "region": "south",
+        "sarToYerRate": 535,
+        "usdToYerRate": 2040,
+        "markupType": "percentage",
+        "markupValue": 8,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "شحن جوي مجاني متضمن إلى حديبو وسقطرى",
+        "isActive": true
+      },
+      "صنعاء": {
+        "governorate": "صنعاء",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 0,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل فوري مجاني داخل صنعاء",
+        "isActive": true
+      },
+      "أمانة العاصمة": {
+        "governorate": "أمانة العاصمة",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 0,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني مباشر لجميع المديريات",
+        "isActive": true
+      },
+      "تعز": {
+        "governorate": "تعز",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 3,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني للمدينة وكافة الفروع",
+        "isActive": true
+      },
+      "إب": {
+        "governorate": "إب",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 2,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني لمدينة إب ويريم وجبلة",
+        "isActive": true
+      },
+      "الحديدة": {
+        "governorate": "الحديدة",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 2,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني لمدينة الحديدة والميناء",
+        "isActive": true
+      },
+      "ذمار": {
+        "governorate": "ذمار",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 2,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني سريع لمدينة ذمار",
+        "isActive": true
+      },
+      "مأرب": {
+        "governorate": "مأرب",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 4,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني آمن لمدينة مأرب والمجمع",
+        "isActive": true
+      },
+      "صعدة": {
+        "governorate": "صعدة",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 3,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل وشحن مجاني إلى صعدة",
+        "isActive": true
+      },
+      "حجة": {
+        "governorate": "حجة",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 3,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني لمدينة حجة والمديريات",
+        "isActive": true
+      },
+      "عمران": {
+        "governorate": "عمران",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 2,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني لمدينة عمران وخمر",
+        "isActive": true
+      },
+      "البيضاء": {
+        "governorate": "البيضاء",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 3,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل وشحن مجاني لمدينة رداع والبيضاء",
+        "isActive": true
+      },
+      "الجوف": {
+        "governorate": "الجوف",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 4,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني لمدينة الحزم والجوف",
+        "isActive": true
+      },
+      "المحويت": {
+        "governorate": "المحويت",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 3,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني لمدينة المحويت وشبام",
+        "isActive": true
+      },
+      "ريمة": {
+        "governorate": "ريمة",
+        "region": "north",
+        "sarToYerRate": 140,
+        "usdToYerRate": 535,
+        "markupType": "percentage",
+        "markupValue": 3,
+        "freeDeliveryIncluded": true,
+        "deliveryNote": "توصيل مجاني لمدينة الجبين وريمة",
+        "isActive": true
+      }
+    }
+  }
+}
