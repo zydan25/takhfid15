@@ -7,7 +7,7 @@ const REMOTE_BACKEND_URL = 'https://whats.alattab.site';
 export function getApiBaseUrl(): string {
   const envUrl = ((import.meta as any).env?.VITE_API_BASE_URL as string)?.trim();
   if (envUrl) {
-    return envUrl.replace(/\/$/, '');
+    return envUrl.replace(/\/takhfid\/api\/v4\/?$/, '').replace(/\/+$/, '');
   }
   return REMOTE_BACKEND_URL;
 }

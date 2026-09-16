@@ -9,9 +9,63 @@
 (function() {
   'use strict';
 
-  var REMOTE_SERVER = 'https://whats.alattab.site';
-  var API_BASE = 'https://whats.alattab.site/takhfid/api/v4';
-  var DIRECT_REMOTE_BASE = 'https://whats.alattab.site/takhfid/api/v4';
+  function getCustomApiBaseUrl() {
+    try {
+      if (typeof window !== 'undefined') {
+        var winEnv = window.VITE_API_BASE_URL || window.__VITE_API_BASE_URL;
+        if (winEnv && typeof winEnv === 'string' && winEnv.indexOf('%') === -1 && winEnv.trim()) {
+          return winEnv.trim();
+        }
+      }
+    } catch(e) {}
+    return 'https://whats.alattab.site';
+  }
+
+  var rawBaseUrl = getCustomApiBaseUrl();
+  var REMOTE_SERVER = rawBaseUrl.replace(/\/takhfid\/api\/v4\/?$/, '').replace(/\/+$/, '');
+  var API_BASE = REMOTE_SERVER + '/takhfid/api/v4';
+  var DIRECT_REMOTE_BASE = API_BASE;
+
+  var lastHooks = null;
+  var lastConnectionError = null;
+
+  function showConnectionErrorBanner(errMsg) {
+    if (typeof document === 'undefined') return;
+    var existing = document.getElementById('takhfid-connection-error-banner');
+    if (!existing) {
+      existing = document.createElement('div');
+      existing.id = 'takhfid-connection-error-banner';
+      existing.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#fee2e2;color:#991b1b;border-bottom:1px solid #f87171;padding:8px 12px;font-family:Cairo,sans-serif;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);direction:rtl;';
+      var rootEl = document.getElementById('root');
+      if (rootEl && rootEl.parentNode) {
+        rootEl.parentNode.insertBefore(existing, rootEl);
+      } else {
+        document.body.appendChild(existing);
+      }
+    }
+    existing.innerHTML = '<div style="display:flex;align-items:center;gap:6px;flex:1;overflow:hidden;"><span style="font-size:14px;">⚠️</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">تعذر الاتصال بالخادم: ' + (errMsg || 'خطأ في الشبكة أو الخادم') + '</span></div><button id="takhfid-retry-btn" style="background:#dc2626;color:#ffffff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">إعادة المحاولة</button>';
+    var btn = document.getElementById('takhfid-retry-btn');
+    if (btn) {
+      btn.onclick = function() {
+        btn.textContent = 'جارٍ المحاولة...';
+        btn.disabled = true;
+        if (window.__takhfidInitSync && lastHooks) {
+          window.__takhfidInitSync(lastHooks).finally(function() {
+            btn.textContent = 'إعادة المحاولة';
+            btn.disabled = false;
+          });
+        }
+      };
+    }
+  }
+
+  function hideConnectionErrorBanner() {
+    if (typeof document === 'undefined') return;
+    var existing = document.getElementById('takhfid-connection-error-banner');
+    if (existing && existing.parentNode) {
+      existing.parentNode.removeChild(existing);
+    }
+  }
 
   function isNativePlatform() {
     if (typeof window === 'undefined') return false;
@@ -74,9 +128,6 @@
       }
       return '';
     } catch (e) {
-      return '';
-    }
-  } catch (e) {
       return '';
     }
   }
@@ -283,15 +334,20 @@
         var data = await res.json();
         var rawList = Array.isArray(data) ? data : (data.products || []);
         var normalized = rawList.map(normalizeProduct).filter(Boolean);
+        lastConnectionError = null;
         return normalized;
       } catch (err) {
         console.warn('[Bridge] fetchProducts failed, falling back to direct remote:', err);
         try {
           var r2 = await fetch(DIRECT_REMOTE_BASE + '/products?limit=200');
+          if (!r2.ok) throw new Error('HTTP ' + r2.status);
           var d2 = await r2.json();
           var rawList2 = Array.isArray(d2) ? d2 : (d2.products || []);
-          return rawList2.map(normalizeProduct).filter(Boolean);
+          var normalized2 = rawList2.map(normalizeProduct).filter(Boolean);
+          lastConnectionError = null;
+          return normalized2;
         } catch (e2) {
+          lastConnectionError = e2 || err;
           console.error('[Bridge] direct fetchProducts error:', e2);
           return [];
         }
@@ -344,10 +400,12 @@
         console.warn('[Bridge] fetchContent failed, trying direct remote:', err);
         try {
           var r2 = await fetch(DIRECT_REMOTE_BASE + '/content');
+          if (!r2.ok) throw new Error('HTTP ' + r2.status);
           var d2 = await r2.json();
           return d2.content || d2 || {};
         } catch (e2) {
           console.error('[Bridge] fetchContent error:', e2);
+          if (!lastConnectionError) lastConnectionError = e2 || err;
           return {};
         }
       }
@@ -720,9 +778,11 @@
     // 5. BOOTSTRAP INITIALIZATION ON APP LOAD
     initSync: async function(hooks) {
       hooks = hooks || {};
+      lastHooks = hooks;
       if (hooks.showToast) {
         activeToast = hooks.showToast;
       }
+      lastConnectionError = null;
       console.log('[Bridge] Initializing synchronization with server...');
 
       // Auto-cleanup bad localStorage values (e.g. empty array in announcements)
@@ -812,11 +872,17 @@
 
         // B. Load Products
         var serverProducts = await takhfidBridge.fetchProducts();
+        var prodsLoaded = false;
+        var finalProdCount = 0;
         if (Array.isArray(serverProducts) && serverProducts.length > 0) {
           var normProds = serverProducts.map(normalizeProduct).filter(Boolean);
-          console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
-          if (hooks.setProducts) hooks.setProducts(normProds);
-          try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
+          if (normProds.length > 0) {
+            console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
+            if (hooks.setProducts) hooks.setProducts(normProds);
+            try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
+            prodsLoaded = true;
+            finalProdCount = normProds.length;
+          }
         }
 
         // C. Load Orders if token exists
@@ -826,8 +892,22 @@
           if (hooks.setOrders) hooks.setOrders(orders);
           try { localStorage.setItem('admin_orders_v2', JSON.stringify(orders)); } catch(e) {}
         }
+
+        if (prodsLoaded) {
+          hideConnectionErrorBanner();
+          console.log('[Bridge] Live sync completed successfully.');
+          toast('تم الاتصال بالخادم بنجاح وجلب ' + finalProdCount + ' منتجاً حياً ✨', 'success');
+        } else if (lastConnectionError) {
+          var errMsg = lastConnectionError.message || String(lastConnectionError);
+          console.error('[Bridge] Server connection failure:', errMsg);
+          showConnectionErrorBanner(errMsg);
+          toast('فشل الاتصال بالخادم: ' + errMsg + ' (يتم عرض البيانات المؤقتة)', 'error');
+        }
       } catch (err) {
-        console.warn('[Bridge] initSync partial warning:', err);
+        console.error('[Bridge] initSync error:', err);
+        var errText = err.message || String(err);
+        showConnectionErrorBanner(errText);
+        toast('فشل الاتصال بالخادم: ' + errText + ' (يتم عرض البيانات المؤقتة)', 'error');
       }
     }
   };
@@ -835,6 +915,11 @@
   // Expose Global Bridges for React bundle
   window.__takhfidBridge = takhfidBridge;
   window.__takhfidInitSync = takhfidBridge.initSync.bind(takhfidBridge);
+  window.__takhfidRetrySync = function() {
+    if (window.__takhfidInitSync && lastHooks) {
+      return window.__takhfidInitSync(lastHooks);
+    }
+  };
   window.__takhfidSaveProduct = takhfidBridge.saveProduct.bind(takhfidBridge);
   window.__takhfidSaveCategories = takhfidBridge.saveCategories.bind(takhfidBridge);
   window.__takhfidSaveBanners = takhfidBridge.saveBanners.bind(takhfidBridge);
