@@ -2,7 +2,17 @@ import type { Product, Category, Banner, TrendCampaign, PricingSettings, Order, 
 import { initialStoreSettings } from './types';
 import { initialPricingSettings } from './utils/pricing';
 
-const API_BASE_URL = (((import.meta as any).env?.VITE_API_BASE_URL as string) || '').replace(/\/$/, '');
+const REMOTE_BACKEND_URL = 'https://whats.alattab.site';
+
+export function getApiBaseUrl(): string {
+  const envUrl = ((import.meta as any).env?.VITE_API_BASE_URL as string)?.trim();
+  if (envUrl) {
+    return envUrl.replace(/\/$/, '');
+  }
+  return REMOTE_BACKEND_URL;
+}
+
+const API_BASE_URL = getApiBaseUrl();
 const TOKEN_KEY = 'takhfid_access_token';
 
 export function getAccessToken(): string | null {
@@ -49,17 +59,18 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  // If running with Vite dev server proxy or direct
-  const url = `${API_BASE_URL}${path}`;
+  const baseUrl = getApiBaseUrl();
+  const url = path.startsWith('http://') || path.startsWith('https://') 
+    ? path 
+    : `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
   
   let response: Response;
   try {
     response = await fetch(url, { ...init, headers });
   } catch (err) {
-    // Fallback to direct URL if relative fails
-    if (!API_BASE_URL && path.startsWith('/takhfid')) {
-      const directUrl = `https://whats.alattab.site${path}`;
-      response = await fetch(directUrl, { ...init, headers });
+    if (!url.startsWith(REMOTE_BACKEND_URL)) {
+      const fallbackUrl = `${REMOTE_BACKEND_URL}${path.startsWith('/') ? path : `/${path}`}`;
+      response = await fetch(fallbackUrl, { ...init, headers });
     } else {
       throw err;
     }
@@ -190,7 +201,7 @@ export function sanitizeProduct(p: any): Product {
 
 export async function fetchProductsApi(): Promise<Product[]> {
   try {
-    const data = await apiFetch<{ products?: any[] }>('/takhfid/api/v2/products');
+    const data = await apiFetch<{ products?: any[]; total?: number }>('/takhfid/api/v4/products?limit=200');
     if (Array.isArray(data.products) && data.products.length > 0) {
       const sanitized = data.products.map(sanitizeProduct);
       // Update local storage cache
@@ -209,13 +220,13 @@ export async function fetchProductsApi(): Promise<Product[]> {
 export async function createProductApi(product: Product): Promise<Product> {
   const payload = sanitizeProduct(product);
   try {
-    const data = await apiFetch<{ success?: boolean; product?: Product }>('/takhfid/api/v2/products', {
+    const data = await apiFetch<{ success?: boolean; product?: Product }>('/takhfid/api/v4/admin/products', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
     return data.product ? sanitizeProduct(data.product) : payload;
   } catch (e) {
-    console.warn('POST /products failed, falling back to bulk/local:', e);
+    console.warn('POST /products failed, falling back to local:', e);
     return payload;
   }
 }
@@ -223,7 +234,7 @@ export async function createProductApi(product: Product): Promise<Product> {
 export async function bulkSyncProductsApi(products: Product[]): Promise<{ count: number; success: boolean }> {
   const sanitized = products.map(sanitizeProduct);
   try {
-    const data = await apiFetch<{ success?: boolean; count?: number; message?: string }>('/takhfid/api/v2/products/bulk', {
+    const data = await apiFetch<{ success?: boolean; count?: number; message?: string }>('/takhfid/api/v4/admin/products/bulk', {
       method: 'POST',
       body: JSON.stringify({ products: sanitized }),
     });
@@ -240,7 +251,7 @@ export async function bulkSyncProductsApi(products: Product[]): Promise<{ count:
 export async function updateProductApi(product: Product): Promise<Product> {
   const payload = sanitizeProduct(product);
   try {
-    const data = await apiFetch<{ success?: boolean; product?: Product }>(`/takhfid/api/v2/products/${payload.id}`, {
+    const data = await apiFetch<{ success?: boolean; product?: Product }>(`/takhfid/api/v4/admin/products/${payload.id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
@@ -252,7 +263,7 @@ export async function updateProductApi(product: Product): Promise<Product> {
 
 export async function deleteProductApi(productId: string): Promise<boolean> {
   try {
-    await apiFetch(`/takhfid/api/v2/products/${productId}`, {
+    await apiFetch(`/takhfid/api/v4/admin/products/${productId}`, {
       method: 'DELETE',
     });
     return true;
@@ -275,17 +286,33 @@ export interface ServerContent {
   [key: string]: any;
 }
 
+export async function fetchCategoriesApi(): Promise<Category[]> {
+  try {
+    const data = await apiFetch<{ categories?: Category[]; success?: boolean }>('/takhfid/api/v4/categories');
+    if (Array.isArray(data.categories) && data.categories.length > 0) {
+      try {
+        localStorage.setItem('altakhfid_categories', JSON.stringify(data.categories));
+      } catch {}
+      return data.categories;
+    }
+  } catch (e) {
+    console.warn('Could not fetch categories directly:', e);
+  }
+  return [];
+}
+
 export async function fetchContentApi(): Promise<ServerContent> {
   try {
-    const data = await apiFetch<{ content?: ServerContent; success?: boolean }>('/takhfid/admin/api/content');
+    const data = await apiFetch<{ content?: ServerContent; success?: boolean }>('/takhfid/api/v4/content');
+    const content = data.content || (data as any);
     return {
-      banners: Array.isArray(data.content?.banners) ? data.content!.banners : [],
-      campaigns: Array.isArray(data.content?.campaigns) ? data.content!.campaigns : [],
-      categories: Array.isArray(data.content?.categories) ? data.content!.categories : [],
-      pricingSettings: data.content?.pricingSettings,
-      storeSettings: data.content?.storeSettings,
-      orders: Array.isArray(data.content?.orders) ? data.content!.orders : [],
-      users: Array.isArray(data.content?.users) ? data.content!.users : [],
+      banners: Array.isArray(content?.banners) ? content.banners : [],
+      campaigns: Array.isArray(content?.campaigns) ? content.campaigns : [],
+      categories: Array.isArray(content?.categories) ? content.categories : [],
+      pricingSettings: content?.pricingSettings,
+      storeSettings: content?.storeSettings,
+      orders: Array.isArray(content?.orders) ? content.orders : [],
+      users: Array.isArray(content?.users) ? content.users : [],
     };
   } catch (error) {
     console.warn('Could not fetch content from server:', error);
@@ -295,7 +322,7 @@ export async function fetchContentApi(): Promise<ServerContent> {
 
 export async function saveContentApi(content: Partial<ServerContent>): Promise<boolean> {
   try {
-    await apiFetch('/takhfid/admin/api/content', {
+    await apiFetch('/takhfid/api/v4/admin/content', {
       method: 'PUT',
       body: JSON.stringify(content),
     });
@@ -314,6 +341,31 @@ export async function fetchPricingSettingsApi(): Promise<PricingSettings> {
       cached = { ...initialPricingSettings, ...JSON.parse(saved) };
     }
   } catch {}
+
+  try {
+    const data = await apiFetch<{ pricing?: Record<string, any>; success?: boolean }>('/takhfid/api/v4/pricing');
+    if (data && data.pricing) {
+      const sanaa = data.pricing['صنعاء'] || {};
+      const aden = data.pricing['عدن'] || {};
+      const updated: PricingSettings = {
+        ...cached,
+        sarRate: sanaa.sarToYerRate || cached.sarRate,
+        usdRate: sanaa.usdToYerRate || cached.usdRate,
+        sarToYerRateNorth: sanaa.sarToYerRate || 140,
+        sarToYerRateSouth: aden.sarToYerRate || 535,
+        usdToYerRateNorth: sanaa.usdToYerRate || 535,
+        usdToYerRateSouth: aden.usdToYerRate || 2040,
+        shippingSanaa: sanaa.deliveryFee !== undefined ? sanaa.deliveryFee : cached.shippingSanaa,
+        shippingOther: aden.deliveryFee !== undefined ? aden.deliveryFee : cached.shippingOther,
+      };
+      try {
+        localStorage.setItem('altakhfid_pricing_settings', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    }
+  } catch (err) {
+    console.warn('Direct pricing fetch note, checking content endpoint:', err);
+  }
 
   try {
     const content = await fetchContentApi();
@@ -386,7 +438,7 @@ export async function saveStoreSettingsApi(settings: StoreSettings): Promise<boo
 
 export async function createOrderApi(order: Order): Promise<boolean> {
   try {
-    await apiFetch('/takhfid/api/v2/orders', {
+    await apiFetch('/takhfid/api/v4/orders', {
       method: 'POST',
       body: JSON.stringify(order),
     });
@@ -407,7 +459,7 @@ export async function createOrderApi(order: Order): Promise<boolean> {
 
 export async function fetchOrdersApi(): Promise<Order[]> {
   try {
-    const res = await apiFetch<{ orders?: Order[]; data?: Order[] }>('/takhfid/api/v2/orders');
+    const res = await apiFetch<{ orders?: Order[]; data?: Order[] }>('/takhfid/api/v4/orders');
     const list = res.orders || res.data;
     if (Array.isArray(list) && list.length > 0) {
       return list;
@@ -435,7 +487,7 @@ export async function updateOrderStatusApi(
   isPaid?: boolean
 ): Promise<boolean> {
   try {
-    await apiFetch(`/takhfid/api/v2/orders/${orderId}`, {
+    await apiFetch(`/takhfid/api/v4/orders/${orderId}`, {
       method: 'PUT',
       body: JSON.stringify({ status, isPaid, updatedAt: new Date().toISOString() }),
     });
@@ -460,7 +512,7 @@ export async function updateOrderStatusApi(
 
 export async function deleteOrderApi(orderId: string): Promise<boolean> {
   try {
-    await apiFetch(`/takhfid/api/v2/orders/${orderId}`, {
+    await apiFetch(`/takhfid/api/v4/orders/${orderId}`, {
       method: 'DELETE',
     });
     return true;
@@ -490,7 +542,7 @@ export async function bulkSyncOrdersApi(orders: Order[]): Promise<number> {
 
 export async function fetchUsersApi(): Promise<User[]> {
   try {
-    const res = await apiFetch<{ users?: User[]; data?: User[] }>('/takhfid/api/v2/users');
+    const res = await apiFetch<{ users?: User[]; data?: User[] }>('/takhfid/api/v4/users');
     const list = res.users || res.data;
     if (Array.isArray(list) && list.length > 0) {
       return list;
@@ -514,7 +566,7 @@ export async function fetchUsersApi(): Promise<User[]> {
 
 export async function saveUserApi(user: User): Promise<boolean> {
   try {
-    await apiFetch('/takhfid/api/v2/users', {
+    await apiFetch('/takhfid/api/v4/users', {
       method: 'POST',
       body: JSON.stringify(user),
     });
@@ -537,7 +589,7 @@ export async function saveUserApi(user: User): Promise<boolean> {
 
 export async function deleteUserApi(uid: string): Promise<boolean> {
   try {
-    await apiFetch(`/takhfid/api/v2/users/${uid}`, {
+    await apiFetch(`/takhfid/api/v4/users/${uid}`, {
       method: 'DELETE',
     });
     return true;

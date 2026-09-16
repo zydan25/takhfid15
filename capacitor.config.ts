@@ -4,6 +4,11 @@ const config: CapacitorConfig = {
   appId: 'com.altakhfeedalsh.app',
   appName: 'التخفيض الصح',
   webDir: 'dist',
+  plugins: {
+    CapacitorHttp: {
+      enabled: true,
+    },
+  },
   server: {
     androidScheme: 'https',
     cleartext: true,

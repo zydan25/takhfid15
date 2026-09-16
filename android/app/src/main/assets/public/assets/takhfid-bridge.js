@@ -9,38 +9,55 @@
 (function() {
   'use strict';
 
-  var API_BASE = '/takhfid/api/v4';
+  var REMOTE_SERVER = 'https://whats.alattab.site';
+  var API_BASE = 'https://whats.alattab.site/takhfid/api/v4';
   var DIRECT_REMOTE_BASE = 'https://whats.alattab.site/takhfid/api/v4';
 
   function isNativePlatform() {
     if (typeof window === 'undefined') return false;
-    if (window.Capacitor && (typeof window.Capacitor.isNativePlatform === 'function' ? window.Capacitor.isNativePlatform() : true)) {
-      return true;
-    }
+    if (window.Capacitor) return true;
     var proto = (window.location && window.location.protocol) || '';
     var host = (window.location && window.location.hostname) || '';
     if (proto === 'file:' || proto === 'capacitor:' || proto === 'ionic:' || proto === 'content:') {
       return true;
     }
-    if (host === 'localhost' && typeof window.Capacitor !== 'undefined') {
+    if (host === 'localhost' || host === '127.0.0.1' || host === '') {
       return true;
+    }
+    if (typeof navigator !== 'undefined' && navigator.userAgent) {
+      if (/Android|iPhone|iPad|iPod|Capacitor/i.test(navigator.userAgent) || navigator.userAgent.indexOf('wv') !== -1) {
+        return true;
+      }
     }
     return false;
   }
 
   function getBaseUrl() {
-    if (isNativePlatform()) {
-      return DIRECT_REMOTE_BASE;
-    }
-    return API_BASE;
+    return DIRECT_REMOTE_BASE;
   }
 
   if (typeof window !== 'undefined' && window.fetch && !window.__takhfidFetchPatched) {
     window.__takhfidFetchPatched = true;
     var _origFetch = window.fetch;
     window.fetch = function(input, init) {
-      if (isNativePlatform() && typeof input === 'string' && input.startsWith('/takhfid')) {
-        input = 'https://whats.alattab.site' + input;
+      try {
+        if (typeof input === 'string') {
+          if (input.startsWith('/takhfid')) {
+            input = REMOTE_SERVER + input;
+          } else if (input.indexOf('localhost/takhfid') !== -1 || input.indexOf('127.0.0.1/takhfid') !== -1) {
+            input = input.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, REMOTE_SERVER).replace(/^capacitor:\/\/localhost/, REMOTE_SERVER);
+          }
+        } else if (input && typeof input === 'object' && input.url) {
+          var u = input.url;
+          if (u.startsWith('/takhfid')) {
+            return _origFetch.call(this, new Request(REMOTE_SERVER + u, input), init);
+          } else if (u.indexOf('localhost/takhfid') !== -1 || u.indexOf('127.0.0.1/takhfid') !== -1) {
+            var newU = u.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, REMOTE_SERVER).replace(/^capacitor:\/\/localhost/, REMOTE_SERVER);
+            return _origFetch.call(this, new Request(newU, input), init);
+          }
+        }
+      } catch (err) {
+        console.warn('[Takhfid Bridge] fetch url rewrite notice:', err);
       }
       return _origFetch.call(this, input, init);
     };
@@ -261,7 +278,7 @@
     // 1. PRODUCTS API
     fetchProducts: async function() {
       try {
-        var res = await fetch(getBaseUrl() + '/products');
+        var res = await fetch(getBaseUrl() + '/products?limit=200');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = await res.json();
         var rawList = Array.isArray(data) ? data : (data.products || []);
@@ -270,7 +287,7 @@
       } catch (err) {
         console.warn('[Bridge] fetchProducts failed, falling back to direct remote:', err);
         try {
-          var r2 = await fetch(DIRECT_REMOTE_BASE + '/products');
+          var r2 = await fetch(DIRECT_REMOTE_BASE + '/products?limit=200');
           var d2 = await r2.json();
           var rawList2 = Array.isArray(d2) ? d2 : (d2.products || []);
           return rawList2.map(normalizeProduct).filter(Boolean);
@@ -797,21 +814,9 @@
         var serverProducts = await takhfidBridge.fetchProducts();
         if (Array.isArray(serverProducts) && serverProducts.length > 0) {
           var normProds = serverProducts.map(normalizeProduct).filter(Boolean);
-          // Merge with local products to preserve all items if server has only partial count
-          var localProds = [];
-          try {
-            var lpRaw = localStorage.getItem('altakhfid_products');
-            if (lpRaw) localProds = JSON.parse(lpRaw).map(normalizeProduct).filter(Boolean);
-          } catch(e) {}
-
-          var productMap = {};
-          localProds.forEach(function(p) { productMap[p.id] = p; });
-          normProds.forEach(function(p) { productMap[p.id] = p; });
-          var mergedProducts = Object.values(productMap);
-
-          console.log('[Bridge] Loaded & normalized ' + mergedProducts.length + ' products');
-          if (hooks.setProducts) hooks.setProducts(mergedProducts);
-          try { localStorage.setItem('altakhfid_products', JSON.stringify(mergedProducts)); } catch(e) {}
+          console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
+          if (hooks.setProducts) hooks.setProducts(normProds);
+          try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
         }
 
         // C. Load Orders if token exists
