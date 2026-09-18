@@ -156,49 +156,112 @@
   // --- SAFE DATA NORMALIZATION ---
   function normalizeProduct(p) {
     if (!p) return null;
-    var discPrice = typeof p.discountPrice === 'number' ? p.discountPrice : (typeof p.price === 'number' ? p.price : (typeof p.originalPrice === 'number' ? p.originalPrice : 45));
-    var origPrice = typeof p.originalPrice === 'number' ? p.originalPrice : (typeof p.price === 'number' ? Math.round(p.price * 1.35) : Math.round(discPrice * 1.35));
+    var res = Object.assign({}, p);
+
+    var discPrice = typeof p.discountPrice === 'number' && !isNaN(p.discountPrice)
+      ? p.discountPrice
+      : (typeof p.price === 'number' && !isNaN(p.price)
+        ? p.price
+        : (typeof p.originalPrice === 'number' && !isNaN(p.originalPrice) ? p.originalPrice : 45));
+
+    var origPrice = typeof p.originalPrice === 'number' && !isNaN(p.originalPrice)
+      ? p.originalPrice
+      : (typeof p.price === 'number' && !isNaN(p.price)
+        ? Math.round(p.price * 1.35)
+        : Math.round(discPrice * 1.35));
+
     if (origPrice < discPrice) origPrice = Math.round(discPrice * 1.35);
-    var discPerc = typeof p.discountPercentage === 'number' ? p.discountPercentage : (origPrice > discPrice ? Math.round(((origPrice - discPrice) / origPrice) * 100) : 0);
+
+    var discPerc = typeof p.discountPercentage === 'number' && !isNaN(p.discountPercentage)
+      ? p.discountPercentage
+      : (origPrice > discPrice ? Math.round(((origPrice - discPrice) / origPrice) * 100) : 0);
 
     var cat = p.category || (Array.isArray(p.categories) && p.categories[1] ? p.categories[1] : 'women');
     var cats = Array.isArray(p.categories) && p.categories.length > 0 ? p.categories : ['all', cat];
 
-    var img = p.image || (Array.isArray(p.images) && p.images[0]) || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80';
-    var gallery = Array.isArray(p.galleryImages) && p.galleryImages.length > 0 ? p.galleryImages : [img];
+    var img = p.image || (Array.isArray(p.images) && p.images[0]) || (Array.isArray(p.galleryImages) && p.galleryImages[0]) || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80';
+    var gallery = Array.isArray(p.galleryImages) && p.galleryImages.length > 0
+      ? p.galleryImages
+      : (Array.isArray(p.images) && p.images.length > 0 ? p.images : [img]);
 
-    var colors = Array.isArray(p.colors) && p.colors.length > 0 ? p.colors : [{ name: 'أسود كلاسيك', hex: '#1e293b' }];
+    // Normalize colors, preserving per-color images and hex values
+    var colors = Array.isArray(p.colors) && p.colors.length > 0 ? p.colors.map(function(c) {
+      if (typeof c === 'string') {
+        return { name: c, hex: '#1e293b', images: [img], image: img };
+      }
+      var cImgs = Array.isArray(c.images) && c.images.length > 0
+        ? c.images
+        : (c.image ? [c.image] : [img]);
+      return {
+        name: c.name || 'لون',
+        hex: c.hex || '#1e293b',
+        image: cImgs[0] || img,
+        images: cImgs
+      };
+    }) : [{ name: 'افتراضي', hex: '#1e293b', image: img, images: [img] }];
+
     var sizes = Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes : ['M', 'L', 'XL'];
+    var tags = Array.isArray(p.tags) ? p.tags : (p.tags ? [String(p.tags)] : []);
+    var trends = Array.isArray(p.trends) && p.trends.length > 0 ? p.trends : (p.trendTag ? [p.trendTag] : []);
 
-    return {
-      id: String(p.id || ('p-' + Date.now())),
-      name: String(p.name || p.title || 'صنف جديد'),
-      brand: String(p.brand || 'SHEIN'),
-      category: String(cat),
-      categories: cats,
-      subCategory: String(p.subCategory || 'عام'),
-      originalPrice: Number(origPrice),
-      discountPrice: Number(discPrice),
-      discountPercentage: Number(discPerc),
-      price: Number(discPrice),
-      rating: typeof p.rating === 'number' ? p.rating : 4.8,
-      reviewsCount: typeof p.reviewsCount === 'number' ? p.reviewsCount : 120,
-      image: String(img),
-      galleryImages: gallery,
-      colors: colors,
-      sizes: sizes,
-      inStock: p.inStock !== false,
-      description: String(p.description || ''),
-      couponTag: String(p.couponTag || 'بعد القسيمة'),
-      salesText: String(p.salesText || '+100. تم بيع'),
-      storeBadgeTag: String(p.storeBadgeTag || 'متجر معتمد 🏪'),
-      cardAspect: p.cardAspect || 'standard',
-      isBestSeller: Boolean(p.isBestSeller),
-      isNewBadgeEnabled: p.isNewBadgeEnabled !== false,
-      newBadgeText: p.newBadgeText || 'NEW',
-      sku: p.sku || ('SKU-' + (p.id || Date.now())),
-      soldCount: typeof p.soldCount === 'number' ? p.soldCount : 100
-    };
+    res.id = String(p.id || ('p-' + Date.now()));
+    res.name = String(p.name || p.title || 'صنف جديد');
+    res.brand = String(p.brand || 'SHEIN');
+    res.category = String(cat);
+    res.categories = cats;
+    res.subCategory = String(p.subCategory || 'عام');
+    res.originalPrice = Number(origPrice);
+    res.discountPrice = Number(discPrice);
+    res.discountPercentage = Number(discPerc);
+    res.price = Number(discPrice);
+    res.rating = typeof p.rating === 'number' ? p.rating : 4.8;
+    res.reviewsCount = typeof p.reviewsCount === 'number' ? p.reviewsCount : 120;
+    res.image = String(img);
+    res.images = gallery;
+    res.galleryImages = gallery;
+    res.colors = colors;
+    res.sizes = sizes;
+    res.tags = tags;
+    res.trends = trends;
+    res.inStock = p.inStock !== false && p.stock !== 0;
+
+    // Badges & customizations - fully preserved and synchronized
+    res.isSavingBannerEnabled = Boolean(p.isSavingBannerEnabled);
+    res.savingBannerPrefix = p.savingBannerPrefix !== undefined ? String(p.savingBannerPrefix) : 'توفير';
+    res.savingBannerLeftText = p.savingBannerLeftText !== undefined ? String(p.savingBannerLeftText) : '';
+    res.savingBannerBgColor = p.savingBannerBgColor || 'rgba(0, 0, 0, 0.78)';
+    res.savingBannerTextColor = p.savingBannerTextColor || '#ffffff';
+    res.savingBannerPriceColor = p.savingBannerPriceColor || '#facc15';
+
+    res.showCardShipping = Boolean(p.showCardShipping);
+    res.cardShippingText = p.cardShippingText !== undefined ? String(p.cardShippingText) : 'شحن مجاني وسريع 🚚';
+    res.isLocalFastShipping = Boolean(p.isLocalFastShipping);
+
+    res.isNewBadgeEnabled = p.isNewBadgeEnabled !== false;
+    res.newBadgeText = p.newBadgeText || 'NEW';
+    res.newBadgeTextColor = p.newBadgeTextColor || '#ffffff';
+    res.newBadgeBgColor = p.newBadgeBgColor || '#10b981';
+    res.newBadgeDurationDays = typeof p.newBadgeDurationDays === 'number' ? p.newBadgeDurationDays : 7;
+
+    res.isBestSeller = Boolean(p.isBestSeller);
+    res.bestSellerText = p.bestSellerText || '';
+    res.campaignRibbonText = p.campaignRibbonText || '';
+    res.ratingReviewsText = p.ratingReviewsText || '';
+    res.cartBadgeCount = typeof p.cartBadgeCount === 'number' ? p.cartBadgeCount : undefined;
+    res.productType = p.productType || '';
+    res.fabric = p.fabric || '';
+    res.ageGroup = p.ageGroup || '';
+    res.hasCurveLogo = Boolean(p.hasCurveLogo);
+    res.stretchInfo = p.stretchInfo || '';
+    res.hasZoomInBubble = Boolean(p.hasZoomInBubble);
+    res.zoomBubbleImage = p.zoomBubbleImage || '';
+    res.enableReviews = p.enableReviews !== false;
+    res.enableSizeGuide = p.enableSizeGuide !== false;
+    res.cardAspect = p.cardAspect || 'tall';
+    res.sku = p.sku || ('SKU-' + (p.id || Date.now()));
+    res.soldCount = typeof p.soldCount === 'number' ? p.soldCount : 100;
+
+    return res;
   }
 
   function normalizeBanner(b, idx) {
@@ -230,7 +293,18 @@
     };
   }
 
-  function normalizeCategory(c, existingDefaults) {
+  function sortCategoriesWithAllFirst(cats) {
+  if (!Array.isArray(cats)) return cats;
+  var allIdx = cats.findIndex(function(c) { return c && (c.id === "all" || c.name === "كل" || c.name === "الكل"); });
+  if (allIdx > 0) {
+    var allCat = cats[allIdx];
+    var rest = cats.filter(function(_, idx) { return idx !== allIdx; });
+    return [allCat].concat(rest);
+  }
+  return cats;
+}
+
+function normalizeCategory(c, existingDefaults) {
     if (!c) return null;
     var def = existingDefaults ? existingDefaults.find(function(d) { return d.id === c.id; }) : null;
     var subCats = Array.isArray(c.subCategories) && c.subCategories.length > 0 ? c.subCategories : (def && def.subCategories ? def.subCategories : []);
@@ -414,8 +488,7 @@
     updateContentSection: async function(payload) {
       var token = getAuthToken();
       if (!token) {
-        console.warn('[Bridge] updateContentSection called without admin token. Cached locally.');
-        return { success: true, cached: true, message: 'تم الحفظ في الذاكرة المحلية بنجاح' };
+        console.warn('[Bridge] updateContentSection sending update (attempting with available credentials)...');
       }
       try {
         var res = await fetch(getBaseUrl() + '/admin/content', {
@@ -460,6 +533,7 @@
     saveCategories: async function(categories) {
       if (!Array.isArray(categories)) return { success: false };
       var safe = categories.map(function(c) { return normalizeCategory(c); }).filter(Boolean);
+      safe = sortCategoriesWithAllFirst(safe);
       try {
         localStorage.setItem('altakhfid_categories', JSON.stringify(safe));
       } catch(e) {}
@@ -524,6 +598,7 @@
     saveCategoryTabsConfig: async function(config) {
       try {
         localStorage.setItem('store_category_tabs_config_v2', JSON.stringify(config));
+        localStorage.setItem('shein_category_tabs_config', JSON.stringify(config));
       } catch(e) {}
       var res = await this.updateContentSection({ categoryTabsConfig: config });
       if (res.success) {
@@ -535,6 +610,7 @@
     saveRecommendations: async function(tabs) {
       try {
         localStorage.setItem('store_recommendation_tabs_v2', JSON.stringify(tabs));
+        localStorage.setItem('recommendation_tabs_v1', JSON.stringify(tabs));
       } catch(e) {}
       var res = await this.updateContentSection({ recommendationTabs: tabs });
       if (res.success) {
@@ -643,6 +719,96 @@
         return { success: res.ok && data.success !== false };
       } catch (err) {
         console.error('[Bridge] updateOrderStatus error:', err);
+        return { success: false, error: err.message };
+      }
+    },
+
+    // LIVE SYNC FROM SERVER (FETCH ONLY)
+    syncFromServer: async function(isManual) {
+      console.log('[Bridge] Fetching live data from server (syncFromServer)...');
+      try {
+        var content = await takhfidBridge.fetchContent();
+        if (content) {
+          if (Array.isArray(content.categories) && content.categories.length > 0) {
+            var normCats = content.categories.map(function(c) { return normalizeCategory(c); }).filter(Boolean);
+            if (normCats.length > 0) {
+              try { localStorage.setItem('altakhfid_categories', JSON.stringify(normCats)); } catch(e) {}
+              if (window.__takhfidSetCategories) window.__takhfidSetCategories(normCats);
+            }
+          }
+          if (Array.isArray(content.banners) && content.banners.length > 0) {
+            var normBanners = content.banners.map(normalizeBanner).filter(Boolean);
+            if (normBanners.length > 0) {
+              try { localStorage.setItem('store_banners_v1', JSON.stringify(normBanners)); } catch(e) {}
+              if (window.__takhfidSetBanners) window.__takhfidSetBanners(normBanners);
+            }
+          }
+          if (Array.isArray(content.campaigns) && content.campaigns.length > 0) {
+            var normCamps = content.campaigns.map(normalizeCampaign).filter(Boolean);
+            if (normCamps.length > 0) {
+              try {
+                localStorage.setItem('trend_campaigns_v2', JSON.stringify(normCamps));
+                localStorage.setItem('altakhfid_campaigns', JSON.stringify(normCamps));
+              } catch(e) {}
+              if (window.__takhfidSetCampaigns) window.__takhfidSetCampaigns(normCamps);
+            }
+          }
+          var serverHashtags = (Array.isArray(content.trendHashtags) && content.trendHashtags.length > 0) ? content.trendHashtags : (Array.isArray(content.hashtags) && content.hashtags.length > 0 ? content.hashtags : null);
+          if (serverHashtags) {
+            try { localStorage.setItem('trend_hashtags_v2', JSON.stringify(serverHashtags)); } catch(e) {}
+            if (window.__takhfidSetHashtags) window.__takhfidSetHashtags(serverHashtags);
+          }
+                    if (content.categoryTabsConfig && typeof content.categoryTabsConfig === "object") {
+            try {
+              localStorage.setItem("shein_category_tabs_config", JSON.stringify(content.categoryTabsConfig));
+              localStorage.setItem("store_category_tabs_config_v2", JSON.stringify(content.categoryTabsConfig));
+            } catch(e) {}
+            if (window.__takhfidSetCategoryTabsConfig) window.__takhfidSetCategoryTabsConfig(content.categoryTabsConfig);
+          }
+          if (Array.isArray(content.recommendationTabs) && content.recommendationTabs.length > 0) {
+            try {
+              localStorage.setItem("recommendation_tabs_v1", JSON.stringify(content.recommendationTabs));
+              localStorage.setItem("store_recommendation_tabs_v2", JSON.stringify(content.recommendationTabs));
+            } catch(e) {}
+            if (window.__takhfidSetRecommendations) window.__takhfidSetRecommendations(content.recommendationTabs);
+          }
+          if (content.announcements && typeof content.announcements === 'object' && Array.isArray(content.announcements.screens) && content.announcements.screens.length > 0) {
+            var normAnn = normalizeAnnouncementSettings(content.announcements);
+            try { localStorage.setItem('shein_announcement_bar_settings_v1', JSON.stringify(normAnn)); } catch(e) {}
+            if (lastHooks && lastHooks.setAnnouncementSettings) lastHooks.setAnnouncementSettings(normAnn);
+          }
+          if (content.pricingSettings) {
+            try { localStorage.setItem('altakhfid_pricing_settings', JSON.stringify(content.pricingSettings)); } catch(e) {}
+          }
+        }
+
+        var serverProducts = await takhfidBridge.fetchProducts();
+        var prodsCount = 0;
+        if (Array.isArray(serverProducts) && serverProducts.length > 0) {
+          var normProds = serverProducts.map(normalizeProduct).filter(Boolean);
+          if (normProds.length > 0) {
+            try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
+            if (window.__takhfidSetProducts) window.__takhfidSetProducts(normProds);
+            prodsCount = normProds.length;
+          }
+        }
+
+        var orders = await takhfidBridge.fetchOrders();
+        if (Array.isArray(orders) && orders.length > 0) {
+          try { localStorage.setItem('admin_orders_v2', JSON.stringify(orders)); } catch(e) {}
+          if (lastHooks && lastHooks.setOrders) lastHooks.setOrders(orders);
+        }
+
+        hideConnectionErrorBanner();
+        if (isManual) {
+          toast('تم جلب وتحديث ' + prodsCount + ' منتجاً حياً وكافة الأقسام والبانرات من الخادم بنجاح 🔄✨', 'success');
+        }
+        return { success: true, count: prodsCount };
+      } catch (err) {
+        console.error('[Bridge] syncFromServer error:', err);
+        if (isManual) {
+          toast('تعذر جلب البيانات من الخادم، تم الإبقاء على البيانات الحالية ⚠️', 'info');
+        }
         return { success: false, error: err.message };
       }
     },
@@ -896,7 +1062,7 @@
         if (prodsLoaded) {
           hideConnectionErrorBanner();
           console.log('[Bridge] Live sync completed successfully.');
-          toast('تم الاتصال بالخادم بنجاح وجلب ' + finalProdCount + ' منتجاً حياً ✨', 'success');
+          // Customer notification removed as requested
         } else if (lastConnectionError) {
           var errMsg = lastConnectionError.message || String(lastConnectionError);
           console.error('[Bridge] Server connection failure:', errMsg);
@@ -930,7 +1096,9 @@
   window.__takhfidSaveRecommendations = takhfidBridge.saveRecommendations.bind(takhfidBridge);
   window.__takhfidCreateOrder = takhfidBridge.createOrder.bind(takhfidBridge);
   window.__takhfidUpdateOrderStatus = takhfidBridge.updateOrderStatus.bind(takhfidBridge);
-  window.__takhfidSyncAll = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
+  window.__takhfidSyncAll = function(isManual) { return takhfidBridge.syncFromServer(isManual); };
+  window.__takhfidSyncFromServer = function(isManual) { return takhfidBridge.syncFromServer(isManual); };
+  window.__takhfidRefresh = function() { return takhfidBridge.syncFromServer(false); };
   window.__takhfidBulkSync = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
   window.__takhfidFetchOrders = takhfidBridge.fetchOrders.bind(takhfidBridge);
   window.syncProductsToServer = function() { return takhfidBridge.syncAllToBackend(true); };

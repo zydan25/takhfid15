@@ -9,9 +9,63 @@
 (function() {
   'use strict';
 
-  var REMOTE_SERVER = 'https://whats.alattab.site';
-  var API_BASE = 'https://whats.alattab.site/takhfid/api/v4';
-  var DIRECT_REMOTE_BASE = 'https://whats.alattab.site/takhfid/api/v4';
+  function getCustomApiBaseUrl() {
+    try {
+      if (typeof window !== 'undefined') {
+        var winEnv = window.VITE_API_BASE_URL || window.__VITE_API_BASE_URL;
+        if (winEnv && typeof winEnv === 'string' && winEnv.indexOf('%') === -1 && winEnv.trim()) {
+          return winEnv.trim();
+        }
+      }
+    } catch(e) {}
+    return 'https://whats.alattab.site';
+  }
+
+  var rawBaseUrl = getCustomApiBaseUrl();
+  var REMOTE_SERVER = rawBaseUrl.replace(/\/takhfid\/api\/v4\/?$/, '').replace(/\/+$/, '');
+  var API_BASE = REMOTE_SERVER + '/takhfid/api/v4';
+  var DIRECT_REMOTE_BASE = API_BASE;
+
+  var lastHooks = null;
+  var lastConnectionError = null;
+
+  function showConnectionErrorBanner(errMsg) {
+    if (typeof document === 'undefined') return;
+    var existing = document.getElementById('takhfid-connection-error-banner');
+    if (!existing) {
+      existing = document.createElement('div');
+      existing.id = 'takhfid-connection-error-banner';
+      existing.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#fee2e2;color:#991b1b;border-bottom:1px solid #f87171;padding:8px 12px;font-family:Cairo,sans-serif;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);direction:rtl;';
+      var rootEl = document.getElementById('root');
+      if (rootEl && rootEl.parentNode) {
+        rootEl.parentNode.insertBefore(existing, rootEl);
+      } else {
+        document.body.appendChild(existing);
+      }
+    }
+    existing.innerHTML = '<div style="display:flex;align-items:center;gap:6px;flex:1;overflow:hidden;"><span style="font-size:14px;">⚠️</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">تعذر الاتصال بالخادم: ' + (errMsg || 'خطأ في الشبكة أو الخادم') + '</span></div><button id="takhfid-retry-btn" style="background:#dc2626;color:#ffffff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">إعادة المحاولة</button>';
+    var btn = document.getElementById('takhfid-retry-btn');
+    if (btn) {
+      btn.onclick = function() {
+        btn.textContent = 'جارٍ المحاولة...';
+        btn.disabled = true;
+        if (window.__takhfidInitSync && lastHooks) {
+          window.__takhfidInitSync(lastHooks).finally(function() {
+            btn.textContent = 'إعادة المحاولة';
+            btn.disabled = false;
+          });
+        }
+      };
+    }
+  }
+
+  function hideConnectionErrorBanner() {
+    if (typeof document === 'undefined') return;
+    var existing = document.getElementById('takhfid-connection-error-banner');
+    if (existing && existing.parentNode) {
+      existing.parentNode.removeChild(existing);
+    }
+  }
 
   function isNativePlatform() {
     if (typeof window === 'undefined') return false;
@@ -76,9 +130,6 @@
     } catch (e) {
       return '';
     }
-  } catch (e) {
-      return '';
-    }
   }
 
   function getAuthHeaders(includeContentType) {
@@ -105,49 +156,112 @@
   // --- SAFE DATA NORMALIZATION ---
   function normalizeProduct(p) {
     if (!p) return null;
-    var discPrice = typeof p.discountPrice === 'number' ? p.discountPrice : (typeof p.price === 'number' ? p.price : (typeof p.originalPrice === 'number' ? p.originalPrice : 45));
-    var origPrice = typeof p.originalPrice === 'number' ? p.originalPrice : (typeof p.price === 'number' ? Math.round(p.price * 1.35) : Math.round(discPrice * 1.35));
+    var res = Object.assign({}, p);
+
+    var discPrice = typeof p.discountPrice === 'number' && !isNaN(p.discountPrice)
+      ? p.discountPrice
+      : (typeof p.price === 'number' && !isNaN(p.price)
+        ? p.price
+        : (typeof p.originalPrice === 'number' && !isNaN(p.originalPrice) ? p.originalPrice : 45));
+
+    var origPrice = typeof p.originalPrice === 'number' && !isNaN(p.originalPrice)
+      ? p.originalPrice
+      : (typeof p.price === 'number' && !isNaN(p.price)
+        ? Math.round(p.price * 1.35)
+        : Math.round(discPrice * 1.35));
+
     if (origPrice < discPrice) origPrice = Math.round(discPrice * 1.35);
-    var discPerc = typeof p.discountPercentage === 'number' ? p.discountPercentage : (origPrice > discPrice ? Math.round(((origPrice - discPrice) / origPrice) * 100) : 0);
+
+    var discPerc = typeof p.discountPercentage === 'number' && !isNaN(p.discountPercentage)
+      ? p.discountPercentage
+      : (origPrice > discPrice ? Math.round(((origPrice - discPrice) / origPrice) * 100) : 0);
 
     var cat = p.category || (Array.isArray(p.categories) && p.categories[1] ? p.categories[1] : 'women');
     var cats = Array.isArray(p.categories) && p.categories.length > 0 ? p.categories : ['all', cat];
 
-    var img = p.image || (Array.isArray(p.images) && p.images[0]) || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80';
-    var gallery = Array.isArray(p.galleryImages) && p.galleryImages.length > 0 ? p.galleryImages : [img];
+    var img = p.image || (Array.isArray(p.images) && p.images[0]) || (Array.isArray(p.galleryImages) && p.galleryImages[0]) || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80';
+    var gallery = Array.isArray(p.galleryImages) && p.galleryImages.length > 0
+      ? p.galleryImages
+      : (Array.isArray(p.images) && p.images.length > 0 ? p.images : [img]);
 
-    var colors = Array.isArray(p.colors) && p.colors.length > 0 ? p.colors : [{ name: 'أسود كلاسيك', hex: '#1e293b' }];
+    // Normalize colors, preserving per-color images and hex values
+    var colors = Array.isArray(p.colors) && p.colors.length > 0 ? p.colors.map(function(c) {
+      if (typeof c === 'string') {
+        return { name: c, hex: '#1e293b', images: [img], image: img };
+      }
+      var cImgs = Array.isArray(c.images) && c.images.length > 0
+        ? c.images
+        : (c.image ? [c.image] : [img]);
+      return {
+        name: c.name || 'لون',
+        hex: c.hex || '#1e293b',
+        image: cImgs[0] || img,
+        images: cImgs
+      };
+    }) : [{ name: 'افتراضي', hex: '#1e293b', image: img, images: [img] }];
+
     var sizes = Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes : ['M', 'L', 'XL'];
+    var tags = Array.isArray(p.tags) ? p.tags : (p.tags ? [String(p.tags)] : []);
+    var trends = Array.isArray(p.trends) && p.trends.length > 0 ? p.trends : (p.trendTag ? [p.trendTag] : []);
 
-    return {
-      id: String(p.id || ('p-' + Date.now())),
-      name: String(p.name || p.title || 'صنف جديد'),
-      brand: String(p.brand || 'SHEIN'),
-      category: String(cat),
-      categories: cats,
-      subCategory: String(p.subCategory || 'عام'),
-      originalPrice: Number(origPrice),
-      discountPrice: Number(discPrice),
-      discountPercentage: Number(discPerc),
-      price: Number(discPrice),
-      rating: typeof p.rating === 'number' ? p.rating : 4.8,
-      reviewsCount: typeof p.reviewsCount === 'number' ? p.reviewsCount : 120,
-      image: String(img),
-      galleryImages: gallery,
-      colors: colors,
-      sizes: sizes,
-      inStock: p.inStock !== false,
-      description: String(p.description || ''),
-      couponTag: String(p.couponTag || 'بعد القسيمة'),
-      salesText: String(p.salesText || '+100. تم بيع'),
-      storeBadgeTag: String(p.storeBadgeTag || 'متجر معتمد 🏪'),
-      cardAspect: p.cardAspect || 'standard',
-      isBestSeller: Boolean(p.isBestSeller),
-      isNewBadgeEnabled: p.isNewBadgeEnabled !== false,
-      newBadgeText: p.newBadgeText || 'NEW',
-      sku: p.sku || ('SKU-' + (p.id || Date.now())),
-      soldCount: typeof p.soldCount === 'number' ? p.soldCount : 100
-    };
+    res.id = String(p.id || ('p-' + Date.now()));
+    res.name = String(p.name || p.title || 'صنف جديد');
+    res.brand = String(p.brand || 'SHEIN');
+    res.category = String(cat);
+    res.categories = cats;
+    res.subCategory = String(p.subCategory || 'عام');
+    res.originalPrice = Number(origPrice);
+    res.discountPrice = Number(discPrice);
+    res.discountPercentage = Number(discPerc);
+    res.price = Number(discPrice);
+    res.rating = typeof p.rating === 'number' ? p.rating : 4.8;
+    res.reviewsCount = typeof p.reviewsCount === 'number' ? p.reviewsCount : 120;
+    res.image = String(img);
+    res.images = gallery;
+    res.galleryImages = gallery;
+    res.colors = colors;
+    res.sizes = sizes;
+    res.tags = tags;
+    res.trends = trends;
+    res.inStock = p.inStock !== false && p.stock !== 0;
+
+    // Badges & customizations - fully preserved and synchronized
+    res.isSavingBannerEnabled = Boolean(p.isSavingBannerEnabled);
+    res.savingBannerPrefix = p.savingBannerPrefix !== undefined ? String(p.savingBannerPrefix) : 'توفير';
+    res.savingBannerLeftText = p.savingBannerLeftText !== undefined ? String(p.savingBannerLeftText) : '';
+    res.savingBannerBgColor = p.savingBannerBgColor || 'rgba(0, 0, 0, 0.78)';
+    res.savingBannerTextColor = p.savingBannerTextColor || '#ffffff';
+    res.savingBannerPriceColor = p.savingBannerPriceColor || '#facc15';
+
+    res.showCardShipping = Boolean(p.showCardShipping);
+    res.cardShippingText = p.cardShippingText !== undefined ? String(p.cardShippingText) : 'شحن مجاني وسريع 🚚';
+    res.isLocalFastShipping = Boolean(p.isLocalFastShipping);
+
+    res.isNewBadgeEnabled = p.isNewBadgeEnabled !== false;
+    res.newBadgeText = p.newBadgeText || 'NEW';
+    res.newBadgeTextColor = p.newBadgeTextColor || '#ffffff';
+    res.newBadgeBgColor = p.newBadgeBgColor || '#10b981';
+    res.newBadgeDurationDays = typeof p.newBadgeDurationDays === 'number' ? p.newBadgeDurationDays : 7;
+
+    res.isBestSeller = Boolean(p.isBestSeller);
+    res.bestSellerText = p.bestSellerText || '';
+    res.campaignRibbonText = p.campaignRibbonText || '';
+    res.ratingReviewsText = p.ratingReviewsText || '';
+    res.cartBadgeCount = typeof p.cartBadgeCount === 'number' ? p.cartBadgeCount : undefined;
+    res.productType = p.productType || '';
+    res.fabric = p.fabric || '';
+    res.ageGroup = p.ageGroup || '';
+    res.hasCurveLogo = Boolean(p.hasCurveLogo);
+    res.stretchInfo = p.stretchInfo || '';
+    res.hasZoomInBubble = Boolean(p.hasZoomInBubble);
+    res.zoomBubbleImage = p.zoomBubbleImage || '';
+    res.enableReviews = p.enableReviews !== false;
+    res.enableSizeGuide = p.enableSizeGuide !== false;
+    res.cardAspect = p.cardAspect || 'tall';
+    res.sku = p.sku || ('SKU-' + (p.id || Date.now()));
+    res.soldCount = typeof p.soldCount === 'number' ? p.soldCount : 100;
+
+    return res;
   }
 
   function normalizeBanner(b, idx) {
@@ -283,15 +397,20 @@
         var data = await res.json();
         var rawList = Array.isArray(data) ? data : (data.products || []);
         var normalized = rawList.map(normalizeProduct).filter(Boolean);
+        lastConnectionError = null;
         return normalized;
       } catch (err) {
         console.warn('[Bridge] fetchProducts failed, falling back to direct remote:', err);
         try {
           var r2 = await fetch(DIRECT_REMOTE_BASE + '/products?limit=200');
+          if (!r2.ok) throw new Error('HTTP ' + r2.status);
           var d2 = await r2.json();
           var rawList2 = Array.isArray(d2) ? d2 : (d2.products || []);
-          return rawList2.map(normalizeProduct).filter(Boolean);
+          var normalized2 = rawList2.map(normalizeProduct).filter(Boolean);
+          lastConnectionError = null;
+          return normalized2;
         } catch (e2) {
+          lastConnectionError = e2 || err;
           console.error('[Bridge] direct fetchProducts error:', e2);
           return [];
         }
@@ -344,10 +463,12 @@
         console.warn('[Bridge] fetchContent failed, trying direct remote:', err);
         try {
           var r2 = await fetch(DIRECT_REMOTE_BASE + '/content');
+          if (!r2.ok) throw new Error('HTTP ' + r2.status);
           var d2 = await r2.json();
           return d2.content || d2 || {};
         } catch (e2) {
           console.error('[Bridge] fetchContent error:', e2);
+          if (!lastConnectionError) lastConnectionError = e2 || err;
           return {};
         }
       }
@@ -356,8 +477,7 @@
     updateContentSection: async function(payload) {
       var token = getAuthToken();
       if (!token) {
-        console.warn('[Bridge] updateContentSection called without admin token. Cached locally.');
-        return { success: true, cached: true, message: 'تم الحفظ في الذاكرة المحلية بنجاح' };
+        console.warn('[Bridge] updateContentSection sending update (attempting with available credentials)...');
       }
       try {
         var res = await fetch(getBaseUrl() + '/admin/content', {
@@ -589,6 +709,82 @@
       }
     },
 
+    // LIVE SYNC FROM SERVER (FETCH ONLY)
+    syncFromServer: async function(isManual) {
+      console.log('[Bridge] Fetching live data from server (syncFromServer)...');
+      try {
+        var content = await takhfidBridge.fetchContent();
+        if (content) {
+          if (Array.isArray(content.categories) && content.categories.length > 0) {
+            var normCats = content.categories.map(function(c) { return normalizeCategory(c); }).filter(Boolean);
+            if (normCats.length > 0) {
+              try { localStorage.setItem('altakhfid_categories', JSON.stringify(normCats)); } catch(e) {}
+              if (window.__takhfidSetCategories) window.__takhfidSetCategories(normCats);
+            }
+          }
+          if (Array.isArray(content.banners) && content.banners.length > 0) {
+            var normBanners = content.banners.map(normalizeBanner).filter(Boolean);
+            if (normBanners.length > 0) {
+              try { localStorage.setItem('store_banners_v1', JSON.stringify(normBanners)); } catch(e) {}
+              if (window.__takhfidSetBanners) window.__takhfidSetBanners(normBanners);
+            }
+          }
+          if (Array.isArray(content.campaigns) && content.campaigns.length > 0) {
+            var normCamps = content.campaigns.map(normalizeCampaign).filter(Boolean);
+            if (normCamps.length > 0) {
+              try {
+                localStorage.setItem('trend_campaigns_v2', JSON.stringify(normCamps));
+                localStorage.setItem('altakhfid_campaigns', JSON.stringify(normCamps));
+              } catch(e) {}
+              if (window.__takhfidSetCampaigns) window.__takhfidSetCampaigns(normCamps);
+            }
+          }
+          var serverHashtags = (Array.isArray(content.trendHashtags) && content.trendHashtags.length > 0) ? content.trendHashtags : (Array.isArray(content.hashtags) && content.hashtags.length > 0 ? content.hashtags : null);
+          if (serverHashtags) {
+            try { localStorage.setItem('trend_hashtags_v2', JSON.stringify(serverHashtags)); } catch(e) {}
+            if (window.__takhfidSetHashtags) window.__takhfidSetHashtags(serverHashtags);
+          }
+          if (content.announcements && typeof content.announcements === 'object' && Array.isArray(content.announcements.screens) && content.announcements.screens.length > 0) {
+            var normAnn = normalizeAnnouncementSettings(content.announcements);
+            try { localStorage.setItem('shein_announcement_bar_settings_v1', JSON.stringify(normAnn)); } catch(e) {}
+            if (lastHooks && lastHooks.setAnnouncementSettings) lastHooks.setAnnouncementSettings(normAnn);
+          }
+          if (content.pricingSettings) {
+            try { localStorage.setItem('altakhfid_pricing_settings', JSON.stringify(content.pricingSettings)); } catch(e) {}
+          }
+        }
+
+        var serverProducts = await takhfidBridge.fetchProducts();
+        var prodsCount = 0;
+        if (Array.isArray(serverProducts) && serverProducts.length > 0) {
+          var normProds = serverProducts.map(normalizeProduct).filter(Boolean);
+          if (normProds.length > 0) {
+            try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
+            if (window.__takhfidSetProducts) window.__takhfidSetProducts(normProds);
+            prodsCount = normProds.length;
+          }
+        }
+
+        var orders = await takhfidBridge.fetchOrders();
+        if (Array.isArray(orders) && orders.length > 0) {
+          try { localStorage.setItem('admin_orders_v2', JSON.stringify(orders)); } catch(e) {}
+          if (lastHooks && lastHooks.setOrders) lastHooks.setOrders(orders);
+        }
+
+        hideConnectionErrorBanner();
+        if (isManual) {
+          toast('تم جلب وتحديث ' + prodsCount + ' منتجاً حياً وكافة الأقسام والبانرات من الخادم بنجاح 🔄✨', 'success');
+        }
+        return { success: true, count: prodsCount };
+      } catch (err) {
+        console.error('[Bridge] syncFromServer error:', err);
+        if (isManual) {
+          toast('تعذر جلب البيانات من الخادم، تم الإبقاء على البيانات الحالية ⚠️', 'info');
+        }
+        return { success: false, error: err.message };
+      }
+    },
+
     // 4. COMPREHENSIVE BULK SYNC TO BACKEND
     syncAllToBackend: async function(isManual) {
       console.log('[Bridge] Starting full sync to server...');
@@ -720,9 +916,11 @@
     // 5. BOOTSTRAP INITIALIZATION ON APP LOAD
     initSync: async function(hooks) {
       hooks = hooks || {};
+      lastHooks = hooks;
       if (hooks.showToast) {
         activeToast = hooks.showToast;
       }
+      lastConnectionError = null;
       console.log('[Bridge] Initializing synchronization with server...');
 
       // Auto-cleanup bad localStorage values (e.g. empty array in announcements)
@@ -812,11 +1010,17 @@
 
         // B. Load Products
         var serverProducts = await takhfidBridge.fetchProducts();
+        var prodsLoaded = false;
+        var finalProdCount = 0;
         if (Array.isArray(serverProducts) && serverProducts.length > 0) {
           var normProds = serverProducts.map(normalizeProduct).filter(Boolean);
-          console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
-          if (hooks.setProducts) hooks.setProducts(normProds);
-          try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
+          if (normProds.length > 0) {
+            console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
+            if (hooks.setProducts) hooks.setProducts(normProds);
+            try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
+            prodsLoaded = true;
+            finalProdCount = normProds.length;
+          }
         }
 
         // C. Load Orders if token exists
@@ -826,8 +1030,22 @@
           if (hooks.setOrders) hooks.setOrders(orders);
           try { localStorage.setItem('admin_orders_v2', JSON.stringify(orders)); } catch(e) {}
         }
+
+        if (prodsLoaded) {
+          hideConnectionErrorBanner();
+          console.log('[Bridge] Live sync completed successfully.');
+          // Customer notification removed as requested
+        } else if (lastConnectionError) {
+          var errMsg = lastConnectionError.message || String(lastConnectionError);
+          console.error('[Bridge] Server connection failure:', errMsg);
+          showConnectionErrorBanner(errMsg);
+          toast('فشل الاتصال بالخادم: ' + errMsg + ' (يتم عرض البيانات المؤقتة)', 'error');
+        }
       } catch (err) {
-        console.warn('[Bridge] initSync partial warning:', err);
+        console.error('[Bridge] initSync error:', err);
+        var errText = err.message || String(err);
+        showConnectionErrorBanner(errText);
+        toast('فشل الاتصال بالخادم: ' + errText + ' (يتم عرض البيانات المؤقتة)', 'error');
       }
     }
   };
@@ -835,6 +1053,11 @@
   // Expose Global Bridges for React bundle
   window.__takhfidBridge = takhfidBridge;
   window.__takhfidInitSync = takhfidBridge.initSync.bind(takhfidBridge);
+  window.__takhfidRetrySync = function() {
+    if (window.__takhfidInitSync && lastHooks) {
+      return window.__takhfidInitSync(lastHooks);
+    }
+  };
   window.__takhfidSaveProduct = takhfidBridge.saveProduct.bind(takhfidBridge);
   window.__takhfidSaveCategories = takhfidBridge.saveCategories.bind(takhfidBridge);
   window.__takhfidSaveBanners = takhfidBridge.saveBanners.bind(takhfidBridge);
@@ -845,7 +1068,9 @@
   window.__takhfidSaveRecommendations = takhfidBridge.saveRecommendations.bind(takhfidBridge);
   window.__takhfidCreateOrder = takhfidBridge.createOrder.bind(takhfidBridge);
   window.__takhfidUpdateOrderStatus = takhfidBridge.updateOrderStatus.bind(takhfidBridge);
-  window.__takhfidSyncAll = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
+  window.__takhfidSyncAll = function(isManual) { return takhfidBridge.syncFromServer(isManual); };
+  window.__takhfidSyncFromServer = function(isManual) { return takhfidBridge.syncFromServer(isManual); };
+  window.__takhfidRefresh = function() { return takhfidBridge.syncFromServer(false); };
   window.__takhfidBulkSync = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
   window.__takhfidFetchOrders = takhfidBridge.fetchOrders.bind(takhfidBridge);
   window.syncProductsToServer = function() { return takhfidBridge.syncAllToBackend(true); };
