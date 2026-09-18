@@ -488,7 +488,7 @@ function normalizeCategory(c, existingDefaults) {
     updateContentSection: async function(payload) {
       var token = getAuthToken();
       if (!token) {
-        console.warn('[Bridge] updateContentSection sending update (attempting with available credentials)...');
+        console.warn('[Bridge] updateContentSection: No active auth token. Logging in with admin phone 774952665 is required for remote server sync.');
       }
       try {
         var res = await fetch(getBaseUrl() + '/admin/content', {
@@ -497,6 +497,11 @@ function normalizeCategory(c, existingDefaults) {
           body: JSON.stringify(payload)
         });
         var data = await res.json().catch(function() { return {}; });
+        if (res.status === 401 || (data && data.error && data.error.includes('غير مصرح'))) {
+          console.warn('[Bridge] 401 Unauthorized from server. Admin login needed.');
+          toast('تم الحفظ محلياً. لمزامنة الخادم، يرجى تسجيل الدخول برقمك (774952665) 📱', 'warning');
+          return { success: false, error: 'جلسة الأدمن غير مفعلة', localSaved: true };
+        }
         if (!res.ok || data.success === false) {
           console.warn('[Bridge] updateContentSection proxy failed, trying direct remote:', data);
           var r2 = await fetch(DIRECT_REMOTE_BASE + '/admin/content', {
