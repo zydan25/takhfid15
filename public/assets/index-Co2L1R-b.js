@@ -6209,9 +6209,9 @@ const AccountManagementView = ({
             children: [
               r.jsx("span", {
                 className: "px-3 py-1 rounded-full text-[10.5px] font-black bg-slate-100 text-slate-700 border border-slate-200",
-                onClick: (u && (u.isAdmin || u.role === "admin" || u.phone === "967774952665")) ? () => { if(window.__openAdminDashboard) window.__openAdminDashboard(); if(typeof e === "function") e(); } : undefined,
-                className: (u && (u.isAdmin || u.role === "admin" || u.phone === "967774952665")) ? "px-3 py-1.5 rounded-full text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 border border-amber-300 shadow-xs cursor-pointer active:scale-95 transition-all flex items-center gap-1" : "px-3 py-1 rounded-full text-[10.5px] font-black bg-slate-100 text-slate-700 border border-slate-200",
-                children: (u && (u.isAdmin || u.role === "admin" || u.phone === "967774952665")) ? "👑 لوحة التحكم والإدارة ←" : "عميل مميز"
+                onClick: (u && (u.isAdmin || u.role === "admin" || (u.phone && (u.phone.includes("774952665") || u.phone.includes("967774952665"))))) ? () => { if(window.__openAdminDashboard) window.__openAdminDashboard(); if(typeof e === "function") e(); } : undefined,
+                className: (u && (u.isAdmin || u.role === "admin" || (u.phone && (u.phone.includes("774952665") || u.phone.includes("967774952665"))))) ? "px-3 py-1.5 rounded-full text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 border border-amber-300 shadow-xs cursor-pointer active:scale-95 transition-all flex items-center gap-1" : "px-3 py-1 rounded-full text-[10.5px] font-black bg-slate-100 text-slate-700 border border-slate-200",
+                children: (u && (u.isAdmin || u.role === "admin" || (u.phone && (u.phone.includes("774952665") || u.phone.includes("967774952665"))))) ? "👑 لوحة التحكم والإدارة ←" : "عميل مميز"
               }),
               r.jsxs("button", {
                 type: "button",
@@ -6274,7 +6274,7 @@ const AccountManagementView = ({
       }),
 
       /* ADMIN DASHBOARD ENTRY CARD */
-(u && (u.isAdmin || u.role === "admin" || u.phone === "967774952665")) ? r.jsxs("div", {
+(u && (u.isAdmin || u.role === "admin" || (u.phone && (u.phone.includes("774952665") || u.phone.includes("967774952665"))))) ? r.jsxs("div", {
   id: "admin-quick-access-card",
   className: "bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white rounded-2xl p-4 shadow-md border border-purple-800/60 flex items-center justify-between text-right cursor-pointer hover:shadow-lg transition-all active:scale-98",
   onClick: () => {
