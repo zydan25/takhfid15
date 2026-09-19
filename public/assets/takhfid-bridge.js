@@ -9,33 +9,6 @@
 (function() {
   'use strict';
 
-  // Server-authoritative cache schema. Old local catalog/content snapshots are
-  // invalidated once when this schema changes; the server repopulates them.
-  var SERVER_CACHE_VERSION = 'server-authoritative-v2';
-  function prepareServerCache() {
-    try {
-      var current = localStorage.getItem('__takhfid_server_cache_version');
-      if (current === SERVER_CACHE_VERSION) return;
-      [
-        'altakhfid_products',
-        'altakhfid_categories',
-        'store_banners_v1',
-        'trend_campaigns_v2',
-        'altakhfid_campaigns',
-        'trend_hashtags_v2',
-        'store_category_tabs_config_v2',
-        'store_recommendation_tabs_v2',
-        'admin_orders_v2',
-        'admin_orders_v3',
-        'shein_announcement_bar_settings_v1'
-      ].forEach(function(key) {
-        try { localStorage.removeItem(key); } catch (e) {}
-      });
-      localStorage.setItem('__takhfid_server_cache_version', SERVER_CACHE_VERSION);
-    } catch (e) {}
-  }
-  prepareServerCache();
-
   function getCustomApiBaseUrl() {
     try {
       if (typeof window !== 'undefined') {
@@ -55,48 +28,6 @@
 
   var lastHooks = null;
   var lastConnectionError = null;
-
-  // Centralized network helper used by all server-authoritative write operations.
-  // Adds timeout + bounded retry without changing the server contract.
-  async function serverFetch(url, options) {
-    var cfg = (typeof window !== 'undefined' && window.TAKHFID_RUNTIME_CONFIG) || {};
-    var timeoutMs = Number(cfg.apiTimeoutMs);
-    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) timeoutMs = 20000;
-    var retryCount = Number(cfg.apiRetryCount);
-    if (!Number.isFinite(retryCount) || retryCount < 0) retryCount = 0;
-    retryCount = Math.min(Math.floor(retryCount), 3);
-
-    var attempt = 0;
-    while (true) {
-      var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      var timer = null;
-      try {
-        var init = Object.assign({}, options || {});
-        if (controller) {
-          init.signal = controller.signal;
-          timer = setTimeout(function() {
-            try { controller.abort(); } catch (e) {}
-          }, timeoutMs);
-        }
-
-        var response = await fetch(url, init);
-        if (timer) clearTimeout(timer);
-
-        if (response && response.status >= 500 && attempt < retryCount) {
-          attempt += 1;
-          continue;
-        }
-        return response;
-      } catch (err) {
-        if (timer) clearTimeout(timer);
-        if (attempt < retryCount) {
-          attempt += 1;
-          continue;
-        }
-        throw err;
-      }
-    }
-  }
 
   function showConnectionErrorBanner(errMsg) {
     if (typeof document === 'undefined') return;
@@ -223,234 +154,52 @@
   }
 
   // --- SAFE DATA NORMALIZATION ---
-  function finiteNumber(value, fallback) {
-    var n = Number(value);
-    return Number.isFinite(n) ? n : (fallback || 0);
-  }
-
-  function baseSarFromProduct(p, fallbackPrice) {
-    var currency = String(p && p.inputCurrency || '').toUpperCase();
-    var baseSar = finiteNumber(p && p.basePriceSar, NaN);
-    if (Number.isFinite(baseSar) && baseSar > 0) return baseSar;
-
-    var raw = finiteNumber(fallbackPrice, 0);
-    if (currency === 'YER' && finiteNumber(p && p.baseNorthPriceYer, 0) > 0) {
-      return finiteNumber(p.baseNorthPriceYer, 0) / 140;
-    }
-    if (currency === 'USD') {
-      return raw * 3.75;
-    }
-    return raw;
-  }
-
   function normalizeProduct(p) {
     if (!p) return null;
-    var res = Object.assign({}, p);
-
-    var originalRaw = finiteNumber(p.originalPrice, finiteNumber(p.price, 0));
-    var discountRaw = finiteNumber(p.discountPrice, finiteNumber(p.price, originalRaw));
-    var origSar = baseSarFromProduct(p, originalRaw);
-    var discSar = baseSarFromProduct(p, discountRaw);
-
-    if (!Number.isFinite(origSar) || origSar < 0) origSar = 0;
-    if (!Number.isFinite(discSar) || discSar < 0) discSar = 0;
-    if (origSar > 0 && discSar > origSar) origSar = discSar;
-
-    var discPerc = Number.isFinite(Number(p.discountPercentage))
-      ? finiteNumber(p.discountPercentage, 0)
-      : (origSar > discSar && origSar > 0 ? Math.round(((origSar - discSar) / origSar) * 100) : 0);
+    var discPrice = typeof p.discountPrice === 'number' ? p.discountPrice : (typeof p.price === 'number' ? p.price : (typeof p.originalPrice === 'number' ? p.originalPrice : 45));
+    var origPrice = typeof p.originalPrice === 'number' ? p.originalPrice : (typeof p.price === 'number' ? Math.round(p.price * 1.35) : Math.round(discPrice * 1.35));
+    if (origPrice < discPrice) origPrice = Math.round(discPrice * 1.35);
+    var discPerc = typeof p.discountPercentage === 'number' ? p.discountPercentage : (origPrice > discPrice ? Math.round(((origPrice - discPrice) / origPrice) * 100) : 0);
 
     var cat = p.category || (Array.isArray(p.categories) && p.categories[1] ? p.categories[1] : 'women');
     var cats = Array.isArray(p.categories) && p.categories.length > 0 ? p.categories : ['all', cat];
 
-    var img = p.image || (Array.isArray(p.images) && p.images[0]) || (Array.isArray(p.galleryImages) && p.galleryImages[0]) || '';
-    var gallery = Array.isArray(p.galleryImages) && p.galleryImages.length > 0
-      ? p.galleryImages
-      : (Array.isArray(p.images) && p.images.length > 0 ? p.images : (img ? [img] : []));
+    var img = p.image || (Array.isArray(p.images) && p.images[0]) || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80';
+    var gallery = Array.isArray(p.galleryImages) && p.galleryImages.length > 0 ? p.galleryImages : [img];
 
-    var colors = Array.isArray(p.colors) ? p.colors.map(function(color) {
-      return normalizeColor(color, img);
-    }).filter(Boolean) : [];
+    var colors = Array.isArray(p.colors) && p.colors.length > 0 ? p.colors : [{ name: 'أسود كلاسيك', hex: '#1e293b' }];
+    var sizes = Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes : ['M', 'L', 'XL'];
 
-    var sizes = Array.isArray(p.sizes) ? p.sizes : [];
-    var tags = Array.isArray(p.tags) ? p.tags : (p.tags ? [String(p.tags)] : []);
-    var trends = Array.isArray(p.trends) ? p.trends : (p.trendTag ? [String(p.trendTag)] : []);
-    var hasRating = Number.isFinite(Number(p.rating)) && Number(p.rating) > 0;
-    var reviewCount = Number.isFinite(Number(p.reviewsCount)) ? Math.max(0, Number(p.reviewsCount)) : 0;
-    var soldCount = Number.isFinite(Number(p.soldCount)) ? Math.max(0, Number(p.soldCount)) : 0;
-
-    res.id = String(p.id || ('p-' + Date.now()));
-    res.name = String(p.name || p.title || 'صنف جديد');
-    res.nameEn = p.nameEn !== undefined ? String(p.nameEn) : '';
-    res.brand = p.brand !== undefined ? String(p.brand) : '';
-    res.category = String(cat);
-    res.categoryId = String(p.categoryId || cat);
-    res.categories = cats;
-    res.subCategory = String(p.subCategory || '');
-    res.subCategories = Array.isArray(p.subCategories) ? p.subCategories : [];
-    res.sideCategories = Array.isArray(p.sideCategories) ? p.sideCategories : [];
-    res.sideSubCategories = Array.isArray(p.sideSubCategories) ? p.sideSubCategories : [];
-    res.styleTabs = Array.isArray(p.styleTabs) ? p.styleTabs : [];
-    res.originalPrice = Number(origSar.toFixed(2));
-    res.discountPrice = Number(discSar.toFixed(2));
-    res.basePriceSar = Number(discSar.toFixed(2));
-    res.baseOriginalPriceSar = Number(origSar.toFixed(2));
-    res.baseNorthPriceYer = finiteNumber(p.baseNorthPriceYer, discSar ? Math.round(discSar * 140) : 0);
-    res.baseSouthPriceYer = finiteNumber(p.baseSouthPriceYer, discSar ? Math.round(discSar * 535) : 0);
-    res.discountPercentage = Math.max(0, Math.min(100, Number(discPerc) || 0));
-    res.price = res.discountPrice;
-    res.rating = hasRating ? finiteNumber(p.rating, 0) : 0;
-    res.reviewsCount = reviewCount;
-    res.enableReviews = p.enableReviews !== false && hasRating;
-    res.image = String(img);
-    res.images = Array.isArray(p.images) ? p.images : gallery;
-    res.gallery = gallery;
-    res.galleryImages = gallery;
-    res.colors = colors;
-    res.sizes = sizes;
-    res.tags = tags;
-    res.trends = trends;
-    res.inStock = p.inStock !== false && (p.stock === undefined || p.stock === null || Number(p.stock) > 0);
-    res.stock = p.stock !== undefined && p.stock !== null && Number.isFinite(Number(p.stock)) ? Math.max(0, Number(p.stock)) : null;
-
-    // Preserve every modern product customization without inventing fake values.
-    res.description = p.description !== undefined ? String(p.description) : '';
-    res.material = p.material !== undefined ? String(p.material) : '';
-    res.materials = Array.isArray(p.materials) ? p.materials : [];
-    res.badgeText = p.badgeText !== undefined ? String(p.badgeText) : '';
-    res.trendBadge = p.trendBadge !== undefined ? String(p.trendBadge) : '';
-    res.salesText = p.salesText !== undefined ? String(p.salesText) : '';
-    res.couponText = p.couponText !== undefined ? String(p.couponText) : '';
-    res.campaignRibbonText = p.campaignRibbonText !== undefined ? String(p.campaignRibbonText) : '';
-    res.bestSellerText = p.bestSellerText !== undefined ? String(p.bestSellerText) : '';
-    res.ratingReviewsText = p.ratingReviewsText !== undefined ? String(p.ratingReviewsText) : '';
-    res.cartBadgeCount = Number.isFinite(Number(p.cartBadgeCount)) ? Number(p.cartBadgeCount) : 0;
-    res.storeBadgeTag = p.storeBadgeTag !== undefined
-      ? String(p.storeBadgeTag)
-      : (p.badgeText !== undefined ? String(p.badgeText) : '');
-    res.productType = p.productType !== undefined ? String(p.productType) : '';
-    res.fabric = p.fabric !== undefined ? String(p.fabric) : '';
-    res.ageGroup = p.ageGroup !== undefined ? String(p.ageGroup) : '';
-    res.details = Array.isArray(p.details) ? p.details : [];
-    res.isRecommended = Boolean(p.isRecommended);
-    res.isMostPopular = Boolean(p.isMostPopular);
-    res.isBestSeller = Boolean(p.isBestSeller);
-    res.isTrend = Boolean(p.isTrend || trends.length > 0);
-    res.isLocalFastShipping = Boolean(p.isLocalFastShipping);
-    res.hasCurveLogo = Boolean(p.hasCurveLogo);
-    res.stretchInfo = p.stretchInfo !== undefined ? String(p.stretchInfo) : '';
-    res.hasZoomInBubble = Boolean(p.hasZoomInBubble);
-    res.zoomBubbleImage = p.zoomBubbleImage !== undefined ? String(p.zoomBubbleImage) : '';
-    res.cardAspect = p.cardAspect || 'tall';
-    res.sku = p.sku ? String(p.sku) : '';
-    res.soldCount = soldCount;
-
-    res.isNewBadgeEnabled = p.isNewBadgeEnabled === true;
-    res.newBadgeText = p.newBadgeText !== undefined ? String(p.newBadgeText) : '';
-    res.newBadgeTextColor = p.newBadgeTextColor || '#ffffff';
-    res.newBadgeBgColor = p.newBadgeBgColor || '#10b981';
-    res.newBadgeDurationDays = finiteNumber(p.newBadgeDurationDays, 7);
-
-    res.hasCoupon = p.hasCoupon === true;
-    res.couponDiscountType = p.couponDiscountType || 'percentage';
-    res.couponDiscountValue = finiteNumber(p.couponDiscountValue, 0);
-    res.couponMaxCap = Number.isFinite(Number(p.couponMaxCap)) ? Number(p.couponMaxCap) : null;
-    res.couponCustomLabel = p.couponCustomLabel !== undefined ? String(p.couponCustomLabel) : '';
-    res.hasPromotionalTiers = Boolean(p.hasPromotionalTiers);
-    res.promotionalTiersText = p.promotionalTiersText !== undefined ? String(p.promotionalTiersText) : '';
-    res.hasCouponPriceCustomStyle = p.hasCouponPriceCustomStyle === true;
-    res.couponPriceBgColor = p.couponPriceBgColor || '#fff1f2';
-    res.couponPriceTextColor = p.couponPriceTextColor || '#e11d48';
-    res.couponPriceDividerColor = p.couponPriceDividerColor || '#f43f5e';
-
-    res.isSavingBannerEnabled = p.isSavingBannerEnabled === true;
-    res.savingBannerPrefix = p.savingBannerPrefix !== undefined ? String(p.savingBannerPrefix) : '';
-    res.savingBannerLeftText = p.savingBannerLeftText !== undefined ? String(p.savingBannerLeftText) : '';
-    res.savingBannerBgColor = p.savingBannerBgColor || 'rgba(0, 0, 0, 0.78)';
-    res.savingBannerTextColor = p.savingBannerTextColor || '#ffffff';
-    res.savingBannerPriceColor = p.savingBannerPriceColor || '#facc15';
-
-    res.showCardShipping = p.showCardShipping === true;
-    res.cardShippingText = p.cardShippingText !== undefined ? String(p.cardShippingText) : '';
-    
-    res.floatingLogos = p.floatingLogos && typeof p.floatingLogos === 'object' ? p.floatingLogos : undefined;
-    res.modelWearInfo = p.modelWearInfo && typeof p.modelWearInfo === 'object' ? p.modelWearInfo : undefined;
-    res.customInfoItems = Array.isArray(p.customInfoItems) ? p.customInfoItems : [];
-    res.campaignIds = Array.isArray(p.campaignIds) ? p.campaignIds : [];
-    res.department = p.department !== undefined ? String(p.department) : '';
-    res.inputCurrency = p.inputCurrency || 'SAR';
-    res.videoUrl = p.videoUrl || '';
-    res.washingInstructions = p.washingInstructions !== undefined ? String(p.washingInstructions) : '';
-    res.tags = tags;
-    res.hashtags = tags;
-
-    return res;
-  }
-
-  function normalizeColor(color, fallbackImage) {
-    if (typeof color === 'string') {
-      var name = String(color).trim();
-      return {
-        name: name || 'لون',
-        hex: '#1e293b',
-        image: fallbackImage || '',
-        images: fallbackImage ? [fallbackImage] : []
-      };
-    }
-    if (color && typeof color === 'object') {
-      var imgs = Array.isArray(color.images) && color.images.length
-        ? color.images.slice()
-        : (color.image ? [color.image] : (fallbackImage ? [fallbackImage] : []));
-      return Object.assign({}, color, {
-        name: String(color.name || 'لون'),
-        hex: String(color.hex || '#1e293b'),
-        image: String(color.image || imgs[0] || ''),
-        images: imgs
-      });
-    }
     return {
-      name: 'لون',
-      hex: '#1e293b',
-      image: fallbackImage || '',
-      images: fallbackImage ? [fallbackImage] : []
+      id: String(p.id || ('p-' + Date.now())),
+      name: String(p.name || p.title || 'صنف جديد'),
+      brand: String(p.brand || 'SHEIN'),
+      category: String(cat),
+      categories: cats,
+      subCategory: String(p.subCategory || 'عام'),
+      originalPrice: Number(origPrice),
+      discountPrice: Number(discPrice),
+      discountPercentage: Number(discPerc),
+      price: Number(discPrice),
+      rating: typeof p.rating === 'number' ? p.rating : 4.8,
+      reviewsCount: typeof p.reviewsCount === 'number' ? p.reviewsCount : 120,
+      image: String(img),
+      galleryImages: gallery,
+      colors: colors,
+      sizes: sizes,
+      inStock: p.inStock !== false,
+      description: String(p.description || ''),
+      couponTag: String(p.couponTag || 'بعد القسيمة'),
+      salesText: String(p.salesText || '+100. تم بيع'),
+      storeBadgeTag: String(p.storeBadgeTag || 'متجر معتمد 🏪'),
+      cardAspect: p.cardAspect || 'standard',
+      isBestSeller: Boolean(p.isBestSeller),
+      isNewBadgeEnabled: p.isNewBadgeEnabled !== false,
+      newBadgeText: p.newBadgeText || 'NEW',
+      sku: p.sku || ('SKU-' + (p.id || Date.now())),
+      soldCount: typeof p.soldCount === 'number' ? p.soldCount : 100
     };
   }
-
-  function normalizeOrder(order) {
-    if (!order) return null;
-    var rawItems = Array.isArray(order.items) ? order.items : [];
-    var items = rawItems.map(function(item, index) {
-      var p = item && item.product ? item.product : {
-        id: item && (item.productId || item.id) || ('order-product-' + index),
-        name: item && (item.name || item.title) || 'منتج غير متوفر',
-        sku: item && item.sku || '',
-        price: finiteNumber(item && item.price, 0),
-        discountPrice: finiteNumber(item && item.price, 0),
-        image: item && (item.imageUrl || item.image) || ''
-      };
-      return Object.assign({}, item || {}, {
-        id: String(item && (item.id || item.productId) || p.id || ('item-' + index)),
-        productId: String(item && (item.productId || item.id) || p.id || ('item-' + index)),
-        quantity: Math.max(1, Math.round(finiteNumber(item && item.quantity, 1))),
-        selectedSize: String(item && (item.selectedSize || item.size) || ''),
-        selectedColor: normalizeColor(item && (item.selectedColor || item.color), p && p.image || item && (item.imageUrl || item.image) || ''),
-        product: normalizeProduct(p)
-      });
-    });
-    return Object.assign({}, order, {
-      id: String(order.id || order.orderId || ('order-' + Date.now())),
-      orderId: String(order.orderId || order.id || ''),
-      customerName: String(order.customerName || 'عميل المتجر'),
-      customerPhone: String(order.customerPhone || ''),
-      governorate: String(order.governorate || 'صنعاء'),
-      shippingAddress: String(order.shippingAddress || order.deliveryAddress || ''),
-      deliveryNotes: String(order.deliveryNotes || order.notes || ''),
-      totalAmount: finiteNumber(order.totalAmount, 0),
-      items: items,
-      status: String(order.status || 'pending_payment')
-    });
-  }
-
 
   function normalizeBanner(b, idx) {
     if (!b) return null;
@@ -577,133 +326,33 @@
       activeToast = fn;
     },
 
-    function extractProductList(payload) {
-    if (Array.isArray(payload)) return payload;
-    if (!payload || typeof payload !== 'object') return [];
-
-    var candidates = [
-      payload.products,
-      payload.items,
-      payload.results,
-      payload.data && payload.data.products,
-      payload.data && payload.data.items,
-      payload.data && payload.data.results,
-      Array.isArray(payload.data) ? payload.data : null,
-      payload.result && payload.result.products,
-      payload.result && payload.result.items,
-      payload.payload && payload.payload.products,
-      payload.payload && payload.payload.items
-    ];
-
-    for (var i = 0; i < candidates.length; i++) {
-      if (Array.isArray(candidates[i])) return candidates[i];
-    }
-    return [];
-  }
-
-  function parseJsonResponseValue(value) {
-    if (typeof value === 'string') {
-      try { return JSON.parse(value); } catch (e) { return null; }
-    }
-    return value;
-  }
-
-  async function fetchProductsViaCapacitor(url) {
-    try {
-      var plugins = typeof window !== 'undefined' && window.Capacitor && window.Capacitor.Plugins;
-      var http = plugins && plugins.CapacitorHttp;
-      if (!http || typeof http.get !== 'function') return null;
-
-      var result = await http.get({
-        url: url,
-        headers: { Accept: 'application/json' },
-        connectTimeout: 20000,
-        readTimeout: 20000
-      });
-
-      var status = Number(result && result.status);
-      if (status && (status < 200 || status >= 300)) {
-        throw new Error('HTTP ' + status);
-      }
-      return parseJsonResponseValue(result && result.data);
-    } catch (e) {
-      console.warn('[Bridge] CapacitorHttp products request failed:', e);
-      return null;
-    }
-  }
-
-  async function fetchProductsViaFetch(url) {
-    var res = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return await res.json();
-  }
-
-  function productCandidatesFromPayload(payload) {
-    var list = extractProductList(payload);
-    var normalized = list.map(normalizeProduct).filter(Boolean);
-
-    if (normalized.length > 0) return normalized;
-
-    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
-      var keys = Object.keys(payload).slice(0, 20).join(',');
-      console.warn('[Bridge] Products response contained no recognizable list. Keys:', keys);
-    }
-    return [];
-  }
-
-  // 1. PRODUCTS API
-  fetchProducts: async function() {
-    var urls = [
-      getBaseUrl() + '/products',
-      getBaseUrl() + '/products?limit=200',
-      getBaseUrl() + '/products?page=1&limit=200'
-    ];
-
-    var lastErr = null;
-    var nativeFirst = isNativePlatform();
-
-    for (var i = 0; i < urls.length; i++) {
-      var url = urls[i];
-
+    // 1. PRODUCTS API
+    fetchProducts: async function() {
       try {
-        var data = nativeFirst ? await fetchProductsViaCapacitor(url) : null;
-        if (data === null) {
-          data = await fetchProductsViaFetch(url);
-        }
-
-        var normalized = productCandidatesFromPayload(data);
-        if (normalized.length > 0) {
-          lastConnectionError = null;
-          console.log('[Bridge] Products loaded from server:', normalized.length, url);
-          return normalized;
-        }
-
-        console.warn('[Bridge] Products endpoint returned no recognizable products:', url);
+        var res = await fetch(getBaseUrl() + '/products?limit=200');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var data = await res.json();
+        var rawList = Array.isArray(data) ? data : (data.products || []);
+        var normalized = rawList.map(normalizeProduct).filter(Boolean);
+        lastConnectionError = null;
+        return normalized;
       } catch (err) {
-        lastErr = err;
-        console.warn('[Bridge] fetchProducts attempt failed:', url, err);
-      }
-    }
-
-    // Final direct-fetch fallback in case the native bridge is unavailable.
-    for (var j = 0; j < urls.length; j++) {
-      try {
-        var directData = await fetchProductsViaFetch(urls[j]);
-        var directNormalized = productCandidatesFromPayload(directData);
-        if (directNormalized.length > 0) {
+        console.warn('[Bridge] fetchProducts failed, falling back to direct remote:', err);
+        try {
+          var r2 = await fetch(DIRECT_REMOTE_BASE + '/products?limit=200');
+          if (!r2.ok) throw new Error('HTTP ' + r2.status);
+          var d2 = await r2.json();
+          var rawList2 = Array.isArray(d2) ? d2 : (d2.products || []);
+          var normalized2 = rawList2.map(normalizeProduct).filter(Boolean);
           lastConnectionError = null;
-          console.log('[Bridge] Products loaded via direct fetch fallback:', directNormalized.length, urls[j]);
-          return directNormalized;
+          return normalized2;
+        } catch (e2) {
+          lastConnectionError = e2 || err;
+          console.error('[Bridge] direct fetchProducts error:', e2);
+          return [];
         }
-      } catch (e2) {
-        lastErr = e2;
       }
-    }
-
-    lastConnectionError = lastErr || new Error('لم يرجع الخادم أي قائمة منتجات قابلة للقراءة');
-    console.error('[Bridge] Product loading failed on all compatible requests:', lastConnectionError);
-    return null;
-  },
+    },
 
     saveProduct: async function(product, action) {
       if (!product || !product.id) return { success: false, error: 'بيانات المنتج غير مكتملة' };
@@ -722,21 +371,21 @@
       var safeProd = normalizeProduct(product);
 
       try {
-        var res = await serverFetch(url, {
+        var res = await fetch(url, {
           method: method,
           headers: getAuthHeaders(true),
           body: act === 'delete' ? undefined : JSON.stringify(safeProd)
         });
         var data = await res.json().catch(function() { return {}; });
         if (!res.ok || data.success === false) {
-          return { success: false, error: data.error || ('HTTP ' + res.status) };
+          console.warn('[Bridge] saveProduct error:', data.error || ('HTTP ' + res.status));
+          return { success: false, error: data.error || 'فشل حفظ المنتج على الخادم' };
         }
-        return {
-          success: true,
-          product: normalizeProduct(Object.assign({}, safeProd, data.product || {}))
-        };
+        console.log('[Bridge] Product ' + product.id + ' saved successfully:', act);
+        return { success: true, product: data.product || safeProd };
       } catch (err) {
-        return { success: false, error: err.message || String(err) };
+        console.error('[Bridge] saveProduct network exception:', err);
+        return { success: false, error: err.message };
       }
     },
 
@@ -765,51 +414,57 @@
     updateContentSection: async function(payload) {
       var token = getAuthToken();
       if (!token) {
-        return { success: false, error: 'جلسة الإدارة غير مفعلة. سجّل الدخول أولاً.' };
+        console.warn('[Bridge] updateContentSection called without admin token. Cached locally.');
+        return { success: true, cached: true, message: 'تم الحفظ في الذاكرة المحلية بنجاح' };
       }
       try {
-        var res = await serverFetch(getBaseUrl() + '/admin/content', {
+        var res = await fetch(getBaseUrl() + '/admin/content', {
           method: 'PUT',
           headers: getAuthHeaders(true),
           body: JSON.stringify(payload)
         });
         var data = await res.json().catch(function() { return {}; });
-        if (res.ok && data.success !== false) return { success: true, data: data };
-
-        var r2 = await serverFetch(DIRECT_REMOTE_BASE + '/admin/content', {
-          method: 'PUT',
-          headers: getAuthHeaders(true),
-          body: JSON.stringify(payload)
-        });
-        var d2 = await r2.json().catch(function() { return {}; });
-        if (!r2.ok || d2.success === false) {
-          return { success: false, error: d2.error || ('HTTP ' + r2.status) };
-        }
-        return { success: true, data: d2 };
-      } catch (err) {
-        try {
-          var r3 = await serverFetch(DIRECT_REMOTE_BASE + '/admin/content', {
+        if (!res.ok || data.success === false) {
+          console.warn('[Bridge] updateContentSection proxy failed, trying direct remote:', data);
+          var r2 = await fetch(DIRECT_REMOTE_BASE + '/admin/content', {
             method: 'PUT',
             headers: getAuthHeaders(true),
             body: JSON.stringify(payload)
           });
-          var d3 = await r3.json().catch(function() { return {}; });
-          if (!r3.ok || d3.success === false) {
-            return { success: false, error: d3.error || ('HTTP ' + r3.status) };
+          var d2 = await r2.json().catch(function() { return {}; });
+          if (!r2.ok || d2.success === false) {
+            return { success: false, error: d2.error || ('HTTP ' + r2.status) };
           }
-          return { success: true, data: d3 };
+          return { success: true, data: d2 };
+        }
+        return { success: true, data: data };
+      } catch (err) {
+        console.warn('[Bridge] updateContentSection network error, trying direct remote:', err);
+        try {
+          var r2 = await fetch(DIRECT_REMOTE_BASE + '/admin/content', {
+            method: 'PUT',
+            headers: getAuthHeaders(true),
+            body: JSON.stringify(payload)
+          });
+          var d2 = await r2.json().catch(function() { return {}; });
+          if (!r2.ok || d2.success === false) {
+            return { success: false, error: d2.error || ('HTTP ' + r2.status) };
+          }
+          return { success: true, data: d2 };
         } catch (e2) {
-          return { success: false, error: e2.message || String(e2) };
+          console.error('[Bridge] updateContentSection fatal network error:', e2);
+          return { success: false, error: e2.message };
         }
       }
     },
-
     saveCategories: async function(categories) {
       if (!Array.isArray(categories)) return { success: false };
       var safe = categories.map(function(c) { return normalizeCategory(c); }).filter(Boolean);
+      try {
+        localStorage.setItem('altakhfid_categories', JSON.stringify(safe));
+      } catch(e) {}
       var res = await this.updateContentSection({ categories: safe });
       if (res.success) {
-        try { localStorage.setItem('altakhfid_categories', JSON.stringify(safe)); } catch(e) {}
         console.log('[Bridge] Categories saved to server successfully (' + safe.length + ')');
       }
       return res;
@@ -818,9 +473,11 @@
     saveBanners: async function(banners) {
       if (!Array.isArray(banners)) return { success: false };
       var safe = banners.map(normalizeBanner).filter(Boolean);
+      try {
+        localStorage.setItem('store_banners_v1', JSON.stringify(safe));
+      } catch(e) {}
       var res = await this.updateContentSection({ banners: safe });
       if (res.success) {
-        try { localStorage.setItem('store_banners_v1', JSON.stringify(safe)); } catch(e) {}
         console.log('[Bridge] Banners saved to server successfully (' + safe.length + ')');
       }
       return res;
@@ -829,12 +486,12 @@
     saveCampaigns: async function(campaigns) {
       if (!Array.isArray(campaigns)) return { success: false };
       var safe = campaigns.map(normalizeCampaign).filter(Boolean);
+      try {
+        localStorage.setItem('trend_campaigns_v2', JSON.stringify(safe));
+        localStorage.setItem('altakhfid_campaigns', JSON.stringify(safe));
+      } catch(e) {}
       var res = await this.updateContentSection({ campaigns: safe });
       if (res.success) {
-        try {
-          localStorage.setItem('trend_campaigns_v2', JSON.stringify(safe));
-          localStorage.setItem('altakhfid_campaigns', JSON.stringify(safe));
-        } catch(e) {}
         console.log('[Bridge] Campaigns saved to server successfully (' + safe.length + ')');
       }
       return res;
@@ -842,9 +499,11 @@
 
     saveHashtags: async function(hashtags) {
       if (!Array.isArray(hashtags)) return { success: false };
+      try {
+        localStorage.setItem('trend_hashtags_v2', JSON.stringify(hashtags));
+      } catch(e) {}
       var res = await this.updateContentSection({ trendHashtags: hashtags, hashtags: hashtags });
       if (res.success) {
-        try { localStorage.setItem('trend_hashtags_v2', JSON.stringify(hashtags)); } catch(e) {}
         console.log('[Bridge] Hashtags saved to server successfully (' + hashtags.length + ')');
       }
       return res;
@@ -852,37 +511,34 @@
 
     saveAnnouncements: async function(announcements) {
       var safe = normalizeAnnouncementSettings(announcements);
+      try {
+        localStorage.setItem('shein_announcement_bar_settings_v1', JSON.stringify(safe));
+      } catch(e) {}
       var res = await this.updateContentSection({ announcements: safe });
       if (res.success) {
-        try { localStorage.setItem('shein_announcement_bar_settings_v1', JSON.stringify(safe)); } catch(e) {}
         console.log('[Bridge] Announcements saved to server successfully');
       }
       return res;
     },
 
     saveCategoryTabsConfig: async function(config) {
+      try {
+        localStorage.setItem('store_category_tabs_config_v2', JSON.stringify(config));
+      } catch(e) {}
       var res = await this.updateContentSection({ categoryTabsConfig: config });
       if (res.success) {
-        try { localStorage.setItem('store_category_tabs_config_v2', JSON.stringify(config)); } catch(e) {}
         console.log('[Bridge] Category tabs config saved to server successfully');
       }
       return res;
     },
 
     saveRecommendations: async function(tabs) {
+      try {
+        localStorage.setItem('store_recommendation_tabs_v2', JSON.stringify(tabs));
+      } catch(e) {}
       var res = await this.updateContentSection({ recommendationTabs: tabs });
       if (res.success) {
-        try { localStorage.setItem('store_recommendation_tabs_v2', JSON.stringify(tabs)); } catch(e) {}
         console.log('[Bridge] Recommendation tabs saved to server successfully');
-      }
-      return res;
-    },
-
-    savePricingSettings: async function(settings) {
-      var res = await this.updateContentSection({ pricingSettings: settings });
-      if (res.success) {
-        try { localStorage.setItem('pricing_settings_v2', JSON.stringify(settings)); } catch(e) {}
-        console.log('[Bridge] Pricing settings saved to server successfully');
       }
       return res;
     },
@@ -919,7 +575,7 @@
       };
 
       try {
-        var res = await serverFetch(getBaseUrl() + '/orders', {
+        var res = await fetch(getBaseUrl() + '/orders', {
           method: 'POST',
           headers: getAuthHeaders(true),
           body: JSON.stringify(payload)
@@ -963,26 +619,22 @@
       var token = getAuthToken();
       if (!token) return [];
       try {
-        var res = await serverFetch(getBaseUrl() + '/orders', {
+        var res = await fetch(getBaseUrl() + '/orders', {
           headers: getAuthHeaders(false)
         });
-        if (!res.ok) {
-          throw new Error('HTTP ' + res.status);
-        }
+        if (!res.ok) return [];
         var data = await res.json();
-        var raw = Array.isArray(data) ? data : (data.orders || []);
-        return raw.map(normalizeOrder).filter(Boolean);
+        return Array.isArray(data) ? data : (data.orders || []);
       } catch (err) {
-        lastConnectionError = err;
         console.warn('[Bridge] fetchOrders error:', err);
-        return null;
+        return [];
       }
     },
 
     updateOrderStatus: async function(orderId, status) {
       if (!orderId || !status) return { success: false };
       try {
-        var res = await serverFetch(getBaseUrl() + '/orders/' + encodeURIComponent(orderId) + '/status', {
+        var res = await fetch(getBaseUrl() + '/orders/' + encodeURIComponent(orderId) + '/status', {
           method: 'PATCH',
           headers: getAuthHeaders(true),
           body: JSON.stringify({ status: status })
@@ -992,28 +644,6 @@
       } catch (err) {
         console.error('[Bridge] updateOrderStatus error:', err);
         return { success: false, error: err.message };
-      }
-    },
-
-    updateOrderAddress: async function(orderId, shippingAddress, deliveryNotes) {
-      if (!orderId) return { success: false, error: 'معرف الطلب غير موجود' };
-      try {
-        var res = await serverFetch(getBaseUrl() + '/orders/' + encodeURIComponent(orderId), {
-          method: 'PUT',
-          headers: getAuthHeaders(true),
-          body: JSON.stringify({
-            shippingAddress: shippingAddress || '',
-            deliveryNotes: deliveryNotes || ''
-          })
-        });
-        var data = await res.json().catch(function() { return {}; });
-        if (!res.ok || data.success === false) {
-          return { success: false, error: data.error || ('HTTP ' + res.status) };
-        }
-        return { success: true, order: data.order || null };
-      } catch (err) {
-        console.error('[Bridge] updateOrderAddress error:', err);
-        return { success: false, error: err.message || String(err) };
       }
     },
 
@@ -1145,75 +775,6 @@
       }
     },
 
-    // LIVE SERVER REFRESH — server is authoritative
-    syncFromServer: async function(isManual) {
-      try {
-        var content = await takhfidBridge.fetchContent();
-        if (content) {
-          if (Array.isArray(content.categories)) {
-            var cats = content.categories.map(function(c) { return normalizeCategory(c); }).filter(Boolean);
-            if (lastHooks && lastHooks.setCategories) lastHooks.setCategories(cats);
-            try { localStorage.setItem('altakhfid_categories', JSON.stringify(cats)); } catch(e) {}
-          }
-          if (Array.isArray(content.banners)) {
-            var banners = content.banners.map(normalizeBanner).filter(Boolean);
-            if (lastHooks && lastHooks.setBanners) lastHooks.setBanners(banners);
-            try { localStorage.setItem('store_banners_v1', JSON.stringify(banners)); } catch(e) {}
-          }
-          if (Array.isArray(content.campaigns)) {
-            var campaigns = content.campaigns.map(normalizeCampaign).filter(Boolean);
-            if (lastHooks && lastHooks.setCampaigns) lastHooks.setCampaigns(campaigns);
-            try {
-              localStorage.setItem('trend_campaigns_v2', JSON.stringify(campaigns));
-              localStorage.setItem('altakhfid_campaigns', JSON.stringify(campaigns));
-            } catch(e) {}
-          }
-          var hashtags = Array.isArray(content.trendHashtags)
-            ? content.trendHashtags
-            : (Array.isArray(content.hashtags) ? content.hashtags : null);
-          if (hashtags && lastHooks && lastHooks.setHashtags) lastHooks.setHashtags(hashtags);
-          if (hashtags) { try { localStorage.setItem('trend_hashtags_v2', JSON.stringify(hashtags)); } catch(e) {} }
-          if (content.announcements && typeof content.announcements === 'object') {
-            var ann = normalizeAnnouncementSettings(content.announcements);
-            if (lastHooks && lastHooks.setAnnouncementSettings) lastHooks.setAnnouncementSettings(ann);
-            try { localStorage.setItem('shein_announcement_bar_settings_v1', JSON.stringify(ann)); } catch(e) {}
-          }
-          if (content.categoryTabsConfig && typeof content.categoryTabsConfig === 'object') {
-            if (lastHooks && lastHooks.setCategoryTabsConfig) lastHooks.setCategoryTabsConfig(content.categoryTabsConfig);
-            try { localStorage.setItem('store_category_tabs_config_v2', JSON.stringify(content.categoryTabsConfig)); } catch(e) {}
-          }
-          if (Array.isArray(content.recommendationTabs)) {
-            if (lastHooks && lastHooks.setRecommendationTabs) lastHooks.setRecommendationTabs(content.recommendationTabs);
-            try { localStorage.setItem('store_recommendation_tabs_v2', JSON.stringify(content.recommendationTabs)); } catch(e) {}
-          }
-        }
-
-        var serverProducts = await takhfidBridge.fetchProducts();
-        if (lastConnectionError) {
-          throw lastConnectionError;
-        }
-        if (!Array.isArray(serverProducts)) {
-          throw new Error('لم يتم استلام قائمة المنتجات من الخادم');
-        }
-        var products = serverProducts.map(normalizeProduct).filter(Boolean);
-        if (lastHooks && lastHooks.setProducts) lastHooks.setProducts(products);
-        try { localStorage.setItem('altakhfid_products', JSON.stringify(products)); } catch(e) {}
-
-        var orders = await takhfidBridge.fetchOrders();
-        if (Array.isArray(orders)) {
-          if (lastHooks && lastHooks.setOrders) lastHooks.setOrders(orders);
-          try { localStorage.setItem('admin_orders_v2', JSON.stringify(orders)); } catch(e) {}
-        }
-
-        if (isManual) toast('تم تحديث المنتجات والمحتوى والطلبات مباشرة من الخادم ✅', 'success');
-        return { success: true, productsCount: products.length, ordersCount: orders.length };
-      } catch (err) {
-        console.error('[Bridge] syncFromServer error:', err);
-        if (isManual) toast('تعذر تحديث البيانات من الخادم: ' + (err.message || String(err)), 'error');
-        return { success: false, error: err.message || String(err) };
-      }
-    },
-
     // 5. BOOTSTRAP INITIALIZATION ON APP LOAD
     initSync: async function(hooks) {
       hooks = hooks || {};
@@ -1240,7 +801,7 @@
         var content = await takhfidBridge.fetchContent();
         if (content) {
           // Categories
-          if (Array.isArray(content.categories)) {
+          if (Array.isArray(content.categories) && content.categories.length > 0) {
             var currentCats = null;
             try {
               var cRaw = localStorage.getItem('altakhfid_categories');
@@ -1258,7 +819,7 @@
           }
 
           // Banners
-          if (Array.isArray(content.banners)) {
+          if (Array.isArray(content.banners) && content.banners.length > 0) {
             var normBanners = content.banners.map(normalizeBanner).filter(Boolean);
             if (normBanners.length > 0) {
               console.log('[Bridge] Loaded ' + normBanners.length + ' normalized banners from server');
@@ -1268,7 +829,7 @@
           }
 
           // Campaigns
-          if (Array.isArray(content.campaigns)) {
+          if (Array.isArray(content.campaigns) && content.campaigns.length > 0) {
             var normCamps = content.campaigns.map(normalizeCampaign).filter(Boolean);
             if (normCamps.length > 0) {
               console.log('[Bridge] Loaded ' + normCamps.length + ' campaigns from server');
@@ -1281,7 +842,7 @@
           }
 
           // Hashtags
-          var serverHashtags = Array.isArray(content.trendHashtags) ? content.trendHashtags : (Array.isArray(content.hashtags) ? content.hashtags : null);
+          var serverHashtags = (Array.isArray(content.trendHashtags) && content.trendHashtags.length > 0) ? content.trendHashtags : (Array.isArray(content.hashtags) && content.hashtags.length > 0 ? content.hashtags : null);
           if (serverHashtags) {
             console.log('[Bridge] Loaded ' + serverHashtags.length + ' hashtags from server');
             if (hooks.setHashtags) hooks.setHashtags(serverHashtags);
@@ -1313,18 +874,20 @@
         var serverProducts = await takhfidBridge.fetchProducts();
         var prodsLoaded = false;
         var finalProdCount = 0;
-        if (Array.isArray(serverProducts)) {
+        if (Array.isArray(serverProducts) && serverProducts.length > 0) {
           var normProds = serverProducts.map(normalizeProduct).filter(Boolean);
-          console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
-          if (hooks.setProducts) hooks.setProducts(normProds);
-          try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
-          prodsLoaded = true;
-          finalProdCount = normProds.length;
+          if (normProds.length > 0) {
+            console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
+            if (hooks.setProducts) hooks.setProducts(normProds);
+            try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
+            prodsLoaded = true;
+            finalProdCount = normProds.length;
+          }
         }
 
         // C. Load Orders if token exists
         var orders = await takhfidBridge.fetchOrders();
-        if (Array.isArray(orders)) {
+        if (Array.isArray(orders) && orders.length > 0) {
           console.log('[Bridge] Loaded ' + orders.length + ' orders from server');
           if (hooks.setOrders) hooks.setOrders(orders);
           try { localStorage.setItem('admin_orders_v2', JSON.stringify(orders)); } catch(e) {}
@@ -1365,42 +928,12 @@
   window.__takhfidSaveAnnouncements = takhfidBridge.saveAnnouncements.bind(takhfidBridge);
   window.__takhfidSaveCategoryTabsConfig = takhfidBridge.saveCategoryTabsConfig.bind(takhfidBridge);
   window.__takhfidSaveRecommendations = takhfidBridge.saveRecommendations.bind(takhfidBridge);
-  window.__takhfidSavePricing = takhfidBridge.savePricingSettings.bind(takhfidBridge);
   window.__takhfidCreateOrder = takhfidBridge.createOrder.bind(takhfidBridge);
   window.__takhfidUpdateOrderStatus = takhfidBridge.updateOrderStatus.bind(takhfidBridge);
-  window.__takhfidUpdateOrderAddress = takhfidBridge.updateOrderAddress.bind(takhfidBridge);
   window.__takhfidSyncAll = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
-  window.__takhfidSyncFromServer = function(isManual) { return takhfidBridge.syncFromServer(isManual); };
-  window.__takhfidRefresh = function() { return takhfidBridge.syncFromServer(false); };
   window.__takhfidBulkSync = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
   window.__takhfidFetchOrders = takhfidBridge.fetchOrders.bind(takhfidBridge);
-  window.__takhfidNormalizeOrder = normalizeOrder;
-  window.__takhfidFiniteNumber = finiteNumber;
   window.syncProductsToServer = function() { return takhfidBridge.syncAllToBackend(true); };
 
-  // UI rules for the new admin: no manual bulk-sync, and live order sorting.
-  function installAdminUxRules() {
-    try {
-      var syncBtn = document.getElementById('admin-sync-cloud-btn');
-      if (syncBtn) {
-        syncBtn.style.display = 'none';
-        syncBtn.setAttribute('aria-hidden', 'true');
-      }
-    } catch (e) {
-      console.warn('[Bridge] admin UX rule warning:', e);
-    }
-  }
-
-  if (typeof MutationObserver !== 'undefined') {
-    var __takhfidUxObserver = new MutationObserver(function() { installAdminUxRules(); });
-    try {
-      __takhfidUxObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
-    } catch (e) {}
-  }
-  if (typeof setTimeout !== 'undefined') setTimeout(installAdminUxRules, 250);
-  if (typeof setInterval !== 'undefined') setInterval(installAdminUxRules, 1500);
-
-  window.__takhfidInstallAdminUx = installAdminUxRules;
-
-  console.log('[Bridge] Takhfid Store Bridge v4.5.0 server-authoritative cache loaded.');
+  console.log('[Bridge] Takhfid Store Bridge v4.3.0 loaded and ready.');
 })();
