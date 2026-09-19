@@ -202,15 +202,14 @@ export function sanitizeProduct(p: any): Product {
 export async function fetchProductsApi(): Promise<Product[]> {
   try {
     const data = await apiFetch<{ products?: any[]; total?: number }>('/takhfid/api/v4/products?limit=200');
-    if (Array.isArray(data.products) && data.products.length > 0) {
+    if (Array.isArray(data.products)) {
       const sanitized = data.products.map(sanitizeProduct);
-      // Update local storage cache
       try {
         localStorage.setItem('altakhfid_products', JSON.stringify(sanitized));
       } catch {}
       return sanitized;
     }
-    return [];
+    throw new Error('استجابة المنتجات من الخادم غير صالحة');
   } catch (error) {
     console.warn('Could not fetch products from server API:', error);
     throw error;
@@ -224,10 +223,13 @@ export async function createProductApi(product: Product): Promise<Product> {
       method: 'POST',
       body: JSON.stringify(payload),
     });
+    if (data.success === false) {
+      throw new Error('رفض الخادم حفظ المنتج');
+    }
     return data.product ? sanitizeProduct(data.product) : payload;
   } catch (e) {
-    console.warn('POST /products failed, falling back to local:', e);
-    return payload;
+    console.warn('POST /products failed:', e);
+    throw e;
   }
 }
 
@@ -255,9 +257,13 @@ export async function updateProductApi(product: Product): Promise<Product> {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
+    if (data.success === false) {
+      throw new Error('رفض الخادم تعديل المنتج');
+    }
     return data.product ? sanitizeProduct(data.product) : payload;
-  } catch {
-    return createProductApi(payload);
+  } catch (e) {
+    console.warn('PUT /products failed:', e);
+    throw e;
   }
 }
 
@@ -289,7 +295,7 @@ export interface ServerContent {
 export async function fetchCategoriesApi(): Promise<Category[]> {
   try {
     const data = await apiFetch<{ categories?: Category[]; success?: boolean }>('/takhfid/api/v4/categories');
-    if (Array.isArray(data.categories) && data.categories.length > 0) {
+    if (Array.isArray(data.categories)) {
       try {
         localStorage.setItem('altakhfid_categories', JSON.stringify(data.categories));
       } catch {}
@@ -313,20 +319,25 @@ export async function fetchContentApi(): Promise<ServerContent> {
       storeSettings: content?.storeSettings,
       orders: Array.isArray(content?.orders) ? content.orders : [],
       users: Array.isArray(content?.users) ? content.users : [],
+      trendHashtags: Array.isArray(content?.trendHashtags) ? content.trendHashtags : [],
+      hashtags: Array.isArray(content?.hashtags) ? content.hashtags : [],
+      announcements: content?.announcements,
+      categoryTabsConfig: content?.categoryTabsConfig,
+      recommendationTabs: Array.isArray(content?.recommendationTabs) ? content.recommendationTabs : [],
     };
   } catch (error) {
     console.warn('Could not fetch content from server:', error);
-    return { banners: [], campaigns: [], categories: [] };
+    throw error;
   }
 }
 
 export async function saveContentApi(content: Partial<ServerContent>): Promise<boolean> {
   try {
-    await apiFetch('/takhfid/api/v4/admin/content', {
+    const result = await apiFetch<{ success?: boolean }>('/takhfid/api/v4/admin/content', {
       method: 'PUT',
       body: JSON.stringify(content),
     });
-    return true;
+    return result.success !== false;
   } catch (error) {
     console.warn('Could not save content to server:', error);
     return false;
@@ -387,8 +398,7 @@ export async function savePricingSettingsApi(settings: PricingSettings): Promise
   } catch {}
 
   try {
-    await saveContentApi({ pricingSettings: settings });
-    return true;
+    return await saveContentApi({ pricingSettings: settings });
   } catch (err) {
     console.warn('Failed to save pricing to server:', err);
     return false;
@@ -426,8 +436,7 @@ export async function saveStoreSettingsApi(settings: StoreSettings): Promise<boo
   } catch {}
 
   try {
-    await saveContentApi({ storeSettings: settings });
-    return true;
+    return await saveContentApi({ storeSettings: settings });
   } catch (err) {
     console.warn('Failed to save store settings to server:', err);
     return false;
@@ -461,7 +470,10 @@ export async function fetchOrdersApi(): Promise<Order[]> {
   try {
     const res = await apiFetch<{ orders?: Order[]; data?: Order[] }>('/takhfid/api/v4/orders');
     const list = res.orders || res.data;
-    if (Array.isArray(list) && list.length > 0) {
+    if (Array.isArray(list)) {
+      try {
+        localStorage.setItem('altakhfid_orders', JSON.stringify(list));
+      } catch {}
       return list;
     }
   } catch {}
