@@ -79,14 +79,16 @@ jobs:
               cp -R android/capacitor-cordova-android-plugins android-existing/capacitor-cordova-android-plugins
             fi
 
-            # The tracked Android shell is intentionally minimal and may not contain
-            # Capacitor's generated Android resources or launcher activity. Keep the
-            # tracked native code/settings while restoring the generated pieces needed
-            # by a clean CI build and by Android at runtime.
-            # Merge generated Capacitor resources without deleting tracked custom resources
-            # such as network_security_config.xml and file_paths.xml.
+            # The tracked Android shell is intentionally minimal. Preserve its custom
+            # resources while adding generated Capacitor resources. Do not overwrite
+            # existing files: custom network_security_config.xml/file_paths.xml and
+            # the tracked colors.xml must remain authoritative.
             mkdir -p android-existing/app/src/main/res
-            cp -R android/app/src/main/res/. android-existing/app/src/main/res/
+            cp -Rn android/app/src/main/res/. android-existing/app/src/main/res/
+            # The generated Capacitor project has a separate resource with the same
+            # ic_launcher_background name used by the tracked colors.xml; keep only
+            # one definition to avoid AAPT duplicate-resource failures.
+            rm -f android-existing/app/src/main/res/values/ic_launcher_background.xml
 
             if [ -d android/app/src/main/java ]; then
               mkdir -p android-existing/app/src/main/java
