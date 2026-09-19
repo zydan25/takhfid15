@@ -6,12 +6,12 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="التخفيض الصح - تطبيق العميل" />
-    <meta name="application-name" content="التخفيض الصح - تطبيق العميل" />
-    title>التخفيض الصح | Yemen Code للتقنيات الذكية</title>
-    <meta name="description" content="واجهة تطبيق متجر التخفيض الصح للعميل مع شريط التصفح الأسود وإطار الموبايل وتصفح العروض" />
-    <meta property="og:title" content="التخفيض الصح - تطبيق العميل" />
-    <meta property="og:description" content="واجهة تطبيق متجر التخفيض الصح للعميل مع شريط التصفح الأسود وإطار الموبايل وتصفح العروض" />
+    <meta name="apple-mobile-web-app-title" content="التخفيض الصح" />
+    <meta name="application-name" content="التخفيض الصح" />
+    <title>التخفيض الصح | Yemen Code للتقنيات الذكية</title>
+    <meta name="description" content="التخفيض الصح — متجر التخفيضات. برمجة وتصميم Yemen Code للتقنيات الذكية." />
+    <meta property="og:title" content="التخفيض الصح | Yemen Code" />
+    <meta property="og:description" content="متجر التخفيض الصح — برمجة وتصميم Yemen Code للتقنيات الذكية." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/icon-512.png" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -35,7 +35,7 @@
   <body class="bg-slate-100 text-slate-900 antialiased selection:bg-rose-500 selection:text-white font-['Cairo',sans-serif]">
     <div id="root"></div>
     <script>
-      window.VITE_API_BASE_URL = "%VITE_API_BASE_URL%";
+      window.VITE_API_BASE_URL = "%VITE_API_BASE_URL%".includes("%VITE_API_BASE_URL%") ? "https://whats.alattab.site" : "%VITE_API_BASE_URL%";
       window.TAKHFID_RUNTIME_CONFIG = {
         apiBaseUrl: "%VITE_API_BASE_URL%",
         apiTimeoutMs: Number("%VITE_API_TIMEOUT_MS%" || 20000),
