@@ -398,10 +398,12 @@ export async function savePricingSettingsApi(settings: PricingSettings): Promise
   } catch {}
 
   try {
-    return await saveContentApi({ pricingSettings: settings });
+    const saved = await saveContentApi({ pricingSettings: settings });
+    if (!saved) throw new Error('الخادم لم يؤكد حفظ إعدادات التسعير');
+    return true;
   } catch (err) {
     console.warn('Failed to save pricing to server:', err);
-    return false;
+    throw err;
   }
 }
 
@@ -436,10 +438,12 @@ export async function saveStoreSettingsApi(settings: StoreSettings): Promise<boo
   } catch {}
 
   try {
-    return await saveContentApi({ storeSettings: settings });
+    const saved = await saveContentApi({ storeSettings: settings });
+    if (!saved) throw new Error('الخادم لم يؤكد حفظ بيانات المتجر');
+    return true;
   } catch (err) {
     console.warn('Failed to save store settings to server:', err);
-    return false;
+    throw err;
   }
 }
 
