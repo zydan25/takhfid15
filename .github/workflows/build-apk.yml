@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "feat/server-authoritative-admin-2026-09" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
