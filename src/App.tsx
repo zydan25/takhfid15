@@ -766,6 +766,8 @@ export const App: React.FC = () => {
         orders={orders}
         products={products}
         campaigns={campaigns}
+        categories={categories}
+        banners={banners}
         pricingSettings={pricingSettings}
         storeSettings={storeSettings}
         onClose={() => setIsAdminOpen(false)}
