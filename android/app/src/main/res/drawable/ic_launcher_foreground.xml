@@ -4,7 +4,54 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:fillColor="#FFFFFF" android:pathData="M31,29h35c5,0 9,4 9,9v8c0,3-1,5-3,7L49,77c-3,3-8,3-11,0L24,63c-3-3-3-8 0-11l6-6c2-2 3-4 3-7v-1c0-5 4-9 9-9z"/>
-    <path android:fillColor="#E7193F" android:pathData="M36,35h21c3,0 5,2 5,5s-2,5-5,5H36z"/>
-    <path android:fillColor="#E7193F" android:pathData="M70,28l4,9 9,4-9,4-4,9-4-9-9-4 9-4z"/>
+
+    <!-- Stylized Takhfid "S" brand mark -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M79,28
+            C73,18 61,12 47,12
+            C28,12 18,22 18,37
+            C18,51 28,59 44,67
+            L55,72
+            C62,76 64,80 62,85
+            C60,91 54,95 45,95
+            C32,95 22,88 18,79
+            L29,74
+            C33,82 39,85 46,85
+            C52,85 56,82 56,77
+            C56,73 52,70 45,67
+            L34,62
+            C20,55 13,47 13,36
+            C13,21 26,11 45,11
+            C61,11 75,18 84,29
+            Z" />
+
+    <!-- The "الصح" check/swoosh -->
+    <path
+        android:fillColor="#F0A717"
+        android:pathData="M23,54
+            C29,51 35,53 41,60
+            C45,65 48,70 50,75
+            C56,63 66,48 79,39
+            C85,35 90,33 94,34
+            C88,39 79,46 70,56
+            C61,66 55,75 51,82
+            C49,85 46,83 43,79
+            C38,71 31,61 23,54
+            Z" />
+
+    <!-- Small accent indicating discount -->
+    <path
+        android:fillColor="#E7193F"
+        android:pathData="M68,24
+            L72,29
+            L78,29
+            L74,33
+            L75,39
+            L68,36
+            L62,39
+            L63,33
+            L59,29
+            L65,29
+            Z" />
 </vector>
