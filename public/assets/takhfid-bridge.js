@@ -875,7 +875,10 @@
         var prodsLoaded = false;
         var finalProdCount = 0;
         if (Array.isArray(serverProducts) && serverProducts.length > 0) {
-          var normProds = serverProducts.map(normalizeProduct).filter(Boolean);
+          // fetchProducts() already normalizes the server payload. Do not normalize it again:
+          // the response is large (images can be embedded as base64), so a second full pass
+          // unnecessarily doubles JSON-object processing on mobile WebViews.
+          var normProds = serverProducts;
           if (normProds.length > 0) {
             console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
             if (hooks.setProducts) hooks.setProducts(normProds);
