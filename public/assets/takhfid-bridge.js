@@ -1,3 +1,158 @@
+/**
+ * Takhfid Store - Complete Real-Time Sync & Server Bridge (v4 API)
+ * Handles bidirectional synchronization between the client store, local cache,
+ * and the Flask Backend (https://whats.alattab.site/takhfid/api/v4).
+ * 
+ * Includes comprehensive data normalization and fallbacks to prevent any
+ * missing-property runtime errors (white screens) across all screens.
+ */
+(function() {
+  'use strict';
+
+  function getCustomApiBaseUrl() {
+    try {
+      if (typeof window !== 'undefined') {
+        var winEnv = window.VITE_API_BASE_URL || window.__VITE_API_BASE_URL;
+        if (winEnv && typeof winEnv === 'string' && winEnv.indexOf('%') === -1 && winEnv.trim()) {
+          return winEnv.trim();
+        }
+      }
+    } catch(e) {}
+    return 'https://whats.alattab.site';
+  }
+
+  var rawBaseUrl = getCustomApiBaseUrl();
+  var REMOTE_SERVER = rawBaseUrl.replace(/\/takhfid\/api\/v4\/?$/, '').replace(/\/+$/, '');
+  var API_BASE = REMOTE_SERVER + '/takhfid/api/v4';
+  var DIRECT_REMOTE_BASE = API_BASE;
+
+  var lastHooks = null;
+  var lastConnectionError = null;
+
+  function showConnectionErrorBanner(errMsg) {
+    if (typeof document === 'undefined') return;
+    var existing = document.getElementById('takhfid-connection-error-banner');
+    if (!existing) {
+      existing = document.createElement('div');
+      existing.id = 'takhfid-connection-error-banner';
+      existing.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#fee2e2;color:#991b1b;border-bottom:1px solid #f87171;padding:8px 12px;font-family:Cairo,sans-serif;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);direction:rtl;';
+      var rootEl = document.getElementById('root');
+      if (rootEl && rootEl.parentNode) {
+        rootEl.parentNode.insertBefore(existing, rootEl);
+      } else {
+        document.body.appendChild(existing);
+      }
+    }
+    existing.innerHTML = '<div style="display:flex;align-items:center;gap:6px;flex:1;overflow:hidden;"><span style="font-size:14px;">⚠️</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">تعذر الاتصال بالخادم: ' + (errMsg || 'خطأ في الشبكة أو الخادم') + '</span></div><button id="takhfid-retry-btn" style="background:#dc2626;color:#ffffff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">إعادة المحاولة</button>';
+    var btn = document.getElementById('takhfid-retry-btn');
+    if (btn) {
+      btn.onclick = function() {
+        btn.textContent = 'جارٍ المحاولة...';
+        btn.disabled = true;
+        if (window.__takhfidInitSync && lastHooks) {
+          window.__takhfidInitSync(lastHooks).finally(function() {
+            btn.textContent = 'إعادة المحاولة';
+            btn.disabled = false;
+          });
+        }
+      };
+    }
+  }
+
+  function hideConnectionErrorBanner() {
+    if (typeof document === 'undefined') return;
+    var existing = document.getElementById('takhfid-connection-error-banner');
+    if (existing && existing.parentNode) {
+      existing.parentNode.removeChild(existing);
+    }
+  }
+
+  function isNativePlatform() {
+    if (typeof window === 'undefined') return false;
+    if (window.Capacitor) return true;
+    var proto = (window.location && window.location.protocol) || '';
+    var host = (window.location && window.location.hostname) || '';
+    if (proto === 'file:' || proto === 'capacitor:' || proto === 'ionic:' || proto === 'content:') {
+      return true;
+    }
+    if (host === 'localhost' || host === '127.0.0.1' || host === '') {
+      return true;
+    }
+    if (typeof navigator !== 'undefined' && navigator.userAgent) {
+      if (/Android|iPhone|iPad|iPod|Capacitor/i.test(navigator.userAgent) || navigator.userAgent.indexOf('wv') !== -1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function getBaseUrl() {
+    return DIRECT_REMOTE_BASE;
+  }
+
+  if (typeof window !== 'undefined' && window.fetch && !window.__takhfidFetchPatched) {
+    window.__takhfidFetchPatched = true;
+    var _origFetch = window.fetch;
+    window.fetch = function(input, init) {
+      try {
+        if (typeof input === 'string') {
+          if (input.startsWith('/takhfid')) {
+            input = REMOTE_SERVER + input;
+          } else if (input.indexOf('localhost/takhfid') !== -1 || input.indexOf('127.0.0.1/takhfid') !== -1) {
+            input = input.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, REMOTE_SERVER).replace(/^capacitor:\/\/localhost/, REMOTE_SERVER);
+          }
+        } else if (input && typeof input === 'object' && input.url) {
+          var u = input.url;
+          if (u.startsWith('/takhfid')) {
+            return _origFetch.call(this, new Request(REMOTE_SERVER + u, input), init);
+          } else if (u.indexOf('localhost/takhfid') !== -1 || u.indexOf('127.0.0.1/takhfid') !== -1) {
+            var newU = u.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, REMOTE_SERVER).replace(/^capacitor:\/\/localhost/, REMOTE_SERVER);
+            return _origFetch.call(this, new Request(newU, input), init);
+          }
+        }
+      } catch (err) {
+        console.warn('[Takhfid Bridge] fetch url rewrite notice:', err);
+      }
+      return _origFetch.call(this, input, init);
+    };
+  }
+
+  function getAuthToken() {
+    try {
+      var t = localStorage.getItem('takhfid_access_token');
+      if (t) return t;
+      var prof = localStorage.getItem('user_profile');
+      if (prof) {
+        var p = JSON.parse(prof);
+        if (p && (p.accessToken || p.token)) return p.accessToken || p.token;
+      }
+      return '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function getAuthHeaders(includeContentType) {
+    var headers = {};
+    if (includeContentType !== false) {
+      headers['Content-Type'] = 'application/json';
+    }
+    var token = getAuthToken();
+    if (token) {
+      headers['Authorization'] = 'Bearer ' + token;
+    }
+    return headers;
+  }
+
+  var activeToast = null;
+  function toast(msg, type) {
+    if (activeToast) {
+      try { activeToast(msg, type || 'info'); } catch(e) {}
+    } else {
+      console.log('[Takhfid Bridge ' + (type || 'info') + ']: ' + msg);
+    }
+  }
+
   // --- SAFE DATA NORMALIZATION ---
   function finiteNumber(value, fallback) {
     var n = Number(value);
