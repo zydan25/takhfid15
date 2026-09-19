@@ -606,11 +606,14 @@
         var res = await serverFetch(getBaseUrl() + '/orders', {
           headers: getAuthHeaders(false)
         });
-        if (!res.ok) return [];
+        if (!res.ok) {
+          throw new Error('HTTP ' + res.status);
+        }
         var data = await res.json();
         var raw = Array.isArray(data) ? data : (data.orders || []);
         return raw.map(normalizeOrder).filter(Boolean);
       } catch (err) {
+        lastConnectionError = err;
         console.warn('[Bridge] fetchOrders error:', err);
         return [];
       }
@@ -826,6 +829,9 @@
         }
 
         var serverProducts = await takhfidBridge.fetchProducts();
+        if (lastConnectionError) {
+          throw lastConnectionError;
+        }
         var products = Array.isArray(serverProducts) ? serverProducts.map(normalizeProduct).filter(Boolean) : [];
         if (lastHooks && lastHooks.setProducts) lastHooks.setProducts(products);
         try { localStorage.setItem('altakhfid_products', JSON.stringify(products)); } catch(e) {}
