@@ -2,13 +2,14 @@
   "id": "/",
   "name": "التخفيض الصح",
   "short_name": "التخفيض الصح",
-  "description": "تطبيق متجر التخفيض الصح للملابس الجاهزة وأقوى العروض الحصرية",
+  "description": "التخفيض الصح — متجر التخفيضات، برمجة وتصميم Yemen Code للتقنيات الذكية",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",
-  "theme_color": "#000000",
+  "theme_color": "#0B0F19",
+  "author": "Yemen Code للتقنيات الذكية",
   "categories": ["shopping", "lifestyle"],
   "icons": [
     {
