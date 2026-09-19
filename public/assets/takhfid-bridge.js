@@ -778,6 +778,15 @@
       return res;
     },
 
+    savePricingSettings: async function(settings) {
+      var res = await this.updateContentSection({ pricingSettings: settings });
+      if (res.success) {
+        try { localStorage.setItem('pricing_settings_v2', JSON.stringify(settings)); } catch(e) {}
+        console.log('[Bridge] Pricing settings saved to server successfully');
+      }
+      return res;
+    },
+
     // 3. ORDERS API
     createOrder: async function(orderData) {
       if (!orderData) return { success: false, error: 'بيانات الطلب فارغة' };
