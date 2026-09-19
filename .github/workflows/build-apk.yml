@@ -2,7 +2,10 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches:
+      - "main"
+      - "master"
+      - "fix/takhfid15-runtime-and-admin-2026-09-19"
   workflow_dispatch:
 
 permissions:
@@ -98,8 +101,26 @@ jobs:
             rm -f capacitor.config.json
           fi
 
+      - name: Verify fresh Vite build
+        run: |
+          test -f dist/index.html
+          test -s dist/index.html
+          js_count=$(find dist/assets -maxdepth 1 -type f -name "*.js" -size +0c | wc -l)
+          if [ "$js_count" -lt 1 ]; then
+            echo "No non-empty JavaScript bundle was produced by Vite."
+            find dist -maxdepth 3 -type f -print
+            exit 1
+          fi
+          if grep -q 'index-Co2L1R-b.js' dist/index.html; then
+            echo "Unexpected stale hard-coded bundle reference detected."
+            cat dist/index.html
+            exit 1
+          fi
+
       - name: Sync Web Assets to Android Native Project
         run: |
+          # Remove stale tracked bundles so an old native asset cannot be loaded.
+          rm -rf android/app/src/main/assets/public/assets
           npx cap sync android
 
       - name: Make Gradlew Executable
