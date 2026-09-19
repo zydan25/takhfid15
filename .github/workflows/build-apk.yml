@@ -115,6 +115,11 @@ jobs:
 
       - name: Sync Web Assets to Android Native Project
         run: |
+          # Remove tracked/stale Vite assets first. Capacitor must repopulate the
+          # native web directory from the freshly built dist/www files.
+          if [ -d android/app/src/main/assets/public/assets ]; then
+            rm -rf android/app/src/main/assets/public/assets
+          fi
           npx cap sync android
 
       - name: Make Gradlew Executable
