@@ -29,6 +29,48 @@
   var lastHooks = null;
   var lastConnectionError = null;
 
+  // Centralized network helper used by all server-authoritative write operations.
+  // Adds timeout + bounded retry without changing the server contract.
+  async function serverFetch(url, options) {
+    var cfg = (typeof window !== 'undefined' && window.TAKHFID_RUNTIME_CONFIG) || {};
+    var timeoutMs = Number(cfg.apiTimeoutMs);
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) timeoutMs = 20000;
+    var retryCount = Number(cfg.apiRetryCount);
+    if (!Number.isFinite(retryCount) || retryCount < 0) retryCount = 0;
+    retryCount = Math.min(Math.floor(retryCount), 3);
+
+    var attempt = 0;
+    while (true) {
+      var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var timer = null;
+      try {
+        var init = Object.assign({}, options || {});
+        if (controller) {
+          init.signal = controller.signal;
+          timer = setTimeout(function() {
+            try { controller.abort(); } catch (e) {}
+          }, timeoutMs);
+        }
+
+        var response = await fetch(url, init);
+        if (timer) clearTimeout(timer);
+
+        if (response && response.status >= 500 && attempt < retryCount) {
+          attempt += 1;
+          continue;
+        }
+        return response;
+      } catch (err) {
+        if (timer) clearTimeout(timer);
+        if (attempt < retryCount) {
+          attempt += 1;
+          continue;
+        }
+        throw err;
+      }
+    }
+  }
+
   function showConnectionErrorBanner(errMsg) {
     if (typeof document === 'undefined') return;
     var existing = document.getElementById('takhfid-connection-error-banner');
