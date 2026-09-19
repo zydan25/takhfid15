@@ -95,8 +95,8 @@
     res.sizes = sizes;
     res.tags = tags;
     res.trends = trends;
-    res.inStock = p.inStock !== false && p.stock !== 0;
-    res.stock = finiteNumber(p.stock, p.inStock === false ? 0 : 0);
+    res.inStock = p.inStock !== false && (p.stock === undefined || p.stock === null || Number(p.stock) > 0);
+    res.stock = p.stock !== undefined && p.stock !== null && Number.isFinite(Number(p.stock)) ? Math.max(0, Number(p.stock)) : null;
 
     // Preserve every modern product customization without inventing fake values.
     res.description = p.description !== undefined ? String(p.description) : '';
@@ -163,6 +163,9 @@
     res.department = p.department !== undefined ? String(p.department) : '';
     res.inputCurrency = p.inputCurrency || 'SAR';
     res.videoUrl = p.videoUrl || '';
+    res.washingInstructions = p.washingInstructions !== undefined ? String(p.washingInstructions) : '';
+    res.tags = tags;
+    res.hashtags = tags;
 
     return res;
   }
@@ -789,17 +792,17 @@
       try {
         var content = await takhfidBridge.fetchContent();
         if (content) {
-          if (Array.isArray(content.categories) && content.categories.length > 0) {
+          if (Array.isArray(content.categories)) {
             var cats = content.categories.map(function(c) { return normalizeCategory(c); }).filter(Boolean);
             if (lastHooks && lastHooks.setCategories) lastHooks.setCategories(cats);
             try { localStorage.setItem('altakhfid_categories', JSON.stringify(cats)); } catch(e) {}
           }
-          if (Array.isArray(content.banners) && content.banners.length > 0) {
+          if (Array.isArray(content.banners)) {
             var banners = content.banners.map(normalizeBanner).filter(Boolean);
             if (lastHooks && lastHooks.setBanners) lastHooks.setBanners(banners);
             try { localStorage.setItem('store_banners_v1', JSON.stringify(banners)); } catch(e) {}
           }
-          if (Array.isArray(content.campaigns) && content.campaigns.length > 0) {
+          if (Array.isArray(content.campaigns)) {
             var campaigns = content.campaigns.map(normalizeCampaign).filter(Boolean);
             if (lastHooks && lastHooks.setCampaigns) lastHooks.setCampaigns(campaigns);
             try {
@@ -807,7 +810,7 @@
               localStorage.setItem('altakhfid_campaigns', JSON.stringify(campaigns));
             } catch(e) {}
           }
-          var hashtags = Array.isArray(content.trendHashtags) && content.trendHashtags.length > 0
+          var hashtags = Array.isArray(content.trendHashtags)
             ? content.trendHashtags
             : (Array.isArray(content.hashtags) ? content.hashtags : null);
           if (hashtags && lastHooks && lastHooks.setHashtags) lastHooks.setHashtags(hashtags);
