@@ -3,8 +3,6 @@ name: Build Android APK
 on:
   push:
     branches:
-      - "main"
-      - "master"
       - "fix/takhfid15-runtime-and-admin-2026-09-19"
   workflow_dispatch:
 
