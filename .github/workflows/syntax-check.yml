@@ -20,5 +20,5 @@ jobs:
         uses: actions/checkout@v4
       - name: Check shipped JavaScript syntax
         run: |
-          node --check public/assets/index-Co2L1R-b.js
-          node --check public/assets/takhfid-bridge.js
+          node --input-type=module --check < public/assets/index-Co2L1R-b.js
+          node --input-type=module --check < public/assets/takhfid-bridge.js
