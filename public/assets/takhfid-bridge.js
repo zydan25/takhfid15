@@ -329,7 +329,7 @@
     // 1. PRODUCTS API
     fetchProducts: async function() {
       try {
-        var res = await fetch(getBaseUrl() + '/products?limit=200');
+        var res = await fetch(getBaseUrl() + '/products');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = await res.json();
         var rawList = Array.isArray(data) ? data : (data.products || []);
@@ -339,7 +339,7 @@
       } catch (err) {
         console.warn('[Bridge] fetchProducts failed, falling back to direct remote:', err);
         try {
-          var r2 = await fetch(DIRECT_REMOTE_BASE + '/products?limit=200');
+          var r2 = await fetch(DIRECT_REMOTE_BASE + '/products');
           if (!r2.ok) throw new Error('HTTP ' + r2.status);
           var d2 = await r2.json();
           var rawList2 = Array.isArray(d2) ? d2 : (d2.products || []);
