@@ -577,33 +577,133 @@
       activeToast = fn;
     },
 
-    // 1. PRODUCTS API
-    fetchProducts: async function() {
-      try {
-        var res = await fetch(getBaseUrl() + '/products?limit=200');
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        var data = await res.json();
-        var rawList = Array.isArray(data) ? data : (data.products || []);
-        var normalized = rawList.map(normalizeProduct).filter(Boolean);
-        lastConnectionError = null;
-        return normalized;
-      } catch (err) {
-        console.warn('[Bridge] fetchProducts failed, falling back to direct remote:', err);
-        try {
-          var r2 = await fetch(DIRECT_REMOTE_BASE + '/products?limit=200');
-          if (!r2.ok) throw new Error('HTTP ' + r2.status);
-          var d2 = await r2.json();
-          var rawList2 = Array.isArray(d2) ? d2 : (d2.products || []);
-          var normalized2 = rawList2.map(normalizeProduct).filter(Boolean);
-          lastConnectionError = null;
-          return normalized2;
-        } catch (e2) {
-          lastConnectionError = e2 || err;
-          console.error('[Bridge] direct fetchProducts error:', e2);
-          return null;
-        }
+    function extractProductList(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (!payload || typeof payload !== 'object') return [];
+
+    var candidates = [
+      payload.products,
+      payload.items,
+      payload.results,
+      payload.data && payload.data.products,
+      payload.data && payload.data.items,
+      payload.data && payload.data.results,
+      Array.isArray(payload.data) ? payload.data : null,
+      payload.result && payload.result.products,
+      payload.result && payload.result.items,
+      payload.payload && payload.payload.products,
+      payload.payload && payload.payload.items
+    ];
+
+    for (var i = 0; i < candidates.length; i++) {
+      if (Array.isArray(candidates[i])) return candidates[i];
+    }
+    return [];
+  }
+
+  function parseJsonResponseValue(value) {
+    if (typeof value === 'string') {
+      try { return JSON.parse(value); } catch (e) { return null; }
+    }
+    return value;
+  }
+
+  async function fetchProductsViaCapacitor(url) {
+    try {
+      var plugins = typeof window !== 'undefined' && window.Capacitor && window.Capacitor.Plugins;
+      var http = plugins && plugins.CapacitorHttp;
+      if (!http || typeof http.get !== 'function') return null;
+
+      var result = await http.get({
+        url: url,
+        headers: { Accept: 'application/json' },
+        connectTimeout: 20000,
+        readTimeout: 20000
+      });
+
+      var status = Number(result && result.status);
+      if (status && (status < 200 || status >= 300)) {
+        throw new Error('HTTP ' + status);
       }
-    },
+      return parseJsonResponseValue(result && result.data);
+    } catch (e) {
+      console.warn('[Bridge] CapacitorHttp products request failed:', e);
+      return null;
+    }
+  }
+
+  async function fetchProductsViaFetch(url) {
+    var res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  }
+
+  function productCandidatesFromPayload(payload) {
+    var list = extractProductList(payload);
+    var normalized = list.map(normalizeProduct).filter(Boolean);
+
+    if (normalized.length > 0) return normalized;
+
+    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+      var keys = Object.keys(payload).slice(0, 20).join(',');
+      console.warn('[Bridge] Products response contained no recognizable list. Keys:', keys);
+    }
+    return [];
+  }
+
+  // 1. PRODUCTS API
+  fetchProducts: async function() {
+    var urls = [
+      getBaseUrl() + '/products',
+      getBaseUrl() + '/products?limit=200',
+      getBaseUrl() + '/products?page=1&limit=200'
+    ];
+
+    var lastErr = null;
+    var nativeFirst = isNativePlatform();
+
+    for (var i = 0; i < urls.length; i++) {
+      var url = urls[i];
+
+      try {
+        var data = nativeFirst ? await fetchProductsViaCapacitor(url) : null;
+        if (data === null) {
+          data = await fetchProductsViaFetch(url);
+        }
+
+        var normalized = productCandidatesFromPayload(data);
+        if (normalized.length > 0) {
+          lastConnectionError = null;
+          console.log('[Bridge] Products loaded from server:', normalized.length, url);
+          return normalized;
+        }
+
+        console.warn('[Bridge] Products endpoint returned no recognizable products:', url);
+      } catch (err) {
+        lastErr = err;
+        console.warn('[Bridge] fetchProducts attempt failed:', url, err);
+      }
+    }
+
+    // Final direct-fetch fallback in case the native bridge is unavailable.
+    for (var j = 0; j < urls.length; j++) {
+      try {
+        var directData = await fetchProductsViaFetch(urls[j]);
+        var directNormalized = productCandidatesFromPayload(directData);
+        if (directNormalized.length > 0) {
+          lastConnectionError = null;
+          console.log('[Bridge] Products loaded via direct fetch fallback:', directNormalized.length, urls[j]);
+          return directNormalized;
+        }
+      } catch (e2) {
+        lastErr = e2;
+      }
+    }
+
+    lastConnectionError = lastErr || new Error('لم يرجع الخادم أي قائمة منتجات قابلة للقراءة');
+    console.error('[Bridge] Product loading failed on all compatible requests:', lastConnectionError);
+    return null;
+  },
 
     saveProduct: async function(product, action) {
       if (!product || !product.id) return { success: false, error: 'بيانات المنتج غير مكتملة' };
