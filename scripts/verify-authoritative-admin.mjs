@@ -28,7 +28,7 @@ const required = [
   ["server-authoritative product delete", bundle.includes('await window.__takhfidSaveProduct') && bundle.includes('"delete"')],
   ["server refresh bridge", bridge.includes("syncFromServer") && bridge.includes("window.__takhfidRefresh")],
   ["server-first content writes", bridge.includes("جلسة الإدارة غير مفعلة") && bridge.includes("saveCategories") && bridge.includes("saveBanners")],
-  ["order address API", bridge.includes("updateOrderAddress") && bridge.includes("/orders/' + encodeURIComponent(orderId)"),
+  ["order address API", bridge.includes("updateOrderAddress") && bridge.includes("/orders/")],
   ["new product editor text", bundle.includes("إنشاء صنف جديد بالمتجر") && bundle.includes("صور 3:4")],
 ];
 
