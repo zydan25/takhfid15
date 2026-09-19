@@ -3,7 +3,6 @@ import { X, Trash2, ShoppingBag, Truck, CreditCard, ArrowRight } from 'lucide-re
 import type { CartItem, Order, StoreSettings } from '../types';
 import { initialStoreSettings } from '../types';
 import { ALL_GOVERNORATES, GOVERNORATE_RATES } from '../data/governorates';
-import { saveOrderToFirestore } from '../firebase';
 import { createOrderApi } from '../api';
 import { formatCurrencyPrice } from '../utils/pricing';
 
@@ -90,14 +89,11 @@ export const CartModal: React.FC<CartModalProps> = ({
     };
 
     try {
-      // 1. Send to the new server backend
-      await createOrderApi(newOrder).catch((e) => {
-        console.warn('Backend server order placement note:', e);
-      });
-      // 2. Also backup to Firestore
-      await saveOrderToFirestore(newOrder).catch((e) => {
-        console.warn('Firestore order backup note:', e);
-      });
+      // Persist on the authoritative backend; do not report success on a local-only fallback.
+      const saved = await createOrderApi(newOrder);
+      if (!saved) {
+        throw new Error('الخادم لم يؤكد حفظ الطلب');
+      }
 
       onOrderPlaced(newOrder);
       onClearCart();
