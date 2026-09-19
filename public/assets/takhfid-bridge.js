@@ -156,49 +156,112 @@
   // --- SAFE DATA NORMALIZATION ---
   function normalizeProduct(p) {
     if (!p) return null;
-    var discPrice = typeof p.discountPrice === 'number' ? p.discountPrice : (typeof p.price === 'number' ? p.price : (typeof p.originalPrice === 'number' ? p.originalPrice : 45));
-    var origPrice = typeof p.originalPrice === 'number' ? p.originalPrice : (typeof p.price === 'number' ? Math.round(p.price * 1.35) : Math.round(discPrice * 1.35));
+    var res = Object.assign({}, p);
+
+    var discPrice = typeof p.discountPrice === 'number' && !isNaN(p.discountPrice)
+      ? p.discountPrice
+      : (typeof p.price === 'number' && !isNaN(p.price)
+        ? p.price
+        : (typeof p.originalPrice === 'number' && !isNaN(p.originalPrice) ? p.originalPrice : 45));
+
+    var origPrice = typeof p.originalPrice === 'number' && !isNaN(p.originalPrice)
+      ? p.originalPrice
+      : (typeof p.price === 'number' && !isNaN(p.price)
+        ? Math.round(p.price * 1.35)
+        : Math.round(discPrice * 1.35));
+
     if (origPrice < discPrice) origPrice = Math.round(discPrice * 1.35);
-    var discPerc = typeof p.discountPercentage === 'number' ? p.discountPercentage : (origPrice > discPrice ? Math.round(((origPrice - discPrice) / origPrice) * 100) : 0);
+
+    var discPerc = typeof p.discountPercentage === 'number' && !isNaN(p.discountPercentage)
+      ? p.discountPercentage
+      : (origPrice > discPrice ? Math.round(((origPrice - discPrice) / origPrice) * 100) : 0);
 
     var cat = p.category || (Array.isArray(p.categories) && p.categories[1] ? p.categories[1] : 'women');
     var cats = Array.isArray(p.categories) && p.categories.length > 0 ? p.categories : ['all', cat];
 
-    var img = p.image || (Array.isArray(p.images) && p.images[0]) || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80';
-    var gallery = Array.isArray(p.galleryImages) && p.galleryImages.length > 0 ? p.galleryImages : [img];
+    var img = p.image || (Array.isArray(p.images) && p.images[0]) || (Array.isArray(p.galleryImages) && p.galleryImages[0]) || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80';
+    var gallery = Array.isArray(p.galleryImages) && p.galleryImages.length > 0
+      ? p.galleryImages
+      : (Array.isArray(p.images) && p.images.length > 0 ? p.images : [img]);
 
-    var colors = Array.isArray(p.colors) && p.colors.length > 0 ? p.colors : [{ name: 'أسود كلاسيك', hex: '#1e293b' }];
+    // Normalize colors, preserving per-color images and hex values
+    var colors = Array.isArray(p.colors) && p.colors.length > 0 ? p.colors.map(function(c) {
+      if (typeof c === 'string') {
+        return { name: c, hex: '#1e293b', images: [img], image: img };
+      }
+      var cImgs = Array.isArray(c.images) && c.images.length > 0
+        ? c.images
+        : (c.image ? [c.image] : [img]);
+      return {
+        name: c.name || 'لون',
+        hex: c.hex || '#1e293b',
+        image: cImgs[0] || img,
+        images: cImgs
+      };
+    }) : [{ name: 'افتراضي', hex: '#1e293b', image: img, images: [img] }];
+
     var sizes = Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes : ['M', 'L', 'XL'];
+    var tags = Array.isArray(p.tags) ? p.tags : (p.tags ? [String(p.tags)] : []);
+    var trends = Array.isArray(p.trends) && p.trends.length > 0 ? p.trends : (p.trendTag ? [p.trendTag] : []);
 
-    return {
-      id: String(p.id || ('p-' + Date.now())),
-      name: String(p.name || p.title || 'صنف جديد'),
-      brand: String(p.brand || 'SHEIN'),
-      category: String(cat),
-      categories: cats,
-      subCategory: String(p.subCategory || 'عام'),
-      originalPrice: Number(origPrice),
-      discountPrice: Number(discPrice),
-      discountPercentage: Number(discPerc),
-      price: Number(discPrice),
-      rating: typeof p.rating === 'number' ? p.rating : 4.8,
-      reviewsCount: typeof p.reviewsCount === 'number' ? p.reviewsCount : 120,
-      image: String(img),
-      galleryImages: gallery,
-      colors: colors,
-      sizes: sizes,
-      inStock: p.inStock !== false,
-      description: String(p.description || ''),
-      couponTag: String(p.couponTag || 'بعد القسيمة'),
-      salesText: String(p.salesText || '+100. تم بيع'),
-      storeBadgeTag: String(p.storeBadgeTag || 'متجر معتمد 🏪'),
-      cardAspect: p.cardAspect || 'standard',
-      isBestSeller: Boolean(p.isBestSeller),
-      isNewBadgeEnabled: p.isNewBadgeEnabled !== false,
-      newBadgeText: p.newBadgeText || 'NEW',
-      sku: p.sku || ('SKU-' + (p.id || Date.now())),
-      soldCount: typeof p.soldCount === 'number' ? p.soldCount : 100
-    };
+    res.id = String(p.id || ('p-' + Date.now()));
+    res.name = String(p.name || p.title || 'صنف جديد');
+    res.brand = String(p.brand || 'SHEIN');
+    res.category = String(cat);
+    res.categories = cats;
+    res.subCategory = String(p.subCategory || 'عام');
+    res.originalPrice = Number(origPrice);
+    res.discountPrice = Number(discPrice);
+    res.discountPercentage = Number(discPerc);
+    res.price = Number(discPrice);
+    res.rating = typeof p.rating === 'number' ? p.rating : 4.8;
+    res.reviewsCount = typeof p.reviewsCount === 'number' ? p.reviewsCount : 120;
+    res.image = String(img);
+    res.images = gallery;
+    res.galleryImages = gallery;
+    res.colors = colors;
+    res.sizes = sizes;
+    res.tags = tags;
+    res.trends = trends;
+    res.inStock = p.inStock !== false && p.stock !== 0;
+
+    // Badges & customizations - fully preserved and synchronized
+    res.isSavingBannerEnabled = Boolean(p.isSavingBannerEnabled);
+    res.savingBannerPrefix = p.savingBannerPrefix !== undefined ? String(p.savingBannerPrefix) : 'توفير';
+    res.savingBannerLeftText = p.savingBannerLeftText !== undefined ? String(p.savingBannerLeftText) : '';
+    res.savingBannerBgColor = p.savingBannerBgColor || 'rgba(0, 0, 0, 0.78)';
+    res.savingBannerTextColor = p.savingBannerTextColor || '#ffffff';
+    res.savingBannerPriceColor = p.savingBannerPriceColor || '#facc15';
+
+    res.showCardShipping = Boolean(p.showCardShipping);
+    res.cardShippingText = p.cardShippingText !== undefined ? String(p.cardShippingText) : 'شحن مجاني وسريع 🚚';
+    res.isLocalFastShipping = Boolean(p.isLocalFastShipping);
+
+    res.isNewBadgeEnabled = p.isNewBadgeEnabled !== false;
+    res.newBadgeText = p.newBadgeText || 'NEW';
+    res.newBadgeTextColor = p.newBadgeTextColor || '#ffffff';
+    res.newBadgeBgColor = p.newBadgeBgColor || '#10b981';
+    res.newBadgeDurationDays = typeof p.newBadgeDurationDays === 'number' ? p.newBadgeDurationDays : 7;
+
+    res.isBestSeller = Boolean(p.isBestSeller);
+    res.bestSellerText = p.bestSellerText || '';
+    res.campaignRibbonText = p.campaignRibbonText || '';
+    res.ratingReviewsText = p.ratingReviewsText || '';
+    res.cartBadgeCount = typeof p.cartBadgeCount === 'number' ? p.cartBadgeCount : undefined;
+    res.productType = p.productType || '';
+    res.fabric = p.fabric || '';
+    res.ageGroup = p.ageGroup || '';
+    res.hasCurveLogo = Boolean(p.hasCurveLogo);
+    res.stretchInfo = p.stretchInfo || '';
+    res.hasZoomInBubble = Boolean(p.hasZoomInBubble);
+    res.zoomBubbleImage = p.zoomBubbleImage || '';
+    res.enableReviews = p.enableReviews !== false;
+    res.enableSizeGuide = p.enableSizeGuide !== false;
+    res.cardAspect = p.cardAspect || 'tall';
+    res.sku = p.sku || ('SKU-' + (p.id || Date.now()));
+    res.soldCount = typeof p.soldCount === 'number' ? p.soldCount : 100;
+
+    return res;
   }
 
   function normalizeBanner(b, idx) {
@@ -414,8 +477,8 @@
     updateContentSection: async function(payload) {
       var token = getAuthToken();
       if (!token) {
-        console.warn('[Bridge] updateContentSection called without admin token. Cached locally.');
-        return { success: true, cached: true, message: 'تم الحفظ في الذاكرة المحلية بنجاح' };
+        console.warn('[Bridge] updateContentSection rejected: no active admin session.');
+        return { success: false, error: 'جلسة الإدارة غير مفعلة. سجّل الدخول أولاً.' };
       }
       try {
         var res = await fetch(getBaseUrl() + '/admin/content', {
@@ -460,11 +523,9 @@
     saveCategories: async function(categories) {
       if (!Array.isArray(categories)) return { success: false };
       var safe = categories.map(function(c) { return normalizeCategory(c); }).filter(Boolean);
-      try {
-        localStorage.setItem('altakhfid_categories', JSON.stringify(safe));
-      } catch(e) {}
       var res = await this.updateContentSection({ categories: safe });
       if (res.success) {
+        try { localStorage.setItem('altakhfid_categories', JSON.stringify(safe)); } catch(e) {}
         console.log('[Bridge] Categories saved to server successfully (' + safe.length + ')');
       }
       return res;
@@ -473,11 +534,9 @@
     saveBanners: async function(banners) {
       if (!Array.isArray(banners)) return { success: false };
       var safe = banners.map(normalizeBanner).filter(Boolean);
-      try {
-        localStorage.setItem('store_banners_v1', JSON.stringify(safe));
-      } catch(e) {}
       var res = await this.updateContentSection({ banners: safe });
       if (res.success) {
+        try { localStorage.setItem('store_banners_v1', JSON.stringify(safe)); } catch(e) {}
         console.log('[Bridge] Banners saved to server successfully (' + safe.length + ')');
       }
       return res;
@@ -486,12 +545,12 @@
     saveCampaigns: async function(campaigns) {
       if (!Array.isArray(campaigns)) return { success: false };
       var safe = campaigns.map(normalizeCampaign).filter(Boolean);
-      try {
-        localStorage.setItem('trend_campaigns_v2', JSON.stringify(safe));
-        localStorage.setItem('altakhfid_campaigns', JSON.stringify(safe));
-      } catch(e) {}
       var res = await this.updateContentSection({ campaigns: safe });
       if (res.success) {
+        try {
+          localStorage.setItem('trend_campaigns_v2', JSON.stringify(safe));
+          localStorage.setItem('altakhfid_campaigns', JSON.stringify(safe));
+        } catch(e) {}
         console.log('[Bridge] Campaigns saved to server successfully (' + safe.length + ')');
       }
       return res;
@@ -499,11 +558,9 @@
 
     saveHashtags: async function(hashtags) {
       if (!Array.isArray(hashtags)) return { success: false };
-      try {
-        localStorage.setItem('trend_hashtags_v2', JSON.stringify(hashtags));
-      } catch(e) {}
       var res = await this.updateContentSection({ trendHashtags: hashtags, hashtags: hashtags });
       if (res.success) {
+        try { localStorage.setItem('trend_hashtags_v2', JSON.stringify(hashtags)); } catch(e) {}
         console.log('[Bridge] Hashtags saved to server successfully (' + hashtags.length + ')');
       }
       return res;
@@ -511,33 +568,27 @@
 
     saveAnnouncements: async function(announcements) {
       var safe = normalizeAnnouncementSettings(announcements);
-      try {
-        localStorage.setItem('shein_announcement_bar_settings_v1', JSON.stringify(safe));
-      } catch(e) {}
       var res = await this.updateContentSection({ announcements: safe });
       if (res.success) {
+        try { localStorage.setItem('shein_announcement_bar_settings_v1', JSON.stringify(safe)); } catch(e) {}
         console.log('[Bridge] Announcements saved to server successfully');
       }
       return res;
     },
 
     saveCategoryTabsConfig: async function(config) {
-      try {
-        localStorage.setItem('store_category_tabs_config_v2', JSON.stringify(config));
-      } catch(e) {}
       var res = await this.updateContentSection({ categoryTabsConfig: config });
       if (res.success) {
+        try { localStorage.setItem('store_category_tabs_config_v2', JSON.stringify(config)); } catch(e) {}
         console.log('[Bridge] Category tabs config saved to server successfully');
       }
       return res;
     },
 
     saveRecommendations: async function(tabs) {
-      try {
-        localStorage.setItem('store_recommendation_tabs_v2', JSON.stringify(tabs));
-      } catch(e) {}
       var res = await this.updateContentSection({ recommendationTabs: tabs });
       if (res.success) {
+        try { localStorage.setItem('store_recommendation_tabs_v2', JSON.stringify(tabs)); } catch(e) {}
         console.log('[Bridge] Recommendation tabs saved to server successfully');
       }
       return res;
@@ -775,6 +826,68 @@
       }
     },
 
+    // LIVE SERVER REFRESH — server is authoritative
+    syncFromServer: async function(isManual) {
+      try {
+        var content = await takhfidBridge.fetchContent();
+        if (content) {
+          if (Array.isArray(content.categories) && content.categories.length > 0) {
+            var cats = content.categories.map(function(c) { return normalizeCategory(c); }).filter(Boolean);
+            if (lastHooks && lastHooks.setCategories) lastHooks.setCategories(cats);
+            try { localStorage.setItem('altakhfid_categories', JSON.stringify(cats)); } catch(e) {}
+          }
+          if (Array.isArray(content.banners) && content.banners.length > 0) {
+            var banners = content.banners.map(normalizeBanner).filter(Boolean);
+            if (lastHooks && lastHooks.setBanners) lastHooks.setBanners(banners);
+            try { localStorage.setItem('store_banners_v1', JSON.stringify(banners)); } catch(e) {}
+          }
+          if (Array.isArray(content.campaigns) && content.campaigns.length > 0) {
+            var campaigns = content.campaigns.map(normalizeCampaign).filter(Boolean);
+            if (lastHooks && lastHooks.setCampaigns) lastHooks.setCampaigns(campaigns);
+            try {
+              localStorage.setItem('trend_campaigns_v2', JSON.stringify(campaigns));
+              localStorage.setItem('altakhfid_campaigns', JSON.stringify(campaigns));
+            } catch(e) {}
+          }
+          var hashtags = Array.isArray(content.trendHashtags) && content.trendHashtags.length > 0
+            ? content.trendHashtags
+            : (Array.isArray(content.hashtags) ? content.hashtags : null);
+          if (hashtags && lastHooks && lastHooks.setHashtags) lastHooks.setHashtags(hashtags);
+          if (hashtags) { try { localStorage.setItem('trend_hashtags_v2', JSON.stringify(hashtags)); } catch(e) {} }
+          if (content.announcements && typeof content.announcements === 'object') {
+            var ann = normalizeAnnouncementSettings(content.announcements);
+            if (lastHooks && lastHooks.setAnnouncementSettings) lastHooks.setAnnouncementSettings(ann);
+            try { localStorage.setItem('shein_announcement_bar_settings_v1', JSON.stringify(ann)); } catch(e) {}
+          }
+          if (content.categoryTabsConfig && typeof content.categoryTabsConfig === 'object') {
+            if (lastHooks && lastHooks.setCategoryTabsConfig) lastHooks.setCategoryTabsConfig(content.categoryTabsConfig);
+            try { localStorage.setItem('store_category_tabs_config_v2', JSON.stringify(content.categoryTabsConfig)); } catch(e) {}
+          }
+          if (Array.isArray(content.recommendationTabs)) {
+            if (lastHooks && lastHooks.setRecommendationTabs) lastHooks.setRecommendationTabs(content.recommendationTabs);
+            try { localStorage.setItem('store_recommendation_tabs_v2', JSON.stringify(content.recommendationTabs)); } catch(e) {}
+          }
+        }
+
+        var serverProducts = await takhfidBridge.fetchProducts();
+        var products = Array.isArray(serverProducts) ? serverProducts.map(normalizeProduct).filter(Boolean) : [];
+        if (lastHooks && lastHooks.setProducts) lastHooks.setProducts(products);
+        try { localStorage.setItem('altakhfid_products', JSON.stringify(products)); } catch(e) {}
+
+        var orders = await takhfidBridge.fetchOrders();
+        var orderList = Array.isArray(orders) ? orders : [];
+        if (lastHooks && lastHooks.setOrders) lastHooks.setOrders(orderList);
+        try { localStorage.setItem('admin_orders_v2', JSON.stringify(orderList)); } catch(e) {}
+
+        if (isManual) toast('تم تحديث المنتجات والمحتوى والطلبات مباشرة من الخادم ✅', 'success');
+        return { success: true, productsCount: products.length, ordersCount: orderList.length };
+      } catch (err) {
+        console.error('[Bridge] syncFromServer error:', err);
+        if (isManual) toast('تعذر تحديث البيانات من الخادم: ' + (err.message || String(err)), 'error');
+        return { success: false, error: err.message || String(err) };
+      }
+    },
+
     // 5. BOOTSTRAP INITIALIZATION ON APP LOAD
     initSync: async function(hooks) {
       hooks = hooks || {};
@@ -931,6 +1044,8 @@
   window.__takhfidCreateOrder = takhfidBridge.createOrder.bind(takhfidBridge);
   window.__takhfidUpdateOrderStatus = takhfidBridge.updateOrderStatus.bind(takhfidBridge);
   window.__takhfidSyncAll = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
+  window.__takhfidSyncFromServer = function(isManual) { return takhfidBridge.syncFromServer(isManual); };
+  window.__takhfidRefresh = function() { return takhfidBridge.syncFromServer(false); };
   window.__takhfidBulkSync = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
   window.__takhfidFetchOrders = takhfidBridge.fetchOrders.bind(takhfidBridge);
   window.syncProductsToServer = function() { return takhfidBridge.syncAllToBackend(true); };
