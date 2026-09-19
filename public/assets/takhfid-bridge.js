@@ -520,6 +520,14 @@
         }
       }
     },
+    savePricingSettings: async function(settings) {
+      if (!settings || typeof settings !== 'object') return { success: false, error: 'بيانات التسعير غير صالحة' };
+      var res = await this.updateContentSection({ pricingSettings: settings });
+      if (res.success) {
+        try { localStorage.setItem('altakhfid_pricing_settings', JSON.stringify(settings)); } catch(e) {}
+      }
+      return res;
+    },
     saveCategories: async function(categories) {
       if (!Array.isArray(categories)) return { success: false };
       var safe = categories.map(function(c) { return normalizeCategory(c); }).filter(Boolean);
@@ -1063,6 +1071,7 @@
   window.__takhfidSaveAnnouncements = takhfidBridge.saveAnnouncements.bind(takhfidBridge);
   window.__takhfidSaveCategoryTabsConfig = takhfidBridge.saveCategoryTabsConfig.bind(takhfidBridge);
   window.__takhfidSaveRecommendations = takhfidBridge.saveRecommendations.bind(takhfidBridge);
+  window.__takhfidSavePricing = takhfidBridge.savePricingSettings.bind(takhfidBridge);
   window.__takhfidCreateOrder = takhfidBridge.createOrder.bind(takhfidBridge);
   window.__takhfidUpdateOrderStatus = takhfidBridge.updateOrderStatus.bind(takhfidBridge);
   window.__takhfidUpdateOrderAddress = takhfidBridge.updateOrderAddress.bind(takhfidBridge);
