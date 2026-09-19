@@ -1206,7 +1206,7 @@
         }
 
         if (isManual) toast('تم تحديث المنتجات والمحتوى والطلبات مباشرة من الخادم ✅', 'success');
-        return { success: true, productsCount: products.length, ordersCount: orderList.length };
+        return { success: true, productsCount: products.length, ordersCount: orders.length };
       } catch (err) {
         console.error('[Bridge] syncFromServer error:', err);
         if (isManual) toast('تعذر تحديث البيانات من الخادم: ' + (err.message || String(err)), 'error');
