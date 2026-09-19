@@ -1,5 +1,4 @@
   // --- SAFE DATA NORMALIZATION ---
-  // --- SAFE DATA NORMALIZATION ---
   function finiteNumber(value, fallback) {
     var n = Number(value);
     return Number.isFinite(n) ? n : (fallback || 0);
@@ -129,32 +128,32 @@
     res.sku = p.sku ? String(p.sku) : '';
     res.soldCount = soldCount;
 
-    res.isNewBadgeEnabled = p.isNewBadgeEnabled !== false;
-    res.newBadgeText = p.newBadgeText !== undefined ? String(p.newBadgeText) : 'NEW';
+    res.isNewBadgeEnabled = p.isNewBadgeEnabled === true;
+    res.newBadgeText = p.newBadgeText !== undefined ? String(p.newBadgeText) : '';
     res.newBadgeTextColor = p.newBadgeTextColor || '#ffffff';
     res.newBadgeBgColor = p.newBadgeBgColor || '#10b981';
     res.newBadgeDurationDays = finiteNumber(p.newBadgeDurationDays, 7);
 
-    res.hasCoupon = p.hasCoupon !== false;
+    res.hasCoupon = p.hasCoupon === true;
     res.couponDiscountType = p.couponDiscountType || 'percentage';
     res.couponDiscountValue = finiteNumber(p.couponDiscountValue, 0);
     res.couponMaxCap = Number.isFinite(Number(p.couponMaxCap)) ? Number(p.couponMaxCap) : null;
     res.couponCustomLabel = p.couponCustomLabel !== undefined ? String(p.couponCustomLabel) : '';
     res.hasPromotionalTiers = Boolean(p.hasPromotionalTiers);
     res.promotionalTiersText = p.promotionalTiersText !== undefined ? String(p.promotionalTiersText) : '';
-    res.hasCouponPriceCustomStyle = p.hasCouponPriceCustomStyle !== false;
+    res.hasCouponPriceCustomStyle = p.hasCouponPriceCustomStyle === true;
     res.couponPriceBgColor = p.couponPriceBgColor || '#fff1f2';
     res.couponPriceTextColor = p.couponPriceTextColor || '#e11d48';
     res.couponPriceDividerColor = p.couponPriceDividerColor || '#f43f5e';
 
-    res.isSavingBannerEnabled = Boolean(p.isSavingBannerEnabled);
-    res.savingBannerPrefix = p.savingBannerPrefix !== undefined ? String(p.savingBannerPrefix) : 'توفير';
+    res.isSavingBannerEnabled = p.isSavingBannerEnabled === true;
+    res.savingBannerPrefix = p.savingBannerPrefix !== undefined ? String(p.savingBannerPrefix) : '';
     res.savingBannerLeftText = p.savingBannerLeftText !== undefined ? String(p.savingBannerLeftText) : '';
     res.savingBannerBgColor = p.savingBannerBgColor || 'rgba(0, 0, 0, 0.78)';
     res.savingBannerTextColor = p.savingBannerTextColor || '#ffffff';
     res.savingBannerPriceColor = p.savingBannerPriceColor || '#facc15';
 
-    res.showCardShipping = p.showCardShipping !== false;
+    res.showCardShipping = p.showCardShipping === true;
     res.cardShippingText = p.cardShippingText !== undefined ? String(p.cardShippingText) : '';
     
     res.floatingLogos = p.floatingLogos && typeof p.floatingLogos === 'object' ? p.floatingLogos : undefined;
