@@ -37,7 +37,7 @@
         </provider>
         <meta-data
             android:name="developer"
-            android:value="@string/developer_brand" />
+            android:value="Yemen Code للتقنيات الذكية" />
     </application>
 
     <!-- Permissions -->
