@@ -122,14 +122,21 @@
 
     <script src="/assets/takhfid-bridge.js"></script>
 
-    <script type="module">
-      import("/assets/index-Co2L1R-b.js")
-        .catch(function (error) {
+    <script>
+      (function () {
+        var bundle = document.createElement("script");
+        bundle.type = "module";
+        bundle.src = "/assets/index-Co2L1R-b.js";
+        bundle.async = false;
+        bundle.onerror = function () {
+          var error = new Error("تعذر تحميل ملف التطبيق الرئيسي /assets/index-Co2L1R-b.js");
           console.error("[Takhfid] Main bundle failed to load:", error);
           if (window.__takhfidShowBootError) {
             window.__takhfidShowBootError(error, "main-bundle");
           }
-        });
+        };
+        document.body.appendChild(bundle);
+      })();
     </script>
   </body>
 </html>
