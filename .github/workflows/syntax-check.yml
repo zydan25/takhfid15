@@ -1,0 +1,28 @@
+name: Takhfid Shipped JS Syntax Check
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check shipped JavaScript syntax
+        run: |
+          node --check public/assets/index-Co2L1R-b.js
+          node --check public/assets/takhfid-bridge.js
