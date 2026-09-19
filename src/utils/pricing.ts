@@ -18,3 +18,8 @@ export function formatPrice(amount: number, currency: string = 'YER'): string {
   }
   return `${Math.round(amount).toLocaleString('ar-YE')} ر.ي`;
 }
+
+
+export function formatCurrencyPrice(amount: number, currency: 'YER' | 'SAR' | 'USD' = 'YER'): string {
+  return formatPrice(amount, currency);
+}
