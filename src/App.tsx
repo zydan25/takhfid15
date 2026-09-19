@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import type { Product, Category, Banner, TrendCampaign, CartItem, Order, User, PricingSettings, StoreSettings } from './types';
 import { initialStoreSettings } from './types';
-import { INITIAL_CATEGORIES } from './data/categories';
-import { INITIAL_PRODUCTS } from './data/products';
-import { INITIAL_BANNERS } from './data/banners';
-import { INITIAL_TREND_CAMPAIGNS, INITIAL_TREND_HASHTAGS } from './data/trends';
 import {
   fetchProductsApi,
   fetchContentApi,
   fetchPricingSettingsApi,
   fetchStoreSettingsApi,
   fetchOrdersApi,
-  autoMigrateDataToServer,
 } from './api';
 import { initialPricingSettings } from './utils/pricing';
 import { Header } from './components/Header';
@@ -54,12 +49,23 @@ export const App: React.FC = () => {
     } catch (e) {
       console.warn('Failed to parse cached products:', e);
     }
-    return INITIAL_PRODUCTS;
+    return [];
   });
-  const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
-  const [banners, setBanners] = useState<Banner[]>(INITIAL_BANNERS);
-  const [campaigns, setCampaigns] = useState<TrendCampaign[]>(INITIAL_TREND_CAMPAIGNS);
-  const [hashtags] = useState<string[]>(INITIAL_TREND_HASHTAGS);
+
+  const readCachedList = <T,>(key: string): T[] => {
+    try {
+      const raw = localStorage.getItem(key);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const [categories, setCategories] = useState<Category[]>(() => readCachedList<Category>('altakhfid_categories'));
+  const [banners, setBanners] = useState<Banner[]>(() => readCachedList<Banner>('store_banners_v1'));
+  const [campaigns, setCampaigns] = useState<TrendCampaign[]>(() => readCachedList<TrendCampaign>('trend_campaigns_v2'));
+  const [hashtags, setHashtags] = useState<string[]>(() => readCachedList<string>('trend_hashtags_v2'));
   const [pricingSettings, setPricingSettings] = useState<PricingSettings>(() => {
     try {
       const saved = localStorage.getItem('altakhfid_pricing_settings');
@@ -195,7 +201,7 @@ export const App: React.FC = () => {
   const refreshProductsFromServer = async () => {
     try {
       const srvProducts = await fetchProductsApi();
-      if (Array.isArray(srvProducts) && srvProducts.length > 0) {
+      if (Array.isArray(srvProducts)) {
         setProducts(srvProducts);
       }
     } catch (e) {
@@ -207,39 +213,37 @@ export const App: React.FC = () => {
     let isMounted = true;
 
     async function initAppBackend() {
-      // 1. Products: Fetch from server with first-run auto-migration fallback
+      // 1. Server-authoritative product refresh. Keep the local cache only when the request itself fails.
       try {
         const srvProducts = await fetchProductsApi();
-        if (isMounted && Array.isArray(srvProducts) && srvProducts.length > 0) {
+        if (isMounted && Array.isArray(srvProducts)) {
           setProducts(srvProducts);
-        } else {
-          const res = await autoMigrateDataToServer(
-            INITIAL_PRODUCTS,
-            INITIAL_CATEGORIES,
-            INITIAL_BANNERS,
-            INITIAL_TREND_CAMPAIGNS
-          );
-          if (res.serverSynced && isMounted) {
-            const recheck = await fetchProductsApi();
-            if (recheck.length > 0) setProducts(recheck);
-          }
         }
       } catch (err) {
-        console.warn('Server product initialization note:', err);
+        console.warn('Server product initialization failed; keeping local cache:', err);
       }
 
       // 2. Content: Categories, Banners, Campaigns
       try {
         const content = await fetchContentApi();
         if (isMounted) {
-          if (content.categories && content.categories.length > 0) {
+          if (Array.isArray(content.categories)) {
             setCategories(content.categories);
           }
-          if (content.banners && content.banners.length > 0) {
+          if (Array.isArray(content.banners)) {
             setBanners(content.banners);
           }
-          if (content.campaigns && content.campaigns.length > 0) {
+          if (Array.isArray(content.campaigns)) {
             setCampaigns(content.campaigns);
+          }
+          const serverHashtags = Array.isArray((content as any).trendHashtags)
+            ? (content as any).trendHashtags
+            : (Array.isArray((content as any).hashtags) ? (content as any).hashtags : null);
+          if (serverHashtags) {
+            setHashtags(serverHashtags);
+            try {
+              localStorage.setItem('trend_hashtags_v2', JSON.stringify(serverHashtags));
+            } catch {}
           }
         }
       } catch (e) {
