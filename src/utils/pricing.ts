@@ -23,3 +23,10 @@ export function formatPrice(amount: number, currency: string = 'YER'): string {
 export function formatCurrencyPrice(amount: number, currency: 'YER' | 'SAR' | 'USD' = 'YER'): string {
   return formatPrice(amount, currency);
 }
+
+
+export function safeFormatNumber(value: unknown): string {
+  const n = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(n)) return '0';
+  return Math.round(n).toLocaleString('ar-YE');
+}
