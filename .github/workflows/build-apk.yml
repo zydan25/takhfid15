@@ -82,8 +82,25 @@ jobs:
             # Capacitor's generated Android resources or launcher activity. Keep the
             # tracked native code/settings while restoring the generated pieces needed
             # by a clean CI build and by Android at runtime.
+            #
+            # Preserve project-specific Android resources before replacing the generated
+            # res/ directory (notably network_security_config.xml).
+            mkdir -p /tmp/takhfid-ci-preserve-res/xml
+            if [ -f android-existing/app/src/main/res/xml/network_security_config.xml ]; then
+              cp android-existing/app/src/main/res/xml/network_security_config.xml /tmp/takhfid-ci-preserve-res/xml/network_security_config.xml
+            fi
+            if [ -f android-existing/app/src/main/res/xml/file_paths.xml ]; then
+              cp android-existing/app/src/main/res/xml/file_paths.xml /tmp/takhfid-ci-preserve-res/xml/file_paths.xml
+            fi
+
             rm -rf android-existing/app/src/main/res
             cp -R android/app/src/main/res android-existing/app/src/main/res
+
+            # Restore the tracked app-specific resources after Capacitor generation.
+            if [ -d /tmp/takhfid-ci-preserve-res/xml ]; then
+              mkdir -p android-existing/app/src/main/res/xml
+              cp -R /tmp/takhfid-ci-preserve-res/xml/. android-existing/app/src/main/res/xml/
+            fi
 
             if [ -d android/app/src/main/java ]; then
               mkdir -p android-existing/app/src/main/java
