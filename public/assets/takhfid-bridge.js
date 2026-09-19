@@ -698,6 +698,28 @@
       }
     },
 
+    updateOrderAddress: async function(orderId, shippingAddress, deliveryNotes) {
+      if (!orderId) return { success: false, error: 'معرف الطلب غير موجود' };
+      try {
+        var res = await fetch(getBaseUrl() + '/orders/' + encodeURIComponent(orderId), {
+          method: 'PUT',
+          headers: getAuthHeaders(true),
+          body: JSON.stringify({
+            shippingAddress: shippingAddress || '',
+            deliveryNotes: deliveryNotes || ''
+          })
+        });
+        var data = await res.json().catch(function() { return {}; });
+        if (!res.ok || data.success === false) {
+          return { success: false, error: data.error || ('HTTP ' + res.status) };
+        }
+        return { success: true, order: data.order || null };
+      } catch (err) {
+        console.error('[Bridge] updateOrderAddress error:', err);
+        return { success: false, error: err.message || String(err) };
+      }
+    },
+
     // 4. COMPREHENSIVE BULK SYNC TO BACKEND
     syncAllToBackend: async function(isManual) {
       console.log('[Bridge] Starting full sync to server...');
@@ -1043,12 +1065,89 @@
   window.__takhfidSaveRecommendations = takhfidBridge.saveRecommendations.bind(takhfidBridge);
   window.__takhfidCreateOrder = takhfidBridge.createOrder.bind(takhfidBridge);
   window.__takhfidUpdateOrderStatus = takhfidBridge.updateOrderStatus.bind(takhfidBridge);
+  window.__takhfidUpdateOrderAddress = takhfidBridge.updateOrderAddress.bind(takhfidBridge);
   window.__takhfidSyncAll = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
   window.__takhfidSyncFromServer = function(isManual) { return takhfidBridge.syncFromServer(isManual); };
   window.__takhfidRefresh = function() { return takhfidBridge.syncFromServer(false); };
   window.__takhfidBulkSync = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
   window.__takhfidFetchOrders = takhfidBridge.fetchOrders.bind(takhfidBridge);
   window.syncProductsToServer = function() { return takhfidBridge.syncAllToBackend(true); };
+
+  // UI rules for the new admin: no manual bulk-sync, and live order sorting.
+  function installAdminUxRules() {
+    try {
+      var syncBtn = document.getElementById('admin-sync-cloud-btn');
+      if (syncBtn) {
+        syncBtn.style.display = 'none';
+        syncBtn.setAttribute('aria-hidden', 'true');
+      }
+
+      var orderSearch = Array.from(document.querySelectorAll('input')).find(function(input) {
+        return input && input.placeholder === 'ابحث بالاسم، الهاتف، المحافظة، أو الطلب...';
+      });
+
+      if (orderSearch) {
+        var filterBar = orderSearch.closest('.p-2\\.5') || orderSearch.parentElement && orderSearch.parentElement.parentElement;
+        if (filterBar && !filterBar.querySelector('#takhfid-order-sort')) {
+          var selectWrap = document.createElement('div');
+          selectWrap.style.cssText = 'display:flex;align-items:center;gap:6px;margin-top:6px;';
+          selectWrap.innerHTML =
+            '<span style="font-size:10px;font-weight:800;color:#92400e;">الفرز:</span>' +
+            '<select id="takhfid-order-sort" style="flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:4px 6px;font-size:11px;font-weight:700;color:#111827;">' +
+            '<option value="newest">الأحدث</option>' +
+            '<option value="name_asc">الاسم: أ ← ي</option>' +
+            '<option value="name_desc">الاسم: ي ← أ</option>' +
+            '<option value="amount_desc">القيمة: الأعلى</option>' +
+            '<option value="amount_asc">القيمة: الأقل</option>' +
+            '</select>';
+          filterBar.appendChild(selectWrap);
+        }
+
+        var sorter = document.getElementById('takhfid-order-sort');
+        var list = orderSearch.closest('.flex.flex-col') && orderSearch.closest('.flex.flex-col').querySelector('.flex-1.overflow-y-auto');
+        if (sorter && list && sorter.__takhfidBound !== true) {
+          sorter.__takhfidBound = true;
+          sorter.addEventListener('change', function() {
+            var mode = sorter.value;
+            var items = Array.from(list.children);
+            items.sort(function(a, b) {
+              var at = (a.innerText || '').replace(/\\s+/g, ' ').trim();
+              var bt = (b.innerText || '').replace(/\\s+/g, ' ').trim();
+              if (mode === 'name_asc' || mode === 'name_desc') {
+                var an = at.split('•')[0] || at;
+                var bn = bt.split('•')[0] || bt;
+                var cmp = an.localeCompare(bn, 'ar');
+                return mode === 'name_asc' ? cmp : -cmp;
+              }
+              var nums = function(s) {
+                var ms = s.match(/([0-9][0-9,\\.]*)\\s*(?:ر\.س|ر\.ي)?/g) || [];
+                if (!ms.length) return 0;
+                return Number((ms[ms.length-1] || '').replace(/[^0-9.]/g, '')) || 0;
+              };
+              var av = nums(at), bv = nums(bt);
+              if (mode === 'amount_desc') return bv - av;
+              if (mode === 'amount_asc') return av - bv;
+              return 0;
+            });
+            items.forEach(function(node) { list.appendChild(node); });
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('[Bridge] admin UX rule warning:', e);
+    }
+  }
+
+  if (typeof MutationObserver !== 'undefined') {
+    var __takhfidUxObserver = new MutationObserver(function() { installAdminUxRules(); });
+    try {
+      __takhfidUxObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
+    } catch (e) {}
+  }
+  if (typeof setTimeout !== 'undefined') setTimeout(installAdminUxRules, 250);
+  if (typeof setInterval !== 'undefined') setInterval(installAdminUxRules, 1500);
+
+  window.__takhfidInstallAdminUx = installAdminUxRules;
 
   console.log('[Bridge] Takhfid Store Bridge v4.3.0 loaded and ready.');
 })();
