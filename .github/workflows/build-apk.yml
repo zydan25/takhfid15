@@ -83,8 +83,10 @@ jobs:
             # Capacitor's generated Android resources or launcher activity. Keep the
             # tracked native code/settings while restoring the generated pieces needed
             # by a clean CI build and by Android at runtime.
-            rm -rf android-existing/app/src/main/res
-            cp -R android/app/src/main/res android-existing/app/src/main/res
+            # Merge generated Capacitor resources without deleting tracked custom resources
+            # such as network_security_config.xml and file_paths.xml.
+            mkdir -p android-existing/app/src/main/res
+            cp -R android/app/src/main/res/. android-existing/app/src/main/res/
 
             if [ -d android/app/src/main/java ]; then
               mkdir -p android-existing/app/src/main/java
