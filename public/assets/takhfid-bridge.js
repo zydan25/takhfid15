@@ -132,6 +132,46 @@
     }
   }
 
+  function getRuntimeConfig() {
+    try {
+      return (typeof window !== 'undefined' && window.TAKHFID_RUNTIME_CONFIG) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  async function serverFetch(url, init, options) {
+    var cfg = getRuntimeConfig();
+    var timeoutMs = Number((options && options.timeoutMs) || cfg.apiTimeoutMs || 20000);
+    var retries = Number((options && options.retries) !== undefined ? options.retries : (cfg.apiRetryCount || 1));
+    retries = Math.max(0, Math.min(3, retries));
+
+    var attempt = 0;
+    while (true) {
+      var controller = null;
+      var timer = null;
+      try {
+        controller = new AbortController();
+        var requestInit = Object.assign({}, init || {}, { signal: controller.signal });
+        timer = setTimeout(function() { try { controller.abort(); } catch (e) {} }, timeoutMs);
+        var response = await fetch(url, requestInit);
+        clearTimeout(timer);
+
+        if (response.status >= 500 && attempt < retries) {
+          attempt++;
+          await new Promise(function(resolve) { setTimeout(resolve, 350 * attempt); });
+          continue;
+        }
+        return response;
+      } catch (err) {
+        if (timer) clearTimeout(timer);
+        if (attempt >= retries) throw err;
+        attempt++;
+        await new Promise(function(resolve) { setTimeout(resolve, 350 * attempt); });
+      }
+    }
+  }
+
   function getAuthHeaders(includeContentType) {
     var headers = {};
     if (includeContentType !== false) {
@@ -434,21 +474,18 @@
       var safeProd = normalizeProduct(product);
 
       try {
-        var res = await fetch(url, {
+        var res = await serverFetch(url, {
           method: method,
           headers: getAuthHeaders(true),
           body: act === 'delete' ? undefined : JSON.stringify(safeProd)
         });
         var data = await res.json().catch(function() { return {}; });
         if (!res.ok || data.success === false) {
-          console.warn('[Bridge] saveProduct error:', data.error || ('HTTP ' + res.status));
-          return { success: false, error: data.error || 'فشل حفظ المنتج على الخادم' };
+          return { success: false, error: data.error || ('HTTP ' + res.status) };
         }
-        console.log('[Bridge] Product ' + product.id + ' saved successfully:', act);
         return { success: true, product: data.product || safeProd };
       } catch (err) {
-        console.error('[Bridge] saveProduct network exception:', err);
-        return { success: false, error: err.message };
+        return { success: false, error: err.message || String(err) };
       }
     },
 
@@ -477,57 +514,45 @@
     updateContentSection: async function(payload) {
       var token = getAuthToken();
       if (!token) {
-        console.warn('[Bridge] updateContentSection rejected: no active admin session.');
         return { success: false, error: 'جلسة الإدارة غير مفعلة. سجّل الدخول أولاً.' };
       }
       try {
-        var res = await fetch(getBaseUrl() + '/admin/content', {
+        var res = await serverFetch(getBaseUrl() + '/admin/content', {
           method: 'PUT',
           headers: getAuthHeaders(true),
           body: JSON.stringify(payload)
         });
         var data = await res.json().catch(function() { return {}; });
-        if (!res.ok || data.success === false) {
-          console.warn('[Bridge] updateContentSection proxy failed, trying direct remote:', data);
-          var r2 = await fetch(DIRECT_REMOTE_BASE + '/admin/content', {
-            method: 'PUT',
-            headers: getAuthHeaders(true),
-            body: JSON.stringify(payload)
-          });
-          var d2 = await r2.json().catch(function() { return {}; });
-          if (!r2.ok || d2.success === false) {
-            return { success: false, error: d2.error || ('HTTP ' + r2.status) };
-          }
-          return { success: true, data: d2 };
+        if (res.ok && data.success !== false) return { success: true, data: data };
+
+        var r2 = await serverFetch(DIRECT_REMOTE_BASE + '/admin/content', {
+          method: 'PUT',
+          headers: getAuthHeaders(true),
+          body: JSON.stringify(payload)
+        });
+        var d2 = await r2.json().catch(function() { return {}; });
+        if (!r2.ok || d2.success === false) {
+          return { success: false, error: d2.error || ('HTTP ' + r2.status) };
         }
-        return { success: true, data: data };
+        return { success: true, data: d2 };
       } catch (err) {
-        console.warn('[Bridge] updateContentSection network error, trying direct remote:', err);
         try {
-          var r2 = await fetch(DIRECT_REMOTE_BASE + '/admin/content', {
+          var r3 = await serverFetch(DIRECT_REMOTE_BASE + '/admin/content', {
             method: 'PUT',
             headers: getAuthHeaders(true),
             body: JSON.stringify(payload)
           });
-          var d2 = await r2.json().catch(function() { return {}; });
-          if (!r2.ok || d2.success === false) {
-            return { success: false, error: d2.error || ('HTTP ' + r2.status) };
+          var d3 = await r3.json().catch(function() { return {}; });
+          if (!r3.ok || d3.success === false) {
+            return { success: false, error: d3.error || ('HTTP ' + r3.status) };
           }
-          return { success: true, data: d2 };
+          return { success: true, data: d3 };
         } catch (e2) {
-          console.error('[Bridge] updateContentSection fatal network error:', e2);
-          return { success: false, error: e2.message };
+          return { success: false, error: e2.message || String(e2) };
         }
       }
     },
-    savePricingSettings: async function(settings) {
-      if (!settings || typeof settings !== 'object') return { success: false, error: 'بيانات التسعير غير صالحة' };
-      var res = await this.updateContentSection({ pricingSettings: settings });
-      if (res.success) {
-        try { localStorage.setItem('altakhfid_pricing_settings', JSON.stringify(settings)); } catch(e) {}
-      }
-      return res;
-    },
+
     saveCategories: async function(categories) {
       if (!Array.isArray(categories)) return { success: false };
       var safe = categories.map(function(c) { return normalizeCategory(c); }).filter(Boolean);
@@ -634,7 +659,7 @@
       };
 
       try {
-        var res = await fetch(getBaseUrl() + '/orders', {
+        var res = await serverFetch(getBaseUrl() + '/orders', {
           method: 'POST',
           headers: getAuthHeaders(true),
           body: JSON.stringify(payload)
@@ -678,7 +703,7 @@
       var token = getAuthToken();
       if (!token) return [];
       try {
-        var res = await fetch(getBaseUrl() + '/orders', {
+        var res = await serverFetch(getBaseUrl() + '/orders', {
           headers: getAuthHeaders(false)
         });
         if (!res.ok) return [];
@@ -693,7 +718,7 @@
     updateOrderStatus: async function(orderId, status) {
       if (!orderId || !status) return { success: false };
       try {
-        var res = await fetch(getBaseUrl() + '/orders/' + encodeURIComponent(orderId) + '/status', {
+        var res = await serverFetch(getBaseUrl() + '/orders/' + encodeURIComponent(orderId) + '/status', {
           method: 'PATCH',
           headers: getAuthHeaders(true),
           body: JSON.stringify({ status: status })
@@ -709,7 +734,7 @@
     updateOrderAddress: async function(orderId, shippingAddress, deliveryNotes) {
       if (!orderId) return { success: false, error: 'معرف الطلب غير موجود' };
       try {
-        var res = await fetch(getBaseUrl() + '/orders/' + encodeURIComponent(orderId), {
+        var res = await serverFetch(getBaseUrl() + '/orders/' + encodeURIComponent(orderId), {
           method: 'PUT',
           headers: getAuthHeaders(true),
           body: JSON.stringify({
