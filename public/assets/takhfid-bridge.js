@@ -1,271 +1,152 @@
-/**
- * Takhfid Store - Complete Real-Time Sync & Server Bridge (v4 API)
- * Handles bidirectional synchronization between the client store, local cache,
- * and the Flask Backend (https://whats.alattab.site/takhfid/api/v4).
- * 
- * Includes comprehensive data normalization and fallbacks to prevent any
- * missing-property runtime errors (white screens) across all screens.
- */
-(function() {
-  'use strict';
-
-  function getCustomApiBaseUrl() {
-    try {
-      if (typeof window !== 'undefined') {
-        var winEnv = window.VITE_API_BASE_URL || window.__VITE_API_BASE_URL;
-        if (winEnv && typeof winEnv === 'string' && winEnv.indexOf('%') === -1 && winEnv.trim()) {
-          return winEnv.trim();
-        }
-      }
-    } catch(e) {}
-    return 'https://whats.alattab.site';
-  }
-
-  var rawBaseUrl = getCustomApiBaseUrl();
-  var REMOTE_SERVER = rawBaseUrl.replace(/\/takhfid\/api\/v4\/?$/, '').replace(/\/+$/, '');
-  var API_BASE = REMOTE_SERVER + '/takhfid/api/v4';
-  var DIRECT_REMOTE_BASE = API_BASE;
-
-  var lastHooks = null;
-  var lastConnectionError = null;
-
-  function showConnectionErrorBanner(errMsg) {
-    if (typeof document === 'undefined') return;
-    var existing = document.getElementById('takhfid-connection-error-banner');
-    if (!existing) {
-      existing = document.createElement('div');
-      existing.id = 'takhfid-connection-error-banner';
-      existing.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#fee2e2;color:#991b1b;border-bottom:1px solid #f87171;padding:8px 12px;font-family:Cairo,sans-serif;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);direction:rtl;';
-      var rootEl = document.getElementById('root');
-      if (rootEl && rootEl.parentNode) {
-        rootEl.parentNode.insertBefore(existing, rootEl);
-      } else {
-        document.body.appendChild(existing);
-      }
-    }
-    existing.innerHTML = '<div style="display:flex;align-items:center;gap:6px;flex:1;overflow:hidden;"><span style="font-size:14px;">⚠️</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">تعذر الاتصال بالخادم: ' + (errMsg || 'خطأ في الشبكة أو الخادم') + '</span></div><button id="takhfid-retry-btn" style="background:#dc2626;color:#ffffff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">إعادة المحاولة</button>';
-    var btn = document.getElementById('takhfid-retry-btn');
-    if (btn) {
-      btn.onclick = function() {
-        btn.textContent = 'جارٍ المحاولة...';
-        btn.disabled = true;
-        if (window.__takhfidInitSync && lastHooks) {
-          window.__takhfidInitSync(lastHooks).finally(function() {
-            btn.textContent = 'إعادة المحاولة';
-            btn.disabled = false;
-          });
-        }
-      };
-    }
-  }
-
-  function hideConnectionErrorBanner() {
-    if (typeof document === 'undefined') return;
-    var existing = document.getElementById('takhfid-connection-error-banner');
-    if (existing && existing.parentNode) {
-      existing.parentNode.removeChild(existing);
-    }
-  }
-
-  function isNativePlatform() {
-    if (typeof window === 'undefined') return false;
-    if (window.Capacitor) return true;
-    var proto = (window.location && window.location.protocol) || '';
-    var host = (window.location && window.location.hostname) || '';
-    if (proto === 'file:' || proto === 'capacitor:' || proto === 'ionic:' || proto === 'content:') {
-      return true;
-    }
-    if (host === 'localhost' || host === '127.0.0.1' || host === '') {
-      return true;
-    }
-    if (typeof navigator !== 'undefined' && navigator.userAgent) {
-      if (/Android|iPhone|iPad|iPod|Capacitor/i.test(navigator.userAgent) || navigator.userAgent.indexOf('wv') !== -1) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  function getBaseUrl() {
-    return DIRECT_REMOTE_BASE;
-  }
-
-  if (typeof window !== 'undefined' && window.fetch && !window.__takhfidFetchPatched) {
-    window.__takhfidFetchPatched = true;
-    var _origFetch = window.fetch;
-    window.fetch = function(input, init) {
-      try {
-        if (typeof input === 'string') {
-          if (input.startsWith('/takhfid')) {
-            input = REMOTE_SERVER + input;
-          } else if (input.indexOf('localhost/takhfid') !== -1 || input.indexOf('127.0.0.1/takhfid') !== -1) {
-            input = input.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, REMOTE_SERVER).replace(/^capacitor:\/\/localhost/, REMOTE_SERVER);
-          }
-        } else if (input && typeof input === 'object' && input.url) {
-          var u = input.url;
-          if (u.startsWith('/takhfid')) {
-            return _origFetch.call(this, new Request(REMOTE_SERVER + u, input), init);
-          } else if (u.indexOf('localhost/takhfid') !== -1 || u.indexOf('127.0.0.1/takhfid') !== -1) {
-            var newU = u.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, REMOTE_SERVER).replace(/^capacitor:\/\/localhost/, REMOTE_SERVER);
-            return _origFetch.call(this, new Request(newU, input), init);
-          }
-        }
-      } catch (err) {
-        console.warn('[Takhfid Bridge] fetch url rewrite notice:', err);
-      }
-      return _origFetch.call(this, input, init);
-    };
-  }
-
-  function getAuthToken() {
-    try {
-      var t = localStorage.getItem('takhfid_access_token');
-      if (t) return t;
-      var prof = localStorage.getItem('user_profile');
-      if (prof) {
-        var p = JSON.parse(prof);
-        if (p && (p.accessToken || p.token)) return p.accessToken || p.token;
-      }
-      return '';
-    } catch (e) {
-      return '';
-    }
-  }
-
-  function getRuntimeConfig() {
-    try {
-      return (typeof window !== 'undefined' && window.TAKHFID_RUNTIME_CONFIG) || {};
-    } catch (e) {
-      return {};
-    }
-  }
-
-  async function serverFetch(url, init, options) {
-    var cfg = getRuntimeConfig();
-    var timeoutMs = Number((options && options.timeoutMs) || cfg.apiTimeoutMs || 20000);
-    var retries = Number((options && options.retries) !== undefined ? options.retries : (cfg.apiRetryCount || 1));
-    retries = Math.max(0, Math.min(3, retries));
-
-    var attempt = 0;
-    while (true) {
-      var controller = null;
-      var timer = null;
-      try {
-        controller = new AbortController();
-        var requestInit = Object.assign({}, init || {}, { signal: controller.signal });
-        timer = setTimeout(function() { try { controller.abort(); } catch (e) {} }, timeoutMs);
-        var response = await fetch(url, requestInit);
-        clearTimeout(timer);
-
-        if (response.status >= 500 && attempt < retries) {
-          attempt++;
-          await new Promise(function(resolve) { setTimeout(resolve, 350 * attempt); });
-          continue;
-        }
-        return response;
-      } catch (err) {
-        if (timer) clearTimeout(timer);
-        if (attempt >= retries) throw err;
-        attempt++;
-        await new Promise(function(resolve) { setTimeout(resolve, 350 * attempt); });
-      }
-    }
-  }
-
-  function getAuthHeaders(includeContentType) {
-    var headers = {};
-    if (includeContentType !== false) {
-      headers['Content-Type'] = 'application/json';
-    }
-    var token = getAuthToken();
-    if (token) {
-      headers['Authorization'] = 'Bearer ' + token;
-    }
-    return headers;
-  }
-
-  var activeToast = null;
-  function toast(msg, type) {
-    if (activeToast) {
-      try { activeToast(msg, type || 'info'); } catch(e) {}
-    } else {
-      console.log('[Takhfid Bridge ' + (type || 'info') + ']: ' + msg);
-    }
-  }
-
   // --- SAFE DATA NORMALIZATION ---
+  // --- SAFE DATA NORMALIZATION ---
+  function finiteNumber(value, fallback) {
+    var n = Number(value);
+    return Number.isFinite(n) ? n : (fallback || 0);
+  }
+
+  function baseSarFromProduct(p, fallbackPrice) {
+    var currency = String(p && p.inputCurrency || '').toUpperCase();
+    var baseSar = finiteNumber(p && p.basePriceSar, NaN);
+    if (Number.isFinite(baseSar) && baseSar > 0) return baseSar;
+
+    var raw = finiteNumber(fallbackPrice, 0);
+    if (currency === 'YER' && finiteNumber(p && p.baseNorthPriceYer, 0) > 0) {
+      return finiteNumber(p.baseNorthPriceYer, 0) / 140;
+    }
+    if (currency === 'USD') {
+      return raw * 3.75;
+    }
+    return raw;
+  }
+
   function normalizeProduct(p) {
     if (!p) return null;
     var res = Object.assign({}, p);
 
-    var discPrice = typeof p.discountPrice === 'number' && !isNaN(p.discountPrice)
-      ? p.discountPrice
-      : (typeof p.price === 'number' && !isNaN(p.price)
-        ? p.price
-        : (typeof p.originalPrice === 'number' && !isNaN(p.originalPrice) ? p.originalPrice : 45));
+    var originalRaw = finiteNumber(p.originalPrice, finiteNumber(p.price, 0));
+    var discountRaw = finiteNumber(p.discountPrice, finiteNumber(p.price, originalRaw));
+    var origSar = baseSarFromProduct(p, originalRaw);
+    var discSar = baseSarFromProduct(p, discountRaw);
 
-    var origPrice = typeof p.originalPrice === 'number' && !isNaN(p.originalPrice)
-      ? p.originalPrice
-      : (typeof p.price === 'number' && !isNaN(p.price)
-        ? Math.round(p.price * 1.35)
-        : Math.round(discPrice * 1.35));
+    if (!Number.isFinite(origSar) || origSar < 0) origSar = 0;
+    if (!Number.isFinite(discSar) || discSar < 0) discSar = 0;
+    if (origSar > 0 && discSar > origSar) origSar = discSar;
 
-    if (origPrice < discPrice) origPrice = Math.round(discPrice * 1.35);
-
-    var discPerc = typeof p.discountPercentage === 'number' && !isNaN(p.discountPercentage)
-      ? p.discountPercentage
-      : (origPrice > discPrice ? Math.round(((origPrice - discPrice) / origPrice) * 100) : 0);
+    var discPerc = Number.isFinite(Number(p.discountPercentage))
+      ? finiteNumber(p.discountPercentage, 0)
+      : (origSar > discSar && origSar > 0 ? Math.round(((origSar - discSar) / origSar) * 100) : 0);
 
     var cat = p.category || (Array.isArray(p.categories) && p.categories[1] ? p.categories[1] : 'women');
     var cats = Array.isArray(p.categories) && p.categories.length > 0 ? p.categories : ['all', cat];
 
-    var img = p.image || (Array.isArray(p.images) && p.images[0]) || (Array.isArray(p.galleryImages) && p.galleryImages[0]) || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80';
+    var img = p.image || (Array.isArray(p.images) && p.images[0]) || (Array.isArray(p.galleryImages) && p.galleryImages[0]) || '';
     var gallery = Array.isArray(p.galleryImages) && p.galleryImages.length > 0
       ? p.galleryImages
-      : (Array.isArray(p.images) && p.images.length > 0 ? p.images : [img]);
+      : (Array.isArray(p.images) && p.images.length > 0 ? p.images : (img ? [img] : []));
 
-    // Normalize colors, preserving per-color images and hex values
-    var colors = Array.isArray(p.colors) && p.colors.length > 0 ? p.colors.map(function(c) {
-      if (typeof c === 'string') {
-        return { name: c, hex: '#1e293b', images: [img], image: img };
-      }
-      var cImgs = Array.isArray(c.images) && c.images.length > 0
-        ? c.images
-        : (c.image ? [c.image] : [img]);
+    var colors = Array.isArray(p.colors) ? p.colors.map(function(color) {
+      if (typeof color === 'string') return { name: color, hex: '#1e293b', images: img ? [img] : [] };
+      var imgs = Array.isArray(color && color.images) && color.images.length
+        ? color.images
+        : (color && color.image ? [color.image] : (img ? [img] : []));
       return {
-        name: c.name || 'لون',
-        hex: c.hex || '#1e293b',
-        image: cImgs[0] || img,
-        images: cImgs
+        name: String(color && color.name || 'لون'),
+        hex: String(color && color.hex || '#1e293b'),
+        image: imgs[0] || '',
+        images: imgs
       };
-    }) : [{ name: 'افتراضي', hex: '#1e293b', image: img, images: [img] }];
+    }) : [];
 
-    var sizes = Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes : ['M', 'L', 'XL'];
+    var sizes = Array.isArray(p.sizes) ? p.sizes : [];
     var tags = Array.isArray(p.tags) ? p.tags : (p.tags ? [String(p.tags)] : []);
-    var trends = Array.isArray(p.trends) && p.trends.length > 0 ? p.trends : (p.trendTag ? [p.trendTag] : []);
+    var trends = Array.isArray(p.trends) ? p.trends : (p.trendTag ? [String(p.trendTag)] : []);
+    var hasRating = Number.isFinite(Number(p.rating)) && Number(p.rating) > 0;
+    var reviewCount = Number.isFinite(Number(p.reviewsCount)) ? Math.max(0, Number(p.reviewsCount)) : 0;
+    var soldCount = Number.isFinite(Number(p.soldCount)) ? Math.max(0, Number(p.soldCount)) : 0;
 
     res.id = String(p.id || ('p-' + Date.now()));
     res.name = String(p.name || p.title || 'صنف جديد');
-    res.brand = String(p.brand || 'SHEIN');
+    res.nameEn = p.nameEn !== undefined ? String(p.nameEn) : '';
+    res.brand = p.brand !== undefined ? String(p.brand) : '';
     res.category = String(cat);
+    res.categoryId = String(p.categoryId || cat);
     res.categories = cats;
-    res.subCategory = String(p.subCategory || 'عام');
-    res.originalPrice = Number(origPrice);
-    res.discountPrice = Number(discPrice);
-    res.discountPercentage = Number(discPerc);
-    res.price = Number(discPrice);
-    res.rating = typeof p.rating === 'number' ? p.rating : 4.8;
-    res.reviewsCount = typeof p.reviewsCount === 'number' ? p.reviewsCount : 120;
+    res.subCategory = String(p.subCategory || '');
+    res.subCategories = Array.isArray(p.subCategories) ? p.subCategories : [];
+    res.sideCategories = Array.isArray(p.sideCategories) ? p.sideCategories : [];
+    res.sideSubCategories = Array.isArray(p.sideSubCategories) ? p.sideSubCategories : [];
+    res.styleTabs = Array.isArray(p.styleTabs) ? p.styleTabs : [];
+    res.originalPrice = Number(origSar.toFixed(2));
+    res.discountPrice = Number(discSar.toFixed(2));
+    res.basePriceSar = Number(discSar.toFixed(2));
+    res.baseOriginalPriceSar = Number(origSar.toFixed(2));
+    res.baseNorthPriceYer = finiteNumber(p.baseNorthPriceYer, discSar ? Math.round(discSar * 140) : 0);
+    res.baseSouthPriceYer = finiteNumber(p.baseSouthPriceYer, discSar ? Math.round(discSar * 535) : 0);
+    res.discountPercentage = Math.max(0, Math.min(100, Number(discPerc) || 0));
+    res.price = res.discountPrice;
+    res.rating = hasRating ? finiteNumber(p.rating, 0) : 0;
+    res.reviewsCount = reviewCount;
+    res.enableReviews = p.enableReviews !== false && hasRating;
     res.image = String(img);
-    res.images = gallery;
+    res.images = Array.isArray(p.images) ? p.images : gallery;
+    res.gallery = gallery;
     res.galleryImages = gallery;
     res.colors = colors;
     res.sizes = sizes;
     res.tags = tags;
     res.trends = trends;
     res.inStock = p.inStock !== false && p.stock !== 0;
+    res.stock = finiteNumber(p.stock, p.inStock === false ? 0 : 0);
 
-    // Badges & customizations - fully preserved and synchronized
+    // Preserve every modern product customization without inventing fake values.
+    res.description = p.description !== undefined ? String(p.description) : '';
+    res.material = p.material !== undefined ? String(p.material) : '';
+    res.materials = Array.isArray(p.materials) ? p.materials : [];
+    res.badgeText = p.badgeText !== undefined ? String(p.badgeText) : '';
+    res.trendBadge = p.trendBadge !== undefined ? String(p.trendBadge) : '';
+    res.salesText = p.salesText !== undefined ? String(p.salesText) : '';
+    res.couponText = p.couponText !== undefined ? String(p.couponText) : '';
+    res.campaignRibbonText = p.campaignRibbonText !== undefined ? String(p.campaignRibbonText) : '';
+    res.bestSellerText = p.bestSellerText !== undefined ? String(p.bestSellerText) : '';
+    res.ratingReviewsText = p.ratingReviewsText !== undefined ? String(p.ratingReviewsText) : '';
+    res.cartBadgeCount = Number.isFinite(Number(p.cartBadgeCount)) ? Number(p.cartBadgeCount) : 0;
+    res.storeBadgeTag = p.storeBadgeTag !== undefined ? String(p.storeBadgeTag) : '';
+    res.productType = p.productType !== undefined ? String(p.productType) : '';
+    res.fabric = p.fabric !== undefined ? String(p.fabric) : '';
+    res.ageGroup = p.ageGroup !== undefined ? String(p.ageGroup) : '';
+    res.details = Array.isArray(p.details) ? p.details : [];
+    res.isRecommended = Boolean(p.isRecommended);
+    res.isMostPopular = Boolean(p.isMostPopular);
+    res.isBestSeller = Boolean(p.isBestSeller);
+    res.isTrend = Boolean(p.isTrend || trends.length > 0);
+    res.isLocalFastShipping = Boolean(p.isLocalFastShipping);
+    res.hasCurveLogo = Boolean(p.hasCurveLogo);
+    res.stretchInfo = p.stretchInfo !== undefined ? String(p.stretchInfo) : '';
+    res.hasZoomInBubble = Boolean(p.hasZoomInBubble);
+    res.zoomBubbleImage = p.zoomBubbleImage !== undefined ? String(p.zoomBubbleImage) : '';
+    res.cardAspect = p.cardAspect || 'tall';
+    res.sku = p.sku ? String(p.sku) : '';
+    res.soldCount = soldCount;
+
+    res.isNewBadgeEnabled = p.isNewBadgeEnabled !== false;
+    res.newBadgeText = p.newBadgeText !== undefined ? String(p.newBadgeText) : 'NEW';
+    res.newBadgeTextColor = p.newBadgeTextColor || '#ffffff';
+    res.newBadgeBgColor = p.newBadgeBgColor || '#10b981';
+    res.newBadgeDurationDays = finiteNumber(p.newBadgeDurationDays, 7);
+
+    res.hasCoupon = p.hasCoupon !== false;
+    res.couponDiscountType = p.couponDiscountType || 'percentage';
+    res.couponDiscountValue = finiteNumber(p.couponDiscountValue, 0);
+    res.couponMaxCap = Number.isFinite(Number(p.couponMaxCap)) ? Number(p.couponMaxCap) : null;
+    res.couponCustomLabel = p.couponCustomLabel !== undefined ? String(p.couponCustomLabel) : '';
+    res.hasPromotionalTiers = Boolean(p.hasPromotionalTiers);
+    res.promotionalTiersText = p.promotionalTiersText !== undefined ? String(p.promotionalTiersText) : '';
+    res.hasCouponPriceCustomStyle = p.hasCouponPriceCustomStyle !== false;
+    res.couponPriceBgColor = p.couponPriceBgColor || '#fff1f2';
+    res.couponPriceTextColor = p.couponPriceTextColor || '#e11d48';
+    res.couponPriceDividerColor = p.couponPriceDividerColor || '#f43f5e';
+
     res.isSavingBannerEnabled = Boolean(p.isSavingBannerEnabled);
     res.savingBannerPrefix = p.savingBannerPrefix !== undefined ? String(p.savingBannerPrefix) : 'توفير';
     res.savingBannerLeftText = p.savingBannerLeftText !== undefined ? String(p.savingBannerLeftText) : '';
@@ -273,36 +154,55 @@
     res.savingBannerTextColor = p.savingBannerTextColor || '#ffffff';
     res.savingBannerPriceColor = p.savingBannerPriceColor || '#facc15';
 
-    res.showCardShipping = Boolean(p.showCardShipping);
-    res.cardShippingText = p.cardShippingText !== undefined ? String(p.cardShippingText) : 'شحن مجاني وسريع 🚚';
-    res.isLocalFastShipping = Boolean(p.isLocalFastShipping);
-
-    res.isNewBadgeEnabled = p.isNewBadgeEnabled !== false;
-    res.newBadgeText = p.newBadgeText || 'NEW';
-    res.newBadgeTextColor = p.newBadgeTextColor || '#ffffff';
-    res.newBadgeBgColor = p.newBadgeBgColor || '#10b981';
-    res.newBadgeDurationDays = typeof p.newBadgeDurationDays === 'number' ? p.newBadgeDurationDays : 7;
-
-    res.isBestSeller = Boolean(p.isBestSeller);
-    res.bestSellerText = p.bestSellerText || '';
-    res.campaignRibbonText = p.campaignRibbonText || '';
-    res.ratingReviewsText = p.ratingReviewsText || '';
-    res.cartBadgeCount = typeof p.cartBadgeCount === 'number' ? p.cartBadgeCount : undefined;
-    res.productType = p.productType || '';
-    res.fabric = p.fabric || '';
-    res.ageGroup = p.ageGroup || '';
-    res.hasCurveLogo = Boolean(p.hasCurveLogo);
-    res.stretchInfo = p.stretchInfo || '';
-    res.hasZoomInBubble = Boolean(p.hasZoomInBubble);
-    res.zoomBubbleImage = p.zoomBubbleImage || '';
-    res.enableReviews = p.enableReviews !== false;
-    res.enableSizeGuide = p.enableSizeGuide !== false;
-    res.cardAspect = p.cardAspect || 'tall';
-    res.sku = p.sku || ('SKU-' + (p.id || Date.now()));
-    res.soldCount = typeof p.soldCount === 'number' ? p.soldCount : 100;
+    res.showCardShipping = p.showCardShipping !== false;
+    res.cardShippingText = p.cardShippingText !== undefined ? String(p.cardShippingText) : '';
+    
+    res.floatingLogos = p.floatingLogos && typeof p.floatingLogos === 'object' ? p.floatingLogos : undefined;
+    res.modelWearInfo = p.modelWearInfo && typeof p.modelWearInfo === 'object' ? p.modelWearInfo : undefined;
+    res.customInfoItems = Array.isArray(p.customInfoItems) ? p.customInfoItems : [];
+    res.campaignIds = Array.isArray(p.campaignIds) ? p.campaignIds : [];
+    res.department = p.department !== undefined ? String(p.department) : '';
+    res.inputCurrency = p.inputCurrency || 'SAR';
+    res.videoUrl = p.videoUrl || '';
 
     return res;
   }
+
+  function normalizeOrder(order) {
+    if (!order) return null;
+    var rawItems = Array.isArray(order.items) ? order.items : [];
+    var items = rawItems.map(function(item, index) {
+      var p = item && item.product ? item.product : {
+        id: item && (item.productId || item.id) || ('order-product-' + index),
+        name: item && (item.name || item.title) || 'منتج غير متوفر',
+        sku: item && item.sku || '',
+        price: finiteNumber(item && item.price, 0),
+        discountPrice: finiteNumber(item && item.price, 0),
+        image: item && (item.imageUrl || item.image) || ''
+      };
+      return Object.assign({}, item || {}, {
+        id: String(item && (item.id || item.productId) || p.id || ('item-' + index)),
+        productId: String(item && (item.productId || item.id) || p.id || ('item-' + index)),
+        quantity: Math.max(1, Math.round(finiteNumber(item && item.quantity, 1))),
+        selectedSize: item && item.selectedSize || item && item.size || '',
+        selectedColor: item && item.selectedColor || item && item.color || null,
+        product: normalizeProduct(p)
+      });
+    });
+    return Object.assign({}, order, {
+      id: String(order.id || order.orderId || ('order-' + Date.now())),
+      orderId: String(order.orderId || order.id || ''),
+      customerName: String(order.customerName || 'عميل المتجر'),
+      customerPhone: String(order.customerPhone || ''),
+      governorate: String(order.governorate || 'صنعاء'),
+      shippingAddress: String(order.shippingAddress || order.deliveryAddress || ''),
+      deliveryNotes: String(order.deliveryNotes || order.notes || ''),
+      totalAmount: finiteNumber(order.totalAmount, 0),
+      items: items,
+      status: String(order.status || 'pending_payment')
+    });
+  }
+
 
   function normalizeBanner(b, idx) {
     if (!b) return null;
@@ -483,7 +383,7 @@
         if (!res.ok || data.success === false) {
           return { success: false, error: data.error || ('HTTP ' + res.status) };
         }
-        return { success: true, product: data.product || safeProd };
+        return { success: true, product: Object.assign({}, safeProd, data.product || {}) };
       } catch (err) {
         return { success: false, error: err.message || String(err) };
       }
@@ -708,7 +608,8 @@
         });
         if (!res.ok) return [];
         var data = await res.json();
-        return Array.isArray(data) ? data : (data.orders || []);
+        var raw = Array.isArray(data) ? data : (data.orders || []);
+        return raw.map(normalizeOrder).filter(Boolean);
       } catch (err) {
         console.warn('[Bridge] fetchOrders error:', err);
         return [];
@@ -1105,6 +1006,8 @@
   window.__takhfidRefresh = function() { return takhfidBridge.syncFromServer(false); };
   window.__takhfidBulkSync = takhfidBridge.syncAllToBackend.bind(takhfidBridge);
   window.__takhfidFetchOrders = takhfidBridge.fetchOrders.bind(takhfidBridge);
+  window.__takhfidNormalizeOrder = normalizeOrder;
+  window.__takhfidFiniteNumber = finiteNumber;
   window.syncProductsToServer = function() { return takhfidBridge.syncAllToBackend(true); };
 
   // UI rules for the new admin: no manual bulk-sync, and live order sorting.
