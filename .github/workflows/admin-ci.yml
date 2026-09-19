@@ -31,6 +31,11 @@ jobs:
       - name: TypeScript check
         run: npm run lint
 
+      - name: Syntax check shipped JavaScript assets
+        run: |
+          node --check public/assets/index-Co2L1R-b.js
+          node --check public/assets/takhfid-bridge.js
+
       - name: Production build
         run: npm run build
         env:
