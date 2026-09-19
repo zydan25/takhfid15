@@ -17,8 +17,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="/icon-512.png" />
     <meta name="theme-color" content="#000000" />
-    
-    <!-- PWA Web App Manifest & App Icons -->
+
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
@@ -26,7 +25,6 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="shortcut icon" href="/favicon.png" />
 
-    <!-- Google Fonts for Modern Arabic Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -34,8 +32,11 @@
   </head>
   <body class="bg-slate-100 text-slate-900 antialiased selection:bg-rose-500 selection:text-white font-['Cairo',sans-serif]">
     <div id="root"></div>
+
     <script>
-      window.VITE_API_BASE_URL = "%VITE_API_BASE_URL%".includes("%VITE_API_BASE_URL%") ? "https://whats.alattab.site" : "%VITE_API_BASE_URL%";
+      window.VITE_API_BASE_URL = "%VITE_API_BASE_URL%".includes("%VITE_API_BASE_URL%")
+        ? "https://whats.alattab.site"
+        : "%VITE_API_BASE_URL%";
       window.TAKHFID_RUNTIME_CONFIG = {
         apiBaseUrl: "%VITE_API_BASE_URL%",
         apiTimeoutMs: Number("%VITE_API_TIMEOUT_MS%" || 20000),
@@ -43,11 +44,92 @@
         serverAuthoritative: "%VITE_SERVER_AUTHORITATIVE%" !== "false",
         uploadMaxMb: Number("%VITE_UPLOAD_MAX_MB%" || 25)
       };
-      window.addEventListener('error', function(e) {
-        console.error('[App Runtime Error]:', e.error || e.message);
-      });
+
+      (function () {
+        var isNative =
+          !!window.Capacitor ||
+          /Android|wv|Capacitor/i.test((navigator && navigator.userAgent) || "") ||
+          (window.location && window.location.hostname === "localhost");
+
+        function showBootError(error, source) {
+          var root = document.getElementById("root");
+          if (!root) return;
+
+          var message = "";
+          try {
+            message = error && (error.stack || error.message) ? (error.stack || error.message) : String(error || "خطأ غير معروف");
+          } catch (_) {
+            message = "خطأ غير معروف";
+          }
+
+          var existing = document.getElementById("takhfid-boot-error");
+          if (!existing) {
+            existing = document.createElement("div");
+            existing.id = "takhfid-boot-error";
+            existing.dir = "rtl";
+            existing.style.cssText =
+              "min-height:100vh;background:#0b0f19;color:#fff;padding:24px;font-family:Cairo,Tajawal,sans-serif;display:flex;align-items:center;justify-content:center;";
+            root.innerHTML = "";
+            root.appendChild(existing);
+          }
+
+          existing.innerHTML =
+            '<div style="width:100%;max-width:680px;background:#111827;border:1px solid #374151;border-radius:18px;padding:22px;box-sizing:border-box;box-shadow:0 20px 50px rgba(0,0,0,.35);">' +
+              '<div style="font-size:18px;font-weight:800;margin-bottom:8px;">تعذر تشغيل التطبيق</div>' +
+              '<div style="font-size:13px;color:#cbd5e1;margin-bottom:14px;">تم إيقاف الشاشة البيضاء وعرض تفاصيل خطأ التشغيل بدلًا منها.</div>' +
+              '<div style="font-size:11px;color:#fca5a5;background:#1f2937;border-radius:10px;padding:12px;white-space:pre-wrap;word-break:break-word;direction:ltr;text-align:left;max-height:320px;overflow:auto;">' +
+                String(source || "runtime") +
+                ": " +
+                message.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+              '</div>' +
+              '<button onclick="location.reload()" style="margin-top:14px;background:#e7193f;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:800;font-size:13px;">إعادة تشغيل التطبيق</button>' +
+            '</div>';
+        }
+
+        window.__takhfidShowBootError = showBootError;
+
+        window.addEventListener("error", function (event) {
+          console.error("[Takhfid boot/runtime error]", event.error || event.message);
+          if (event && (event.error || event.message)) {
+            showBootError(event.error || event.message, "window.error");
+          }
+        });
+
+        window.addEventListener("unhandledrejection", function (event) {
+          console.error("[Takhfid unhandled rejection]", event.reason);
+          showBootError(event.reason, "unhandledrejection");
+        });
+
+        if (isNative && "serviceWorker" in navigator) {
+          try {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+              return Promise.all(registrations.map(function (registration) {
+                return registration.unregister();
+              }));
+            }).catch(function (error) {
+              console.warn("[Takhfid] Unable to clear old service workers:", error);
+            });
+
+            navigator.serviceWorker.register = function () {
+              return Promise.reject(new Error("Service Worker disabled inside native Capacitor app"));
+            };
+          } catch (error) {
+            console.warn("[Takhfid] Native service worker guard failed:", error);
+          }
+        }
+      })();
     </script>
+
     <script src="/assets/takhfid-bridge.js"></script>
-    <script type="module" crossorigin src="/assets/index-Co2L1R-b.js"></script>
+
+    <script type="module">
+      import("/assets/index-Co2L1R-b.js")
+        .catch(function (error) {
+          console.error("[Takhfid] Main bundle failed to load:", error);
+          if (window.__takhfidShowBootError) {
+            window.__takhfidShowBootError(error, "main-bundle");
+          }
+        });
+    </script>
   </body>
 </html>
