@@ -29,9 +29,8 @@ import {
   Barcode,
   Search,
 } from 'lucide-react';
-import type { Order, Product, TrendCampaign, User, PricingSettings, StoreSettings } from '../types';
+import type { Order, Product, TrendCampaign, User, PricingSettings, StoreSettings, Category, Banner } from '../types';
 import { initialStoreSettings } from '../types';
-import { fetchAllUsersFromFirestore, deleteUserFromFirestore, updateOrderStatusInFirestore } from '../firebase';
 import { safeFormatNumber, initialPricingSettings } from '../utils/pricing';
 import {
   fetchProductsApi,
@@ -51,15 +50,14 @@ import {
   fullMigrationToServer,
   type MigrationSummary,
 } from '../api';
-import { INITIAL_CATEGORIES } from '../data/categories';
-import { INITIAL_BANNERS } from '../data/banners';
-import { INITIAL_TREND_CAMPAIGNS } from '../data/trends';
 
 interface AdminModalProps {
   isOpen: boolean;
   orders: Order[];
   products: Product[];
   campaigns: TrendCampaign[];
+  categories?: Category[];
+  banners?: Banner[];
   pricingSettings?: PricingSettings;
   storeSettings?: StoreSettings;
   onClose: () => void;
@@ -78,6 +76,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   orders,
   products,
   campaigns,
+  categories = [],
+  banners = [],
   pricingSettings: propPricingSettings,
   storeSettings: propStoreSettings,
   onClose,
@@ -285,21 +285,10 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     setIsLoadingUsers(true);
     try {
       const serverUsers = await fetchUsersApi();
-      if (serverUsers && serverUsers.length > 0) {
-        setFirestoreUsers(serverUsers);
-      } else {
-        const users = await fetchAllUsersFromFirestore();
-        setFirestoreUsers(users);
-        if (users.length > 0) {
-          bulkSyncUsersApi(users).catch(() => {});
-        }
-      }
+      setFirestoreUsers(Array.isArray(serverUsers) ? serverUsers : []);
     } catch (err) {
       console.error(err);
-      try {
-        const users = await fetchAllUsersFromFirestore();
-        setFirestoreUsers(users);
-      } catch {}
+      setFirestoreUsers([]);
     } finally {
       setIsLoadingUsers(false);
     }
@@ -314,9 +303,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const handleDeleteUser = async (uid: string) => {
     if (window.confirm('هل أنت متأكد من حذف حساب هذا العميل؟')) {
       await deleteUserApi(uid);
-      try {
-        await deleteUserFromFirestore(uid);
-      } catch {}
       setFirestoreUsers((prev) => prev.filter((u) => u.uid !== uid));
       onShowToast('تم حذف العميل بنجاح من الخادم وقاعدة البيانات', 'success');
     }
@@ -334,10 +320,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   // Handle Orders Status Update and Sync
   const handleUpdateOrder = async (orderId: string, status: Order['status'], isPaid?: boolean) => {
     onUpdateOrderStatus(orderId, status, isPaid);
-    await updateOrderStatusApi(orderId, status, isPaid);
-    try {
-      await updateOrderStatusInFirestore(orderId, status, isPaid);
-    } catch {}
+    const saved = await updateOrderStatusApi(orderId, status, isPaid);
+    if (!saved) {
+      onShowToast('تعذر تحديث حالة الطلب على الخادم', 'error');
+      return;
+    }
     onShowToast(`تم تحديث حالة الطلب في الخادم بنجاح ✅`, 'success');
   };
 
@@ -412,13 +399,14 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const handleContentMigrate = async () => {
     setIsMigratingContent(true);
     try {
-      await saveContentApi({
-        categories: INITIAL_CATEGORIES,
-        banners: INITIAL_BANNERS,
-        campaigns: campaigns.length > 0 ? campaigns : INITIAL_TREND_CAMPAIGNS,
+      const saved = await saveContentApi({
+        categories,
+        banners,
+        campaigns,
         pricingSettings: pricingForm,
         storeSettings: storeSettingsForm,
       });
+      if (!saved) throw new Error('الخادم لم يؤكد حفظ المحتوى');
       onShowToast('تم رفع وتحديث التصنيفات والبانرات والحملات والإعدادات إلى الخادم بنجاح! ✨', 'success');
     } catch (err: any) {
       onShowToast(`فشل رفع المحتوى: ${err.message}`, 'error');
@@ -440,9 +428,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     try {
       const summary = await fullMigrationToServer({
         products,
-        categories: INITIAL_CATEGORIES,
-        banners: INITIAL_BANNERS,
-        campaigns: campaigns.length > 0 ? campaigns : INITIAL_TREND_CAMPAIGNS,
+        categories,
+        banners,
+        campaigns,
         pricingSettings: pricingForm,
         storeSettings: storeSettingsForm,
         orders,
@@ -471,8 +459,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       exportDate: new Date().toISOString(),
       server: 'whats.alattab.site',
       products,
-      categories: INITIAL_CATEGORIES,
-      banners: INITIAL_BANNERS,
+      categories,
+      banners,
       campaigns,
       pricingSettings: pricingForm,
       storeSettings: storeSettingsForm,
