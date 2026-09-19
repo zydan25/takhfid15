@@ -9,6 +9,32 @@
 (function() {
   'use strict';
 
+  // Server-authoritative cache schema. Old local catalog/content snapshots are
+  // invalidated once when this schema changes; the server repopulates them.
+  var SERVER_CACHE_VERSION = 'server-authoritative-v2';
+  function prepareServerCache() {
+    try {
+      var current = localStorage.getItem('__takhfid_server_cache_version');
+      if (current === SERVER_CACHE_VERSION) return;
+      [
+        'altakhfid_products',
+        'altakhfid_categories',
+        'store_banners_v1',
+        'trend_campaigns_v2',
+        'altakhfid_campaigns',
+        'trend_hashtags_v2',
+        'store_category_tabs_config_v2',
+        'store_recommendation_tabs_v2',
+        'admin_orders_v2',
+        'shein_announcement_bar_settings_v1'
+      ].forEach(function(key) {
+        try { localStorage.removeItem(key); } catch (e) {}
+      });
+      localStorage.setItem('__takhfid_server_cache_version', SERVER_CACHE_VERSION);
+    } catch (e) {}
+  }
+  prepareServerCache();
+
   function getCustomApiBaseUrl() {
     try {
       if (typeof window !== 'undefined') {
@@ -242,17 +268,8 @@
       : (Array.isArray(p.images) && p.images.length > 0 ? p.images : (img ? [img] : []));
 
     var colors = Array.isArray(p.colors) ? p.colors.map(function(color) {
-      if (typeof color === 'string') return { name: color, hex: '#1e293b', images: img ? [img] : [] };
-      var imgs = Array.isArray(color && color.images) && color.images.length
-        ? color.images
-        : (color && color.image ? [color.image] : (img ? [img] : []));
-      return {
-        name: String(color && color.name || 'لون'),
-        hex: String(color && color.hex || '#1e293b'),
-        image: imgs[0] || '',
-        images: imgs
-      };
-    }) : [];
+      return normalizeColor(color, img);
+    }).filter(Boolean) : [];
 
     var sizes = Array.isArray(p.sizes) ? p.sizes : [];
     var tags = Array.isArray(p.tags) ? p.tags : (p.tags ? [String(p.tags)] : []);
@@ -367,6 +384,35 @@
     return res;
   }
 
+  function normalizeColor(color, fallbackImage) {
+    if (typeof color === 'string') {
+      var name = String(color).trim();
+      return {
+        name: name || 'لون',
+        hex: '#1e293b',
+        image: fallbackImage || '',
+        images: fallbackImage ? [fallbackImage] : []
+      };
+    }
+    if (color && typeof color === 'object') {
+      var imgs = Array.isArray(color.images) && color.images.length
+        ? color.images.slice()
+        : (color.image ? [color.image] : (fallbackImage ? [fallbackImage] : []));
+      return Object.assign({}, color, {
+        name: String(color.name || 'لون'),
+        hex: String(color.hex || '#1e293b'),
+        image: String(color.image || imgs[0] || ''),
+        images: imgs
+      });
+    }
+    return {
+      name: 'لون',
+      hex: '#1e293b',
+      image: fallbackImage || '',
+      images: fallbackImage ? [fallbackImage] : []
+    };
+  }
+
   function normalizeOrder(order) {
     if (!order) return null;
     var rawItems = Array.isArray(order.items) ? order.items : [];
@@ -383,8 +429,8 @@
         id: String(item && (item.id || item.productId) || p.id || ('item-' + index)),
         productId: String(item && (item.productId || item.id) || p.id || ('item-' + index)),
         quantity: Math.max(1, Math.round(finiteNumber(item && item.quantity, 1))),
-        selectedSize: item && item.selectedSize || item && item.size || '',
-        selectedColor: item && item.selectedColor || item && item.color || null,
+        selectedSize: String(item && (item.selectedSize || item.size) || ''),
+        selectedColor: normalizeColor(item && (item.selectedColor || item.color), p && p.image || item && (item.imageUrl || item.image) || ''),
         product: normalizeProduct(p)
       });
     });
@@ -551,7 +597,7 @@
         } catch (e2) {
           lastConnectionError = e2 || err;
           console.error('[Bridge] direct fetchProducts error:', e2);
-          return [];
+          return null;
         }
       }
     },
@@ -582,7 +628,10 @@
         if (!res.ok || data.success === false) {
           return { success: false, error: data.error || ('HTTP ' + res.status) };
         }
-        return { success: true, product: Object.assign({}, safeProd, data.product || {}) };
+        return {
+          success: true,
+          product: normalizeProduct(Object.assign({}, safeProd, data.product || {}))
+        };
       } catch (err) {
         return { success: false, error: err.message || String(err) };
       }
@@ -1031,7 +1080,10 @@
         if (lastConnectionError) {
           throw lastConnectionError;
         }
-        var products = Array.isArray(serverProducts) ? serverProducts.map(normalizeProduct).filter(Boolean) : [];
+        if (!Array.isArray(serverProducts)) {
+          throw new Error('لم يتم استلام قائمة المنتجات من الخادم');
+        }
+        var products = serverProducts.map(normalizeProduct).filter(Boolean);
         if (lastHooks && lastHooks.setProducts) lastHooks.setProducts(products);
         try { localStorage.setItem('altakhfid_products', JSON.stringify(products)); } catch(e) {}
 
@@ -1075,7 +1127,7 @@
         var content = await takhfidBridge.fetchContent();
         if (content) {
           // Categories
-          if (Array.isArray(content.categories) && content.categories.length > 0) {
+          if (Array.isArray(content.categories)) {
             var currentCats = null;
             try {
               var cRaw = localStorage.getItem('altakhfid_categories');
@@ -1093,7 +1145,7 @@
           }
 
           // Banners
-          if (Array.isArray(content.banners) && content.banners.length > 0) {
+          if (Array.isArray(content.banners)) {
             var normBanners = content.banners.map(normalizeBanner).filter(Boolean);
             if (normBanners.length > 0) {
               console.log('[Bridge] Loaded ' + normBanners.length + ' normalized banners from server');
@@ -1103,7 +1155,7 @@
           }
 
           // Campaigns
-          if (Array.isArray(content.campaigns) && content.campaigns.length > 0) {
+          if (Array.isArray(content.campaigns)) {
             var normCamps = content.campaigns.map(normalizeCampaign).filter(Boolean);
             if (normCamps.length > 0) {
               console.log('[Bridge] Loaded ' + normCamps.length + ' campaigns from server');
@@ -1116,7 +1168,7 @@
           }
 
           // Hashtags
-          var serverHashtags = (Array.isArray(content.trendHashtags) && content.trendHashtags.length > 0) ? content.trendHashtags : (Array.isArray(content.hashtags) && content.hashtags.length > 0 ? content.hashtags : null);
+          var serverHashtags = Array.isArray(content.trendHashtags) ? content.trendHashtags : (Array.isArray(content.hashtags) ? content.hashtags : null);
           if (serverHashtags) {
             console.log('[Bridge] Loaded ' + serverHashtags.length + ' hashtags from server');
             if (hooks.setHashtags) hooks.setHashtags(serverHashtags);
@@ -1148,20 +1200,18 @@
         var serverProducts = await takhfidBridge.fetchProducts();
         var prodsLoaded = false;
         var finalProdCount = 0;
-        if (Array.isArray(serverProducts) && serverProducts.length > 0) {
+        if (Array.isArray(serverProducts)) {
           var normProds = serverProducts.map(normalizeProduct).filter(Boolean);
-          if (normProds.length > 0) {
-            console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
-            if (hooks.setProducts) hooks.setProducts(normProds);
-            try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
-            prodsLoaded = true;
-            finalProdCount = normProds.length;
-          }
+          console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
+          if (hooks.setProducts) hooks.setProducts(normProds);
+          try { localStorage.setItem('altakhfid_products', JSON.stringify(normProds)); } catch(e) {}
+          prodsLoaded = true;
+          finalProdCount = normProds.length;
         }
 
         // C. Load Orders if token exists
         var orders = await takhfidBridge.fetchOrders();
-        if (Array.isArray(orders) && orders.length > 0) {
+        if (Array.isArray(orders)) {
           console.log('[Bridge] Loaded ' + orders.length + ' orders from server');
           if (hooks.setOrders) hooks.setOrders(orders);
           try { localStorage.setItem('admin_orders_v2', JSON.stringify(orders)); } catch(e) {}
@@ -1291,5 +1341,5 @@
 
   window.__takhfidInstallAdminUx = installAdminUxRules;
 
-  console.log('[Bridge] Takhfid Store Bridge v4.3.0 loaded and ready.');
+  console.log('[Bridge] Takhfid Store Bridge v4.4.0 server-authoritative cache loaded.');
 })();
