@@ -36,6 +36,13 @@
     <div id="root"></div>
     <script>
       window.VITE_API_BASE_URL = "%VITE_API_BASE_URL%";
+      window.TAKHFID_RUNTIME_CONFIG = {
+        apiBaseUrl: "%VITE_API_BASE_URL%",
+        apiTimeoutMs: Number("%VITE_API_TIMEOUT_MS%" || 20000),
+        apiRetryCount: Number("%VITE_API_RETRY_COUNT%" || 1),
+        serverAuthoritative: "%VITE_SERVER_AUTHORITATIVE%" !== "false",
+        uploadMaxMb: Number("%VITE_UPLOAD_MAX_MB%" || 25)
+      };
       window.addEventListener('error', function(e) {
         console.error('[App Runtime Error]:', e.error || e.message);
       });
