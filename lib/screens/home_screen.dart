@@ -263,10 +263,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
-                      b.image,
+                    CachedNetworkImage(
+                      imageUrl: b.image,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(color: AppColors.ink),
+                      errorWidget: (_, __, ___) =>
+                          const ColoredBox(color: AppColors.ink),
                     ),
                     const DecoratedBox(
                       decoration: BoxDecoration(
@@ -441,7 +442,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: cat.image.isNotEmpty
-                        ? Image.network(cat.image, fit: BoxFit.cover)
+                        ? CachedNetworkImage(
+                            imageUrl: cat.image,
+                            fit: BoxFit.cover,
+                          )
                         : const Icon(Icons.category_outlined),
                   ),
                   const SizedBox(height: 4),
@@ -481,8 +485,13 @@ class _HomeScreenState extends State<HomeScreen> {
           final style = styles[index];
           return SizedBox(
             width: 76,
-            child: Column(
-              children: [
+            child: GestureDetector(
+              onTap: () => setState(() {
+                styleTab = style.id;
+                subCategory = null;
+              }),
+              child: Column(
+                children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
                   child: SizedBox(
@@ -505,6 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ],
+            ),
             ),
           );
         },
