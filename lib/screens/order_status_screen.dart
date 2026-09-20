@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../state/store_controller.dart';
+import 'auth_screen.dart';
+import 'chat_screen.dart';
 
 class OrderStatusScreen extends StatefulWidget {
   final StoreController controller;
@@ -72,6 +74,15 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
                             child: Text(
                               '#' + order.id,
                               style: const TextStyle(fontWeight: FontWeight.w900),
+                            ),
+                          ),
+                          IconButton(
+                            visualDensity: VisualDensity.compact,
+                            tooltip: 'محادثة الطلب',
+                            onPressed: () => _openOrderChat(order.id),
+                            icon: const Icon(
+                              Icons.chat_bubble_outline,
+                              size: 18,
                             ),
                           ),
                           Text(
@@ -173,6 +184,31 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _openOrderChat(String orderId) async {
+    final sessionId =
+        await widget.controller.ensureChat(orderId: orderId);
+    if (!mounted) return;
+
+    if (sessionId == null || sessionId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر فتح محادثة الطلب')),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          controller: widget.controller,
+          sessionId: sessionId,
+          title: 'محادثة الطلب ' + orderId,
+          orderId: orderId,
+        ),
       ),
     );
   }
