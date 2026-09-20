@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../models/content.dart';
@@ -10,6 +11,7 @@ import 'notifications_screen.dart';
 import 'product_details_screen.dart';
 import 'search_screen.dart';
 import 'wishlist_screen.dart';
+import 'showcase_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final StoreController controller;
@@ -25,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int bannerIndex = 0;
   String category = 'all';
   String? subCategory;
+  String? styleTab;
   String sort = 'for_you';
 
   @override
@@ -97,6 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final items = c.filtered(
       category: category,
       subCategory: subCategory,
+      styleTab: styleTab,
       sort: sort,
     );
 
@@ -213,7 +217,9 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => restartBannerTimer());
+    if (bannerTimer == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => restartBannerTimer());
+    }
 
     return SizedBox(
       height: 245,
@@ -230,19 +236,29 @@ class _HomeScreenState extends State<HomeScreen> {
               final b = banners[index];
               return GestureDetector(
                 onTap: () {
-                  if (b.targetType == 'category') {
-                    setState(() {
-                      category = b.categoryTarget;
-                      subCategory = null;
-                    });
-                  } else if (b.targetType == 'subcategory') {
-                    setState(() {
-                      category = b.categoryTarget;
-                      subCategory = b.subTarget;
-                    });
-                  } else {
-                    widget.controller.selectTab(2);
-                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ShowcaseScreen(
+                        controller: widget.controller,
+                        title: b.title,
+                        subtitle: b.subtitle,
+                        image: b.image,
+                        category: b.targetType == 'category' ||
+                                b.targetType == 'subcategory' ||
+                                b.targetType == 'styleTab'
+                            ? b.categoryTarget
+                            : 'all',
+                        subCategory: b.targetType == 'subcategory'
+                            ? b.subTarget
+                            : null,
+                        styleTab: b.targetType == 'styleTab'
+                            ? b.styleTarget
+                            : null,
+                        saleOnly: b.targetType == 'flashSale',
+                      ),
+                    ),
+                  );
                 },
                 child: Stack(
                   fit: StackFit.expand,
@@ -406,6 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () => setState(() {
               category = cat.id;
               subCategory = null;
+              styleTab = null;
             }),
             child: SizedBox(
               width: 62,
