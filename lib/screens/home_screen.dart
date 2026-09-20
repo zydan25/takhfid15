@@ -13,6 +13,58 @@ import 'search_screen.dart';
 import 'wishlist_screen.dart';
 import 'showcase_screen.dart';
 
+class _FadeIn extends StatefulWidget {
+  final Widget child;
+  final Duration duration;
+  final Duration delay;
+
+  const _FadeIn({
+    required this.child,
+    this.duration = const Duration(milliseconds: 300),
+    this.delay = Duration.zero,
+  });
+
+  @override
+  State<_FadeIn> createState() => _FadeInState();
+}
+
+class _FadeInState extends State<_FadeIn>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+    
+    Future.delayed(widget.delay, () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: widget.child,
+    );
+  }
+}
+
 class HomeScreen extends StatefulWidget {
   final StoreController controller;
   const HomeScreen({super.key, required this.controller});
@@ -142,47 +194,52 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(child: _categoryStrip(c.categories)),
           SliverToBoxAdapter(child: _styleStrip(c.categories)),
           SliverToBoxAdapter(child: _sortTabs()),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, row) {
-                final left = row * 2;
-                final right = left + 1;
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 3, 8, 6),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: right < items.length
-                            ? ProductCard(
-                                product: items[right],
-                                index: right,
-                                wishlisted: c.isWishlisted(items[right]),
-                                onOpen: () => _open(items[right]),
-                                onWishlist: () => c.toggleWishlist(items[right]),
-                                onCart: () => c.addToCart(items[right]),
-                              )
-                            : const SizedBox.shrink(),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 20),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, row) {
+                  final left = row * 2;
+                  final right = left + 1;
+                  return _FadeIn(
+                    delay: Duration(milliseconds: row * 50),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: right < items.length
+                                ? ProductCard(
+                                    product: items[right],
+                                    index: right,
+                                    wishlisted: c.isWishlisted(items[right]),
+                                    onOpen: () => _open(items[right]),
+                                    onWishlist: () => c.toggleWishlist(items[right]),
+                                    onCart: () => c.addToCart(items[right]),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ProductCard(
+                              product: items[left],
+                              index: left,
+                              wishlisted: c.isWishlisted(items[left]),
+                              onOpen: () => _open(items[left]),
+                              onWishlist: () => c.toggleWishlist(items[left]),
+                              onCart: () => c.addToCart(items[left]),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 7),
-                      Expanded(
-                        child: ProductCard(
-                          product: items[left],
-                          index: left,
-                          wishlisted: c.isWishlisted(items[left]),
-                          onOpen: () => _open(items[left]),
-                          onWishlist: () => c.toggleWishlist(items[left]),
-                          onCart: () => c.addToCart(items[left]),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              childCount: (items.length / 2).ceil(),
+                    ),
+                  );
+                },
+                childCount: (items.length / 2).ceil(),
+              ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 15)),
         ],
       ),
     );
@@ -368,10 +425,11 @@ class _HomeScreenState extends State<HomeScreen> {
     Widget card(String a, String b) {
       return Expanded(
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 9),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: AppColors.roseSoft,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.rose.withOpacity(0.2), width: 1),
           ),
           child: Column(
             children: [
@@ -379,15 +437,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 a,
                 style: const TextStyle(
                   color: AppColors.rose,
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.w900,
+                  height: 1,
                 ),
               ),
+              const SizedBox(height: 2),
               Text(
                 b,
                 style: const TextStyle(
                   color: AppColors.slate500,
                   fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  height: 1,
                 ),
               ),
             ],
@@ -397,11 +459,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
       child: Row(
         children: [
           card('خصم -25%', 'قسيمة إضافية'),
-          const SizedBox(width: 2),
+          const SizedBox(width: 8),
           card('خصم -30%', 'على عروض مختارة'),
         ],
       ),
@@ -410,12 +472,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _categoryStrip(List<Category> categories) {
     return SizedBox(
-      height: 105,
+      height: 115,
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (_, index) {
           final cat = categories[index];
           final active = cat.id == category;
@@ -426,19 +488,28 @@ class _HomeScreenState extends State<HomeScreen> {
               styleTab = null;
             }),
             child: SizedBox(
-              width: 62,
+              width: 68,
               child: Column(
                 children: [
                   Container(
-                    width: 58,
-                    height: 72,
+                    width: 64,
+                    height: 76,
                     decoration: BoxDecoration(
-                      color: AppColors.page,
+                      color: AppColors.slate100,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: active ? AppColors.black : AppColors.slate200,
                         width: active ? 2 : 1,
                       ),
+                      boxShadow: active
+                          ? [
+                              BoxShadow(
+                                color: AppColors.black.withOpacity(0.15),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: cat.image.isNotEmpty
@@ -446,17 +517,19 @@ class _HomeScreenState extends State<HomeScreen> {
                             imageUrl: cat.image,
                             fit: BoxFit.cover,
                           )
-                        : const Icon(Icons.category_outlined),
+                        : const Icon(Icons.category_outlined, color: AppColors.slate400),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     cat.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: 10,
                       fontWeight: active ? FontWeight.w900 : FontWeight.w700,
+                      color: active ? AppColors.ink : AppColors.slate500,
+                      height: 1.2,
                     ),
                   ),
                 ],
@@ -548,26 +621,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(8, 4, 8, 5),
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
       child: Row(
         children: items.map((item) {
           final active = sort == item.$1;
           return Padding(
-            padding: const EdgeInsets.only(left: 6),
+            padding: const EdgeInsets.only(left: 8),
             child: InkWell(
               onTap: () => setState(() => sort = item.$1),
+              borderRadius: BorderRadius.circular(8),
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 13,
-                  vertical: 7,
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-                color: active ? AppColors.black : const Color(0xFFF5F5F6),
+                decoration: BoxDecoration(
+                  color: active ? AppColors.black : AppColors.slate100,
+                  borderRadius: BorderRadius.circular(8),
+                  border: active
+                      ? null
+                      : Border.all(color: AppColors.slate200, width: 1),
+                ),
                 child: Text(
                   item.$2,
                   style: TextStyle(
                     color: active ? Colors.white : AppColors.ink,
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: FontWeight.w900,
+                    height: 1,
                   ),
                 ),
               ),

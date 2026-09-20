@@ -18,52 +18,86 @@ class StoreTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 7, 8, 5),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
       child: Row(
         children: [
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            onPressed: onWishlist,
-            icon: const Icon(Icons.favorite_border, size: 21),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onWishlist,
+              customBorder: const CircleBorder(),
+              child: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(
+                  Icons.favorite_border,
+                  size: 22,
+                  color: AppColors.ink,
+                ),
+              ),
+            ),
           ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            onPressed: onNotifications,
-            icon: const Icon(Icons.notifications_none_rounded, size: 21),
+          const SizedBox(width: 4),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onNotifications,
+              customBorder: const CircleBorder(),
+              child: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(
+                  Icons.notifications_none_rounded,
+                  size: 22,
+                  color: AppColors.ink,
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: 8),
           Expanded(
             child: InkWell(
               onTap: onSearch,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(20),
               child: Container(
-                height: 38,
-                padding: const EdgeInsets.symmetric(horizontal: 11),
+                height: 40,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: AppColors.page,
-                  borderRadius: BorderRadius.circular(18),
+                  color: AppColors.slate100,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.slate200, width: 1),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.search, size: 17, color: AppColors.slate500),
-                    const SizedBox(width: 5),
+                    const Icon(
+                      Icons.search,
+                      size: 18,
+                      color: AppColors.slate400,
+                    ),
+                    const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
                         'ابحث عن ماركة، فستان، حذاء، عطر...',
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: AppColors.slate500,
-                          fontSize: 10,
+                          color: AppColors.slate400,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
+                          height: 1,
                         ),
                       ),
                     ),
-                    InkWell(
-                      onTap: onVisualSearch,
-                      customBorder: const CircleBorder(),
-                      child: const Padding(
-                        padding: EdgeInsets.all(5),
-                        child: Icon(Icons.camera_alt_outlined, size: 16),
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onVisualSearch,
+                        customBorder: const CircleBorder(),
+                        child: const Padding(
+                          padding: EdgeInsets.all(6),
+                          child: Icon(
+                            Icons.camera_alt_outlined,
+                            size: 18,
+                            color: AppColors.slate400,
+                          ),
+                        ),
                       ),
                     ),
                   ],

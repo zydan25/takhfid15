@@ -24,77 +24,99 @@ class TakhfidBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 58,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.slate200)),
+      height: 65,
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        border: const Border(top: BorderSide(color: AppColors.slate200, width: 1)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 16,
-            offset: Offset(0, -3),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
-      child: Row(
-        children: List.generate(items.length, (index) {
-          final active = currentIndex == index;
-          final item = items[index];
-          return Expanded(
-            child: InkWell(
-              onTap: () => onChanged(index),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Icon(
-                        item.$1,
-                        size: 21,
-                        color: active ? AppColors.ink : AppColors.slate500,
-                      ),
-                      if (index == 3 && cartCount > 0)
-                        Positioned(
-                          top: -8,
-                          right: -10,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            decoration: const BoxDecoration(
-                              color: AppColors.rose,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              cartCount > 99 ? '99+' : cartCount.toString(),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.w900,
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: List.generate(items.length, (index) {
+            final active = currentIndex == index;
+            final item = items[index];
+            return Expanded(
+              child: InkWell(
+                onTap: () => onChanged(index),
+                splashColor: AppColors.slate100,
+                highlightColor: AppColors.slate50,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: active ? AppColors.slate100 : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            item.$1,
+                            size: 22,
+                            color: active ? AppColors.ink : AppColors.slate400,
+                          ),
+                        ),
+                        if (index == 3 && cartCount > 0)
+                          Positioned(
+                            top: -4,
+                            right: -6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                              constraints: const BoxConstraints(
+                                minWidth: 18,
+                                minHeight: 18,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.rose,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.white, width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.rose.withOpacity(0.3),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                cartCount > 99 ? '99+' : cartCount.toString(),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    item.$2,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: active ? FontWeight.w900 : FontWeight.w600,
-                      color: active ? AppColors.ink : AppColors.slate500,
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      item.$2,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: active ? FontWeight.w900 : FontWeight.w700,
+                        color: active ? AppColors.ink : AppColors.slate400,
+                        height: 1,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }

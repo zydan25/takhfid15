@@ -144,7 +144,7 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              initialValue: governorate,
+              value: governorate,
               items: const [
                 DropdownMenuItem(
                   value: 'أمانة العاصمة',
