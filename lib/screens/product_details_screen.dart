@@ -140,7 +140,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 Row(
                   children: [
                     Text(
-                      p.discountPrice.toStringAsFixed(2) + ' ر.س',
+                      p.discountPrice.toStringAsFixed(2) + ' ' + widget.controller.currency,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
@@ -149,7 +149,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      p.originalPrice.toStringAsFixed(0) + ' ر.س',
+                      p.originalPrice.toStringAsFixed(0) + ' ' + widget.controller.currency,
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.slate500,
