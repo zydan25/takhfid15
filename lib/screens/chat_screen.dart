@@ -297,19 +297,19 @@ class _ChatScreenState extends State<ChatScreen> {
     return showModalBottomSheet<ImageSource>(
       context: context,
       showDragHandle: true,
-      builder: (_) => SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
               title: const Text('المعرض'),
-              onTap: () => Navigator.pop(_, ImageSource.gallery),
+              onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
               title: const Text('الكاميرا'),
-              onTap: () => Navigator.pop(_, ImageSource.camera),
+              onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
             ),
           ],
         ),
