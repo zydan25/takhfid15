@@ -66,17 +66,7 @@ class StoreController extends ChangeNotifier {
 
     try {
       final store = await api.fetchStore();
-      storeConfig = Map<String, dynamic>.from(
-        store['store'] is Map ? store['store'] : const {},
-      );
-      pricing = Map<String, dynamic>.from(
-        store['pricing'] is Map ? store['pricing'] : const {},
-      );
-      _applyContent(
-        Map<String, dynamic>.from(
-          store['content'] is Map ? store['content'] : const {},
-        ),
-      );
+      _applyStore(store);
       await cache.writeJson('store', store);
       onlineSuccess = true;
     } catch (e) {
@@ -84,35 +74,30 @@ class StoreController extends ChangeNotifier {
       error ??= e.toString();
     }
 
-    final hasToken = await api.client.token();
-    if (hasToken != null && hasToken.isNotEmpty) {
+    final token = await api.client.token();
+
+    if (token != null && token.isNotEmpty) {
       try {
         final remoteProfile = await api.currentUser();
         profile = remoteProfile;
+
         if (profile != null) {
           await cache.writeJson('profile', profile!);
-          try {
-            final rawOrders = await api.fetchOrderMaps();
-            orders = rawOrders.map(StoreOrder.fromJson).toList();
-            await cache.writeJson('orders', rawOrders);
-          } catch (_) {
-            await _restoreOrders();
-          }
-          try {
-            notifications = await api.fetchNotifications();
-            await cache.writeJson(
-              'notifications',
-              notifications.map((item) => item.toJson()).toList(),
-            );
-          } catch (_) {
-            await _restoreNotifications();
-          }
+          await _refreshCustomerData();
         }
-      } catch (e) {
-        await _restoreProfile();
-        await _restoreOrders();
-        await _restoreNotifications();
-        error ??= e.toString();
+      } on Object catch (e) {
+        if (e.toString().contains('ApiException(401)')) {
+          await api.client.clearToken();
+          profile = null;
+          await cache.delete('profile');
+          await cache.delete('orders');
+          await cache.delete('notifications');
+        } else {
+          await _restoreProfile();
+          await _restoreOrders();
+          await _restoreNotifications();
+          error ??= e.toString();
+        }
       }
     }
 
@@ -122,11 +107,24 @@ class StoreController extends ChangeNotifier {
     if (!onlineSuccess && products.isEmpty) {
       error ??= 'تعذر الوصول إلى بيانات المتجر.';
     }
+
     notifyListeners();
     _startPoller();
   }
 
-  void _applyContent(Map<String, dynamic> content) {
+  void _applyStore(Map<String, dynamic> store) {
+    storeConfig = Map<String, dynamic>.from(
+      store['store'] is Map ? store['store'] : const {},
+    );
+    pricing = Map<String, dynamic>.from(
+      store['pricing'] is Map ? store['pricing'] : const {},
+    );
+    currency = (storeConfig['currency'] ?? currency).toString().toUpperCase();
+
+    final content = Map<String, dynamic>.from(
+      store['content'] is Map ? store['content'] : const {},
+    );
+
     final rawCategories = content['categories'];
     if (rawCategories is List) {
       categories = rawCategories.whereType<Map>().map((item) {
@@ -154,120 +152,9 @@ class StoreController extends ChangeNotifier {
     }
   }
 
-  Future<void> _restoreProducts() async {
-    final raw = await cache.readJson('products');
-    if (raw is List) {
-      products = raw.whereType<Map>().map((item) {
-        return Product.fromJson(Map<String, dynamic>.from(item));
-      }).toList();
-    }
-  }
-
-  Future<void> _restoreStore() async {
-    final raw = await cache.readJson('store');
-    if (raw is Map) {
-      final store = Map<String, dynamic>.from(raw);
-      storeConfig = Map<String, dynamic>.from(
-        store['store'] is Map ? store['store'] : const {},
-      );
-      pricing = Map<String, dynamic>.from(
-        store['pricing'] is Map ? store['pricing'] : const {},
-      );
-      _applyContent(
-        Map<String, dynamic>.from(
-          store['content'] is Map ? store['content'] : const {},
-        ),
-      );
-    }
-  }
-
-  Future<void> _restoreProfile() async {
-    final raw = await cache.readJson('profile');
-    if (raw is Map) {
-      profile = Map<String, dynamic>.from(raw);
-    }
-  }
-
-  Future<void> _restoreOrders() async {
-    final raw = await cache.readJson('orders');
-    if (raw is List) {
-      orders = raw.whereType<Map>().map((item) {
-        return StoreOrder.fromJson(Map<String, dynamic>.from(item));
-      }).toList();
-    }
-  }
-
-  Future<void> _restoreNotifications() async {
-    final raw = await cache.readJson('notifications');
-    if (raw is List) {
-      notifications = raw.whereType<Map>().map((item) {
-        return NotificationItem.fromJson(Map<String, dynamic>.from(item));
-      }).toList();
-    }
-  }
-
-  Future<void> _restoreCartAndWishlist() async {
-    final rawWishlist = await cache.readJson('wishlist');
-    if (rawWishlist is List) {
-      wishlistIds
-        ..clear()
-        ..addAll(rawWishlist.map((e) => e.toString()));
-    }
-
-    final rawCart = await cache.readJson('cart');
-    if (rawCart is List) {
-      cart.clear();
-      for (final rawItem in rawCart.whereType<Map>()) {
-        final id = rawItem['productId']?.toString();
-        if (id == null) continue;
-        final matches = products.where((p) => p.id == id);
-        if (matches.isEmpty) continue;
-        final product = matches.first;
-        final rawColor = rawItem['color'];
-        final rawColorName = rawItem['colorName']?.toString() ?? 'أساسي';
-        final color = product.colors.cast<ProductColor?>().firstWhere(
-              (c) => c?.hex == rawColor?.toString(),
-              orElse: () => product.colors.isNotEmpty
-                  ? product.colors.first
-                  : const ProductColor(name: 'أساسي', hex: '#111827'),
-            )!;
-        cart.add(
-          CartItem(
-            product: product,
-            size: rawItem['size']?.toString() ?? '',
-            color: color.name == rawColorName
-                ? color
-                : ProductColor(name: rawColorName, hex: rawColor?.toString() ?? color.hex),
-            quantity: (rawItem['quantity'] is num)
-                ? (rawItem['quantity'] as num).toInt().clamp(1, 99)
-                : 1,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _saveCartAndWishlist() async {
-    await cache.writeJson(
-      'wishlist',
-      wishlistIds.toList(),
-    );
-    await cache.writeJson(
-      'cart',
-      cart.map((item) {
-        return {
-          'productId': item.product.id,
-          'size': item.size,
-          'color': item.color.hex,
-          'colorName': item.color.name,
-          'quantity': item.quantity,
-        };
-      }).toList(),
-    );
-  }
-
   Future<void> refresh() async {
     if (refreshing) return;
+
     refreshing = true;
     error = null;
     notifyListeners();
@@ -278,29 +165,11 @@ class StoreController extends ChangeNotifier {
       await cache.writeJson('products', rawProducts);
 
       final store = await api.fetchStore();
-      storeConfig = Map<String, dynamic>.from(
-        store['store'] is Map ? store['store'] : const {},
-      );
-      pricing = Map<String, dynamic>.from(
-        store['pricing'] is Map ? store['pricing'] : const {},
-      );
-      _applyContent(
-        Map<String, dynamic>.from(
-          store['content'] is Map ? store['content'] : const {},
-        ),
-      );
+      _applyStore(store);
       await cache.writeJson('store', store);
 
       if (profile != null) {
-        final rawOrders = await api.fetchOrderMaps();
-        orders = rawOrders.map(StoreOrder.fromJson).toList();
-        await cache.writeJson('orders', rawOrders);
-
-        notifications = await api.fetchNotifications();
-        await cache.writeJson(
-          'notifications',
-          notifications.map((item) => item.toJson()).toList(),
-        );
+        await _refreshCustomerData();
       }
 
       await _restoreCartAndWishlist();
@@ -317,6 +186,7 @@ class StoreController extends ChangeNotifier {
   Future<bool> verifyOtp(String phone, String otp) async {
     final result = await api.verifyOtp(phone, otp);
     final token = (result['accessToken'] ?? '').toString();
+
     if (token.isEmpty) return false;
 
     await api.client.saveToken(token);
@@ -330,23 +200,10 @@ class StoreController extends ChangeNotifier {
       await cache.writeJson('profile', profile!);
     }
 
-    if (!lastOtpNeedsProfile) {
-      try {
-        final rawOrders = await api.fetchOrderMaps();
-        orders = rawOrders.map(StoreOrder.fromJson).toList();
-        await cache.writeJson('orders', rawOrders);
-      } catch (_) {}
-      try {
-        notifications = await api.fetchNotifications();
-        await cache.writeJson(
-          'notifications',
-          notifications.map((item) => item.toJson()).toList(),
-        );
-      } catch (_) {}
-    }
-
-    notifyListeners();
+    await _refreshCustomerData();
     _startPoller();
+    notifyListeners();
+
     return true;
   }
 
@@ -357,36 +214,45 @@ class StoreController extends ChangeNotifier {
     String? lastName,
     required String governorate,
   }) async {
-    final response = await api.completeProfile(
+    final result = await api.completeProfile(
       firstName: firstName,
       secondName: secondName,
       thirdName: thirdName,
       lastName: lastName,
       governorate: governorate,
     );
-    if (response['user'] is Map) {
-      profile = Map<String, dynamic>.from(response['user']);
+
+    if (result['user'] is Map) {
+      profile = Map<String, dynamic>.from(result['user']);
     } else {
       profile = await api.currentUser();
     }
+
     if (profile != null) {
       await cache.writeJson('profile', profile!);
       await _refreshCustomerData();
     }
+
     lastOtpNeedsProfile = false;
     notifyListeners();
   }
 
   Future<void> logout() async {
     await api.logout();
+
     profile = null;
     orders = [];
     notifications = [];
     lastOtpNeedsProfile = false;
+    lastCreatedOrderId = null;
+    lastCreatedChatSessionId = null;
+
     _poller?.cancel();
+
     await cache.delete('profile');
     await cache.delete('orders');
     await cache.delete('notifications');
+
     notifyListeners();
   }
 
@@ -403,6 +269,7 @@ class StoreController extends ChangeNotifier {
     } else {
       wishlistIds.add(product.id);
     }
+
     await _saveCartAndWishlist();
     notifyListeners();
   }
@@ -418,7 +285,10 @@ class StoreController extends ChangeNotifier {
     final chosenColor = color ??
         (product.colors.isNotEmpty
             ? product.colors.first
-            : const ProductColor(name: 'أساسي', hex: '#111827'));
+            : const ProductColor(
+                name: 'أساسي',
+                hex: '#111827',
+              ));
 
     final index = cart.indexWhere(
       (item) =>
@@ -440,6 +310,7 @@ class StoreController extends ChangeNotifier {
         ),
       );
     }
+
     unawaited(_saveCartAndWishlist());
     notifyListeners();
   }
@@ -450,6 +321,7 @@ class StoreController extends ChangeNotifier {
     } else {
       item.quantity = quantity.clamp(1, 99);
     }
+
     unawaited(_saveCartAndWishlist());
     notifyListeners();
   }
@@ -466,10 +338,70 @@ class StoreController extends ChangeNotifier {
     notifyListeners();
   }
 
-  int get cartCount => cart.fold(0, (sum, item) => sum + item.quantity);
+  int get cartCount =>
+      cart.fold(0, (sum, item) => sum + item.quantity);
 
-  double get cartTotal =>
-      cart.fold(0, (sum, item) => sum + item.product.discountPrice * item.quantity);
+  double get cartTotal => cart.fold(
+        0,
+        (sum, item) =>
+            sum + item.product.discountPrice * item.quantity,
+      );
+
+  List<Product> filtered({
+    String category = 'all',
+    String? subCategory,
+    String? styleTab,
+    String sort = 'for_you',
+    bool saleOnly = false,
+  }) {
+    var list = products.toList();
+
+    if (category != 'all') {
+      list = list.where((p) {
+        return p.category == category ||
+            p.categories.contains(category);
+      }).toList();
+    }
+
+    if (subCategory != null && subCategory.isNotEmpty) {
+      list = list.where((p) {
+        return p.subCategory == subCategory ||
+            p.name.contains(subCategory);
+      }).toList();
+    }
+
+    if (styleTab != null && styleTab.isNotEmpty) {
+      list = list.where((p) {
+        return p.styleTabs.contains(styleTab) ||
+            p.name.contains(styleTab);
+      }).toList();
+    }
+
+    if (saleOnly) {
+      list = list.where((p) => p.discountPercentage > 0).toList();
+    }
+
+    switch (sort) {
+      case 'discount':
+        list.sort(
+          (a, b) => b.discountPercentage.compareTo(
+            a.discountPercentage,
+          ),
+        );
+      case 'popular':
+        list.sort((a, b) => b.soldCount.compareTo(a.soldCount));
+      case 'rating':
+        list.sort((a, b) => b.rating.compareTo(a.rating));
+      case 'price-low':
+        list.sort((a, b) =>
+            a.discountPrice.compareTo(b.discountPrice));
+      case 'price-high':
+        list.sort((a, b) =>
+            b.discountPrice.compareTo(a.discountPrice));
+    }
+
+    return list;
+  }
 
   Future<String?> submitOrder({
     required String address,
@@ -484,13 +416,18 @@ class StoreController extends ChangeNotifier {
       profile?['thirdName'],
       profile?['lastName'],
     ]
-        .where((value) => value != null && value.toString().trim().isNotEmpty)
+        .where(
+          (value) =>
+              value != null &&
+              value.toString().trim().isNotEmpty,
+        )
         .join(' ');
 
     final payload = {
       'customerName': name.isEmpty ? 'عميل المتجر' : name,
       'customerPhone': profile?['phone'] ?? '',
-      'governorate': profile?['governorate'] ?? 'أمانة العاصمة',
+      'governorate':
+          profile?['governorate'] ?? 'أمانة العاصمة',
       'address': address.trim(),
       'deliveryNotes': notes.trim(),
       'currency': currency,
@@ -506,32 +443,43 @@ class StoreController extends ChangeNotifier {
     };
 
     final result = await api.createOrder(payload);
-    lastCreatedOrderId = result['orderId']?.toString() ??
-        (result['order'] is Map
-            ? result['order']['id']?.toString()
-            : null);
-    lastCreatedChatSessionId = result['chatSessionId']?.toString();
+
+    lastCreatedOrderId =
+        result['orderId']?.toString() ??
+            (result['order'] is Map
+                ? result['order']['id']?.toString()
+                : null);
+    lastCreatedChatSessionId =
+        result['chatSessionId']?.toString();
 
     cart.clear();
     await _saveCartAndWishlist();
-
     await _refreshCustomerData();
+
     notifyListeners();
     return lastCreatedOrderId;
   }
 
   Future<String?> ensureChat({String? orderId}) async {
     if (profile == null) return null;
-    final result = await api.createChatSession(orderId: orderId);
+
+    final result =
+        await api.createChatSession(orderId: orderId);
     final session = result['session'];
-    return session is Map ? session['id']?.toString() : null;
+
+    return session is Map
+        ? session['id']?.toString()
+        : null;
   }
 
   Future<List<Map<String, dynamic>>> fetchChatMessages(
     String sessionId, {
     DateTime? since,
   }) {
-    return api.chatMessages(sessionId, since: since);
+    return api.chatMessages(
+      sessionId,
+      since: since,
+    );
   }
 
   Future<Map<String, dynamic>> sendChatMessage(
@@ -541,8 +489,8 @@ class StoreController extends ChangeNotifier {
     String? mediaType,
     String? fileName,
     bool isPaymentProof = false,
-  }) async {
-    final result = await api.sendChatMessage(
+  }) {
+    return api.sendChatMessage(
       sessionId,
       text: text,
       mediaUrl: mediaUrl,
@@ -550,7 +498,6 @@ class StoreController extends ChangeNotifier {
       fileName: fileName,
       isPaymentProof: isPaymentProof,
     );
-    return result;
   }
 
   Future<Map<String, dynamic>> uploadChatImage(
@@ -560,33 +507,44 @@ class StoreController extends ChangeNotifier {
     return api.uploadChatImage(sessionId, file);
   }
 
-  Future<void> markChatRead(String sessionId) async {
-    await api.markChatRead(sessionId);
-  }
+  Future<void> markChatRead(String sessionId) =>
+      api.markChatRead(sessionId);
 
   Future<void> refreshNotifications() async {
     if (profile == null) return;
+
     try {
       notifications = await api.fetchNotifications();
       await cache.writeJson(
         'notifications',
-        notifications.map((item) => item.toJson()).toList(),
+        notifications
+            .map((item) => item.toJson())
+            .toList(),
       );
       notifyListeners();
     } catch (_) {}
   }
 
-  Future<void> markNotificationRead(NotificationItem item) async {
-    if (item.id.isEmpty) return;
+  Future<void> markNotificationRead(
+    NotificationItem item,
+  ) async {
     final id = int.tryParse(item.id);
     if (id == null) return;
+
     await api.markNotificationRead(id);
-    final index = notifications.indexWhere((x) => x.id == item.id);
+
+    final index = notifications.indexWhere(
+      (x) => x.id == item.id,
+    );
+
     if (index >= 0) {
-      notifications[index] = notifications[index].copyWith(read: true);
+      notifications[index] =
+          notifications[index].copyWith(read: true);
       await cache.writeJson(
         'notifications',
-        notifications.map((x) => x.toJson()).toList(),
+        notifications
+            .map((x) => x.toJson())
+            .toList(),
       );
       notifyListeners();
     }
@@ -594,8 +552,11 @@ class StoreController extends ChangeNotifier {
 
   Future<void> markAllNotificationsRead() async {
     if (profile == null) return;
+
     await api.markNotificationsReadAll();
-    notifications = notifications.map((x) => x.copyWith(read: true)).toList();
+    notifications =
+        notifications.map((x) => x.copyWith(read: true)).toList();
+
     await cache.writeJson(
       'notifications',
       notifications.map((x) => x.toJson()).toList(),
@@ -605,31 +566,168 @@ class StoreController extends ChangeNotifier {
 
   Future<void> _refreshCustomerData() async {
     if (profile == null) return;
+
     try {
       final rawOrders = await api.fetchOrderMaps();
       orders = rawOrders.map(StoreOrder.fromJson).toList();
       await cache.writeJson('orders', rawOrders);
     } catch (_) {}
+
     try {
       notifications = await api.fetchNotifications();
       await cache.writeJson(
         'notifications',
-        notifications.map((item) => item.toJson()).toList(),
+        notifications.map((x) => x.toJson()).toList(),
       );
     } catch (_) {}
   }
 
+  Future<void> _restoreProducts() async {
+    final raw = await cache.readJson('products');
+    if (raw is List) {
+      products = raw.whereType<Map>().map((item) {
+        return Product.fromJson(
+          Map<String, dynamic>.from(item),
+        );
+      }).toList();
+    }
+  }
+
+  Future<void> _restoreStore() async {
+    final raw = await cache.readJson('store');
+    if (raw is Map) {
+      _applyStore(Map<String, dynamic>.from(raw));
+    }
+  }
+
+  Future<void> _restoreProfile() async {
+    final raw = await cache.readJson('profile');
+    if (raw is Map) {
+      profile = Map<String, dynamic>.from(raw);
+    }
+  }
+
+  Future<void> _restoreOrders() async {
+    final raw = await cache.readJson('orders');
+    if (raw is List) {
+      orders = raw.whereType<Map>().map((item) {
+        return StoreOrder.fromJson(
+          Map<String, dynamic>.from(item),
+        );
+      }).toList();
+    }
+  }
+
+  Future<void> _restoreNotifications() async {
+    final raw = await cache.readJson('notifications');
+    if (raw is List) {
+      notifications = raw.whereType<Map>().map((item) {
+        return NotificationItem.fromJson(
+          Map<String, dynamic>.from(item),
+        );
+      }).toList();
+    }
+  }
+
+  Future<void> _restoreCartAndWishlist() async {
+    final rawWishlist = await cache.readJson('wishlist');
+    if (rawWishlist is List) {
+      wishlistIds
+        ..clear()
+        ..addAll(rawWishlist.map((e) => e.toString()));
+    }
+
+    final rawCart = await cache.readJson('cart');
+    if (rawCart is! List) return;
+
+    cart.clear();
+
+    for (final rawItem in rawCart.whereType<Map>()) {
+      final productId = rawItem['productId']?.toString();
+      if (productId == null) continue;
+
+      final matching =
+          products.where((p) => p.id == productId);
+      if (matching.isEmpty) continue;
+
+      final product = matching.first;
+      final requestedHex =
+          rawItem['color']?.toString() ?? '#111827';
+      final requestedName =
+          rawItem['colorName']?.toString() ?? 'أساسي';
+
+      ProductColor selected =
+          product.colors.where((color) {
+            return color.hex == requestedHex;
+          }).firstOrNull ??
+          (product.colors.isNotEmpty
+              ? product.colors.first
+              : ProductColor(
+                  name: requestedName,
+                  hex: requestedHex,
+                ));
+
+      if (selected.name != requestedName &&
+          requestedName.isNotEmpty) {
+        selected = ProductColor(
+          name: requestedName,
+          hex: selected.hex,
+        );
+      }
+
+      final quantity =
+          rawItem['quantity'] is num
+              ? (rawItem['quantity'] as num)
+                  .toInt()
+                  .clamp(1, 99)
+              : 1;
+
+      cart.add(
+        CartItem(
+          product: product,
+          size: rawItem['size']?.toString() ?? '',
+          color: selected,
+          quantity: quantity,
+        ),
+      );
+    }
+  }
+
+  Future<void> _saveCartAndWishlist() async {
+    await cache.writeJson(
+      'wishlist',
+      wishlistIds.toList(),
+    );
+
+    await cache.writeJson(
+      'cart',
+      cart.map((item) {
+        return {
+          'productId': item.product.id,
+          'size': item.size,
+          'color': item.color.hex,
+          'colorName': item.color.name,
+          'quantity': item.quantity,
+        };
+      }).toList(),
+    );
+  }
+
   void _startPoller() {
     _poller?.cancel();
+
     if (profile == null) return;
 
-    _poller = Timer.periodic(const Duration(seconds: 15), (_) async {
-      if (_polling || profile == null) return;
-      _polling = true;
-      await _refreshCustomerData();
-      _polling = false;
-      notifyListeners();
-    });
+    _poller = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) async {
+        if (_polling || profile == null) return;
+        _polling = true;
+        await _refreshCustomerData();
+        _polling = false;
+        notifyListeners();
+      },
+    );
   }
 
   @override
