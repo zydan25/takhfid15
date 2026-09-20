@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="colorPrimary">#E7193F</color>
-    <color name="colorPrimaryDark">#A70E2B</color>
-    <color name="colorAccent">#F59E0B</color>
-    <color name="takhfid_icon_background">#0B0F19</color>
-    <color name="takhfid_icon_foreground">#FFFFFF</color>
-</resources>
