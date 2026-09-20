@@ -473,6 +473,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (current.isEmpty || current.first.styleTabs.isEmpty) {
       return const SizedBox.shrink();
     }
+
     final styles = current.first.styleTabs;
     return SizedBox(
       height: 119,
@@ -483,38 +484,53 @@ class _HomeScreenState extends State<HomeScreen> {
         separatorBuilder: (_, __) => const SizedBox(width: 7),
         itemBuilder: (_, index) {
           final style = styles[index];
-          return SizedBox(
-            width: 76,
-            child: GestureDetector(
-              onTap: () => setState(() {
-                styleTab = style.id;
-                subCategory = null;
-              }),
+          final active = style.id == styleTab;
+
+          return GestureDetector(
+            onTap: () => setState(() {
+              styleTab = active ? null : style.id;
+              subCategory = null;
+            }),
+            child: SizedBox(
+              width: 76,
               child: Column(
                 children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: SizedBox(
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
                     width: 74,
                     height: 84,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: active
+                            ? AppColors.black
+                            : Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
                     child: style.image.isNotEmpty
-                        ? Image.network(style.image, fit: BoxFit.cover)
-                        : const ColoredBox(color: AppColors.slate100),
+                        ? CachedNetworkImage(
+                            imageUrl: style.image,
+                            fit: BoxFit.cover,
+                          )
+                        : const ColoredBox(
+                            color: AppColors.slate100,
+                          ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  style.name,
-                  maxLines: 2,
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.w800,
+                  const SizedBox(height: 4),
+                  Text(
+                    style.name,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
             ),
           );
         },
