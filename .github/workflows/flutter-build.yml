@@ -37,6 +37,25 @@ jobs:
       - name: Generate Android platform files
         run: flutter create --platforms=android .
 
+      - name: Enable Android internet access
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          
+          path = Path("android/app/src/main/AndroidManifest.xml")
+          text = path.read_text()
+          permission = '<uses-permission android:name="android.permission.INTERNET" />'
+          
+          if permission not in text:
+              anchor = '<application'
+              if anchor not in text:
+                  raise SystemExit("AndroidManifest.xml has no <application> element")
+              text = text.replace(anchor, f"    {permission}\\n\\n    {anchor}", 1)
+              path.write_text(text)
+          PY
+          
+          grep -q 'android.permission.INTERNET' android/app/src/main/AndroidManifest.xml
+
       - name: Resolve packages
         run: flutter pub get
 
