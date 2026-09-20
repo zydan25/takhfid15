@@ -388,16 +388,27 @@ class StoreController extends ChangeNotifier {
             a.discountPercentage,
           ),
         );
+        break;
       case 'popular':
-        list.sort((a, b) => b.soldCount.compareTo(a.soldCount));
+        list.sort(
+          (a, b) => b.soldCount.compareTo(a.soldCount),
+        );
+        break;
       case 'rating':
-        list.sort((a, b) => b.rating.compareTo(a.rating));
+        list.sort(
+          (a, b) => b.rating.compareTo(a.rating),
+        );
+        break;
       case 'price-low':
-        list.sort((a, b) =>
-            a.discountPrice.compareTo(b.discountPrice));
+        list.sort(
+          (a, b) => a.discountPrice.compareTo(b.discountPrice),
+        );
+        break;
       case 'price-high':
-        list.sort((a, b) =>
-            b.discountPrice.compareTo(a.discountPrice));
+        list.sort(
+          (a, b) => b.discountPrice.compareTo(a.discountPrice),
+        );
+        break;
     }
 
     return list;
