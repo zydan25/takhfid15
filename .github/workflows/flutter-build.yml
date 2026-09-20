@@ -9,11 +9,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -31,13 +32,16 @@ jobs:
       - name: Get packages
         run: flutter pub get
 
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed lib
+
       - name: Analyze
         run: flutter analyze
 
-      - name: Build APK
+      - name: Build release APK
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Publish APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: takhfid-client-release-apk
