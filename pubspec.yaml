@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.6.0
+  shared_preferences: ^2.5.5
   flutter_secure_storage: ^11.2.0
   cached_network_image: ^4.0.0
   path_provider: ^2.1.6
