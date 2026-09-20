@@ -4,6 +4,7 @@ class Product {
   final String category;
   final List<String> categories;
   final String subCategory;
+  final List<String> styleTabs;
   final String image;
   final List<String> gallery;
   final double originalPrice;
@@ -17,6 +18,9 @@ class Product {
   final String brand;
   final String description;
   final int soldCount;
+  final String? couponText;
+  final String? videoUrl;
+  final String sku;
 
   const Product({
     required this.id,
@@ -24,6 +28,7 @@ class Product {
     required this.category,
     required this.categories,
     required this.subCategory,
+    required this.styleTabs,
     required this.image,
     required this.gallery,
     required this.originalPrice,
@@ -37,6 +42,9 @@ class Product {
     required this.brand,
     required this.description,
     required this.soldCount,
+    required this.couponText,
+    required this.videoUrl,
+    required this.sku,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -52,38 +60,57 @@ class Product {
 
     final image = (json['image'] ?? '').toString();
     final rawGallery =
-        json['galleryImages'] is List ? json['galleryImages'] : json['gallery'];
+        json['images'] is List
+            ? json['images']
+            : (json['galleryImages'] is List ? json['galleryImages'] : json['gallery']);
     final gallery = rawGallery is List
         ? rawGallery.map((e) => e.toString()).where((e) => e.isNotEmpty).toList()
         : <String>[];
+
     final category =
-        (json['category'] ?? json['categoryId'] ?? 'all').toString();
-    final rawCats = json['categories'];
-    final categories = rawCats is List && rawCats.isNotEmpty
-        ? rawCats.map((e) => e.toString()).toList()
+        (json['categoryId'] ?? json['category'] ?? 'all').toString();
+    final rawCategories = json['categories'];
+    final categories = rawCategories is List && rawCategories.isNotEmpty
+        ? rawCategories.map((e) => e.toString()).toList()
         : <String>['all', category];
-    final discountPrice = number(json['discountPrice'] ?? json['price']);
-    final original = number(json['originalPrice']);
-    final originalPrice = original > 0 ? original : discountPrice;
-    final rawDiscount =
-        integer(json['discountPercentage'] ?? json['discount']);
-    final discount = rawDiscount > 0
-        ? rawDiscount
-        : (originalPrice > discountPrice
-            ? (((originalPrice - discountPrice) / originalPrice) * 100).round()
-            : 0);
+
+    final rawStyles = json['styleTabs'] ?? json['styleTabIds'] ?? json['styles'];
+    final styleTabs = rawStyles is List
+        ? rawStyles.map((e) => e.toString()).toList()
+        : <String>[];
+
+    final price = number(json['price']);
+    final compare = number(json['compareAtPrice'] ?? json['originalPrice']);
+    final discountValue = number(json['discountValue']);
+    final discountType = (json['discountType'] ?? 'none').toString();
+    final calculated = discountType == 'percent'
+        ? price - price * discountValue / 100
+        : discountType == 'fixed'
+            ? price - discountValue
+            : price;
+    final serverDiscount = integer(
+      json['discountPercentage'] ?? json['discount'],
+    );
+    final effectiveDiscount = serverDiscount > 0
+        ? serverDiscount
+        : (compare > calculated && compare > 0)
+            ? (((compare - calculated) / compare) * 100).round()
+            : 0;
 
     return Product(
       id: (json['id'] ?? '').toString(),
       name: (json['name'] ?? json['title'] ?? 'صنف غير مسمى').toString(),
       category: category,
       categories: categories,
-      subCategory: (json['subCategory'] ?? 'عام').toString(),
+      subCategory: (json['subCategory'] ?? json['subcategory'] ?? 'عام').toString(),
+      styleTabs: styleTabs,
       image: image,
-      gallery: gallery.isEmpty ? (image.isEmpty ? const [] : [image]) : gallery,
-      originalPrice: originalPrice,
-      discountPrice: discountPrice,
-      discountPercentage: discount,
+      gallery: gallery.isEmpty
+          ? (image.isEmpty ? const [] : [image])
+          : gallery,
+      originalPrice: compare > 0 ? compare : price,
+      discountPrice: calculated > 0 ? calculated : number(json['discountPrice']),
+      discountPercentage: effectiveDiscount,
       rating: number(json['rating']),
       reviewsCount: integer(json['reviewsCount'] ?? json['reviewCount']),
       colors: json['colors'] is List
@@ -94,10 +121,14 @@ class Product {
       sizes: json['sizes'] is List
           ? (json['sizes'] as List).map((e) => e.toString()).toList()
           : const [],
-      inStock: json['inStock'] != false,
-      brand: (json['brand'] ?? 'SHEIN').toString(),
+      inStock: json['active'] != false &&
+          (json['stock'] == null || integer(json['stock']) > 0),
+      brand: (json['brand'] ?? '').toString(),
       description: (json['description'] ?? '').toString(),
       soldCount: integer(json['soldCount']),
+      couponText: json['couponText']?.toString(),
+      videoUrl: json['videoUrl']?.toString(),
+      sku: (json['sku'] ?? '').toString(),
     );
   }
 }
@@ -105,12 +136,16 @@ class Product {
 class ProductColor {
   final String name;
   final String hex;
-  const ProductColor({required this.name, required this.hex});
+
+  const ProductColor({
+    required this.name,
+    required this.hex,
+  });
 
   factory ProductColor.fromJson(Map<String, dynamic> json) {
     return ProductColor(
-      name: (json['name'] ?? 'أساسي').toString(),
-      hex: (json['hex'] ?? '#111827').toString(),
+      name: (json['name'] ?? json['label'] ?? 'أساسي').toString(),
+      hex: (json['hex'] ?? json['color'] ?? '#111827').toString(),
     );
   }
 }
