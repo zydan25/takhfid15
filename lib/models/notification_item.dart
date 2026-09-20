@@ -7,6 +7,20 @@ class NotificationItem {
   final Map<String, dynamic> data;
   final bool read;
 
+  String get type => (data['type'] ?? data['notificationType'] ?? 'default').toString();
+
+  String? get chatSessionId {
+    final value = data['chatSessionId'] ?? data['sessionId'];
+    final text = value?.toString();
+    return text == null || text.isEmpty ? null : text;
+  }
+
+  String? get orderId {
+    final value = data['orderId'] ?? data['order_id'];
+    final text = value?.toString();
+    return text == null || text.isEmpty ? null : text;
+  }
+
   const NotificationItem({
     required this.id,
     required this.title,
