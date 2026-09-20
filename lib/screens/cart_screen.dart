@@ -61,7 +61,7 @@ class CartScreen extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        controller.cartTotal.toStringAsFixed(2) + ' ر.س',
+                        controller.cartTotal.toStringAsFixed(2) + ' ' + controller.currency,
                         style: const TextStyle(
                           fontSize: 16,
                           color: AppColors.rose,
@@ -153,7 +153,7 @@ class CartScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  item.product.discountPrice.toStringAsFixed(2) + ' ر.س',
+                  item.product.discountPrice.toStringAsFixed(2) + ' ' + controller.currency,
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.rose,
