@@ -1,8 +1,11 @@
-name: Build Flutter Android APK
+name: Build Takhfid Flutter Client
 
 on:
   workflow_dispatch:
   push:
+    branches:
+      - feat/flutter-client-shein-2026-09
+  pull_request:
     branches:
       - feat/flutter-client-shein-2026-09
 
@@ -20,17 +23,24 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Flutter
+      - name: Setup Flutter 3.47.0
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: "3.47.0"
           channel: stable
           cache: true
 
-      - name: Generate Android platform
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Generate Android platform files
         run: flutter create --platforms=android .
 
-      - name: Get packages
+      - name: Resolve packages
         run: flutter pub get
+
+      - name: Generate launcher icon
+        run: dart run flutter_launcher_icons_plus
 
       - name: Format check
         run: dart format --output=none --set-exit-if-changed lib
@@ -41,8 +51,17 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
-      - name: Publish APK artifact
+      - name: Build release AAB
+        run: flutter build appbundle --release
+
+      - name: Publish APK
         uses: actions/upload-artifact@v4
         with:
           name: takhfid-client-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Publish AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: takhfid-client-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
