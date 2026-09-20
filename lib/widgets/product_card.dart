@@ -11,6 +11,7 @@ class ProductCard extends StatelessWidget {
   final VoidCallback onWishlist;
   final VoidCallback onCart;
   final int index;
+  final String currencyLabel;
 
   const ProductCard({
     super.key,
@@ -20,6 +21,7 @@ class ProductCard extends StatelessWidget {
     required this.onWishlist,
     required this.onCart,
     this.index = 0,
+    this.currencyLabel = 'YER',
   });
 
   @override
@@ -173,7 +175,7 @@ class ProductCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             product.originalPrice.toStringAsFixed(0) +
-                                ' ر.س',
+                                ' ' + currencyLabel,
                             style: const TextStyle(
                               color: AppColors.slate500,
                               decoration: TextDecoration.lineThrough,
@@ -197,7 +199,7 @@ class ProductCard extends StatelessWidget {
                     ),
                     child: Text(
                       product.discountPrice.toStringAsFixed(2) +
-                          ' ر.س' +
+                          ' ' + currencyLabel +
                           (product.couponText == null
                               ? ''
                               : '  |  بعد القسيمة'),
