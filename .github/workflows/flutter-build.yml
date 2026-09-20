@@ -12,6 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -23,7 +24,7 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Flutter 3.47.0
+      - name: Setup Flutter 3.47.2
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.47.2"
@@ -40,7 +41,8 @@ jobs:
         run: flutter pub get
 
       - name: Generate launcher icon
-        run: dart run flutter_launcher_icons_plus
+        timeout-minutes: 3
+        run: flutter pub run flutter_launcher_icons
 
       - name: Format check
         run: dart format --output=none --set-exit-if-changed lib
