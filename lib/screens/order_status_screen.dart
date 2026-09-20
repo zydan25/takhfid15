@@ -98,7 +98,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
                       const SizedBox(height: 5),
                       Text(
                         order.totalAmount.toStringAsFixed(2) +
-                            ' ر.س • ' +
+                            ' ' + widget.controller.currency + ' • ' +
                             order.governorate,
                         style: const TextStyle(
                           fontSize: 10,
@@ -134,7 +134,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
             c.cartCount.toString() +
                 ' أصناف • ' +
                 c.cartTotal.toStringAsFixed(2) +
-                ' ر.س',
+                ' ' + c.currency,
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w900,
