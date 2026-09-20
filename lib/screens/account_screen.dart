@@ -4,6 +4,7 @@ import '../state/store_controller.dart';
 import 'auth_screen.dart';
 import 'order_status_screen.dart';
 import 'wishlist_screen.dart';
+import 'chat_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   final StoreController controller;
@@ -113,7 +114,7 @@ class AccountScreen extends StatelessWidget {
         _row(context, 'الهدايا والبطاقات والمكافآت', Icons.card_giftcard_outlined,
             () => _sheet(context, 'الهدايا والكوبونات', 'المكافآت والكوبونات جزء من تجربة العميل في النسخة المرجعية.')),
         _row(context, 'التواصل معنا', Icons.support_agent_outlined,
-            () => _sheet(context, 'التواصل معنا', 'سيتم توصيل شاشة المحادثة بعقد الرسائل بعد تثبيت API النهائي.')),
+            () => _openSupportChat(context)),
         if (profile != null)
           Center(
             child: TextButton.icon(
@@ -129,6 +130,38 @@ class AccountScreen extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  Future<void> _openSupportChat(BuildContext context) async {
+    if (controller.profile == null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AuthScreen(controller: controller),
+        ),
+      );
+      return;
+    }
+
+    final sessionId = await controller.ensureChat();
+    if (!context.mounted) return;
+    if (sessionId == null || sessionId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر فتح محادثة الدعم')),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          controller: controller,
+          sessionId: sessionId,
+          title: 'التواصل معنا',
+        ),
+      ),
     );
   }
 
