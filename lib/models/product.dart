@@ -101,7 +101,12 @@ class Product {
           json['thumbnail'] ??
           json['thumbnailUrl'] ??
           json['image_url'] ??
-          json['imageUrlHttps'],
+          json['imageUrlHttps'] ??
+          json['src'] ??
+          json['photo'] ??
+          json['photoUrl'] ??
+          json['cover'] ??
+          json['coverUrl'],
     );
 
     final galleryCandidates = <dynamic>[
@@ -112,6 +117,9 @@ class Product {
       json['photos'],
       json['media'],
       json['mediaItems'],
+      json['productImages'],
+      json['photos'],
+      json['variants'],
     ];
 
     final gallery = <String>[];
@@ -132,6 +140,11 @@ class Product {
           'src',
           'original',
           'thumbnail',
+          'srcUrl',
+          'photo',
+          'photoUrl',
+          'cover',
+          'coverUrl',
           'images',
           'media',
         ]) {
