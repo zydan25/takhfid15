@@ -629,136 +629,130 @@ class _HomeScreenState extends State<HomeScreen> {
         .cast<Category?>()
         .firstOrNull;
 
-    var styles = allCategory?.styleTabs ?? c.homeStyleTabs;
-    final preferred = <String>[
+    final source = allCategory?.styleTabs ?? c.homeStyleTabs;
+    const preferred = <String>[
       'إطلالات يومية',
       'محتشمة',
       'عمل',
       'حفلات',
     ];
 
-    final ordered = <StyleTab>[];
+    final styles = <StyleTab>[];
     for (final name in preferred) {
-      final matches = styles.where((item) => item.name == name);
-      if (matches.isNotEmpty) ordered.add(matches.first);
+      final found = source.where((item) => item.name == name);
+      if (found.isNotEmpty) styles.add(found.first);
     }
-    for (final style in styles) {
-      if (!ordered.any((item) => item.id == style.id)) {
-        ordered.add(style);
+    for (final style in source) {
+      if (styles.length >= 4) break;
+      if (!styles.any((item) => item.id == style.id)) {
+        styles.add(style);
       }
     }
 
-    final visible = ordered.take(4).toList();
-    if (visible.isEmpty) return const SizedBox.shrink();
+    if (styles.isEmpty) return const SizedBox.shrink();
 
-    final shape = _shape(
-      c.styleTabsConfig['shape'],
-      fallback: 'rounded',
-    );
+    final width = MediaQuery.sizeOf(context).width;
+    final cardWidth = ((width - 100) / 4).clamp(125.0, 154.0).toDouble();
+    final shape = _shape(c.styleTabsConfig['shape'], fallback: 'rounded');
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(11, 7, 11, 5),
+      padding: const EdgeInsets.fromLTRB(11, 8, 11, 5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(3, 3, 3, 8),
+            padding: EdgeInsets.fromLTRB(3, 2, 3, 8),
             child: Text(
               'إطلالات من أجلك',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-              ),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
             ),
           ),
           SizedBox(
-            height: 170,
-            child: Row(
-              children: List.generate(visible.length, (index) {
-                final style = visible[index];
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: index == 0 ? 0 : 4,
-                      right: index == visible.length - 1 ? 0 : 4,
-                    ),
-                    child: GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ShowcaseScreen(
-                            controller: c,
-                            title: style.name,
-                            category: 'all',
-                            styleTab: style.id.isNotEmpty
-                                ? style.id
-                                : style.name,
-                            image: style.image,
-                          ),
-                        ),
+            height: 176,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              scrollDirection: Axis.horizontal,
+              itemCount: styles.take(4).length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, index) {
+                final style = styles[index];
+                return GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ShowcaseScreen(
+                        controller: c,
+                        title: style.name,
+                        category: 'all',
+                        styleTab:
+                            style.id.isNotEmpty ? style.id : style.name,
+                        image: style.image,
                       ),
-                      child: ClipRRect(
-                        borderRadius: _radius(shape, 22),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            if (style.image.isNotEmpty)
-                              CachedNetworkImage(
-                                imageUrl: style.image,
-                                fit: BoxFit.cover,
-                                errorWidget: (_, __, ___) =>
-                                    const ColoredBox(
-                                  color: AppColors.slate100,
-                                  child: Icon(Icons.image_outlined),
-                                ),
-                              )
-                            else
-                              const ColoredBox(
+                    ),
+                  ),
+                  child: SizedBox(
+                    width: cardWidth,
+                    height: 170,
+                    child: ClipRRect(
+                      borderRadius: _radius(shape, 23),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (style.image.isNotEmpty)
+                            CachedNetworkImage(
+                              imageUrl: style.image,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) => const ColoredBox(
                                 color: AppColors.slate100,
-                                child: Icon(Icons.auto_awesome_outlined),
+                                child: Icon(Icons.image_outlined),
                               ),
-                            const Align(
-                              alignment: Alignment.bottomCenter,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.transparent,
-                                      Color(0xE6000000),
-                                    ],
-                                  ),
+                            )
+                          else
+                            const ColoredBox(
+                              color: AppColors.slate100,
+                              child: Icon(Icons.auto_awesome_outlined),
+                            ),
+                          const Align(
+                            alignment: Alignment.bottomCenter,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Color(0xE6000000),
+                                  ],
                                 ),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height: 52,
-                                ),
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 53,
                               ),
                             ),
-                            Positioned(
-                              right: 5,
-                              left: 5,
-                              bottom: 8,
-                              child: Text(
-                                style.name,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w900,
-                                ),
+                          ),
+                          Positioned(
+                            right: 7,
+                            left: 7,
+                            bottom: 9,
+                            child: Text(
+                              style.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 );
-              }),
+              },
             ),
           ),
         ],
@@ -805,17 +799,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (items.isEmpty) return const SizedBox.shrink();
 
+    final width = MediaQuery.sizeOf(context).width;
+    final dimension = ((width - 50) / 5).clamp(62.0, 96.0).toDouble();
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(9, 7, 9, 7),
+      padding: const EdgeInsets.fromLTRB(6, 4, 6, 9),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: items.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 5,
-          crossAxisSpacing: 1,
-          mainAxisSpacing: 7,
-          childAspectRatio: .82,
+          crossAxisSpacing: 2,
+          mainAxisSpacing: 5,
+          childAspectRatio: .83,
         ),
         itemBuilder: (_, index) {
           final sub = items[index];
@@ -835,8 +832,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 Container(
-                  width: 66,
-                  height: 66,
+                  width: dimension,
+                  height: dimension,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.slate100,
@@ -852,16 +849,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: AppColors.slate400,
                         ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  sub.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 9,
-                    height: 1.05,
-                    fontWeight: FontWeight.w700,
+                const SizedBox(height: 5),
+                SizedBox(
+                  height: 28,
+                  child: Text(
+                    sub.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      height: 1.03,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -873,36 +873,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _feedTabs(StoreController c) {
-    final dynamicTabs = c.recommendationTabs;
-    final tabs = dynamicTabs.isNotEmpty
-        ? dynamicTabs
-            .take(4)
-            .map(
-              (tab) => _FeedTab(
-                id: tab.id,
-                label: tab.label,
-              ),
-            )
-            .toList()
-        : const [
-            _FeedTab(id: 'for_you', label: 'من أجلك'),
-            _FeedTab(id: 'new', label: 'مدخلات جديدة'),
-            _FeedTab(id: 'discount', label: 'خصومات'),
-            _FeedTab(id: 'popular', label: 'الأكثر مبيعًا'),
-          ];
+    const tabs = <_FeedTab>[
+      _FeedTab(id: 'for_you', label: 'من أجلك'),
+      _FeedTab(id: 'new', label: 'مدخلات جديدة'),
+      _FeedTab(id: 'discount', label: 'خصومات'),
+      _FeedTab(id: 'popular', label: 'الأكثر مبيعًا'),
+    ];
 
-    final activeId = tabs.any((tab) => tab.id == _feedTab)
-        ? _feedTab
-        : tabs.first.id;
-
-    if (activeId != _feedTab && mounted) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => setState(() => _feedTab = activeId),
-      );
-    }
+    final activeId =
+        tabs.any((tab) => tab.id == _feedTab) ? _feedTab : tabs.first.id;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 7, 12, 0),
+      padding: const EdgeInsets.fromLTRB(18, 3, 18, 0),
       child: Row(
         children: tabs.map((tab) {
           final active = tab.id == activeId;
@@ -910,14 +892,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: GestureDetector(
               onTap: () => setState(() => _feedTab = tab.id),
               child: Container(
-                height: 46,
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                decoration: BoxDecoration(
-                  color: active ? Colors.black : AppColors.slate50,
-                  border: Border.all(
-                    color: active ? Colors.black : AppColors.slate200,
-                  ),
-                ),
+                height: 48,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                color: active ? Colors.black : AppColors.slate100,
                 alignment: Alignment.center,
                 child: Text(
                   tab.label,
@@ -938,17 +915,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<Product> _feedProducts(StoreController c) {
-    if (c.recommendationTabs.isNotEmpty) {
-      final active = c.recommendationTabs
-          .where((tab) => tab.id == _feedTab)
+    if (_feedTab == 'for_you' && c.recommendationTabs.isNotEmpty) {
+      final all = c.recommendationTabs
+          .where((tab) => tab.id == 'all')
           .toList();
-      if (active.isNotEmpty) {
-        final list = c.recommendations(active.first);
-        if (list.isNotEmpty) return list;
+      if (all.isNotEmpty) {
+        final recommended = c.recommendations(all.first);
+        if (recommended.isNotEmpty) return recommended;
       }
     }
 
-    var list = c.products.toList();
+    final list = c.products.toList();
     switch (_feedTab) {
       case 'new':
         return list.reversed.take(30).toList();
