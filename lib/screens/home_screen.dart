@@ -632,7 +632,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 5),
-      padding: const EdgeInsets.fromLTRB(10, 13, 10, 10),
+      padding: const EdgeInsets.fromLTRB(9, 8, 9, 7),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(22),
@@ -651,7 +651,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: text,
-                      fontSize: 14,
+                      fontSize: 11,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -663,7 +663,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: text.withOpacity(.75),
-                        fontSize: 9,
+                        fontSize: 7,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -690,10 +690,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Container(
                             margin:
                                 const EdgeInsets.symmetric(horizontal: 3),
-                            padding: const EdgeInsets.fromLTRB(6, 7, 6, 6),
+                            padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                             decoration: BoxDecoration(
                               color: cardBg,
-                              borderRadius: BorderRadius.circular(15),
+                              borderRadius: BorderRadius.circular(10),
                               border:
                                   Border.all(color: border.withOpacity(.65)),
                             ),
@@ -704,7 +704,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: text,
-                                    fontSize: 16,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 ),
@@ -839,7 +839,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           SizedBox(
-            height: 176,
+            height: 144,
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               scrollDirection: Axis.horizontal,
@@ -862,7 +862,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: SizedBox(
                     width: cardWidth,
-                    height: 170,
+                    height: 140,
                     child: ClipRRect(
                       borderRadius: _radius(shape, 23),
                       child: Stack(
@@ -912,7 +912,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 12,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
@@ -969,75 +969,85 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (items.isEmpty) return const SizedBox.shrink();
 
-    final width = MediaQuery.sizeOf(context).width;
-    final dimension = ((width - 50) / 5).clamp(62.0, 96.0).toDouble();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 4, 6, 9),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: items.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 5,
-          crossAxisSpacing: 2,
-          mainAxisSpacing: 5,
-          childAspectRatio: .83,
+    Widget tile(SubCategory sub) {
+      return GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ShowcaseScreen(
+              controller: c,
+              title: sub.name,
+              category: 'all',
+              subCategory: sub.id,
+              image: sub.image,
+            ),
+          ),
         ),
-        itemBuilder: (_, index) {
-          final sub = items[index];
-          return GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ShowcaseScreen(
-                  controller: c,
-                  title: sub.name,
-                  category: 'all',
-                  subCategory: sub.id,
-                  image: sub.image,
+        child: SizedBox(
+          width: 74,
+          child: Column(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.slate100,
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: sub.image.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: sub.image,
+                        fit: BoxFit.cover,
+                      )
+                    : const Icon(
+                        Icons.category_outlined,
+                        color: AppColors.slate400,
+                      ),
+              ),
+              const SizedBox(height: 4),
+              SizedBox(
+                height: 27,
+                child: Text(
+                  sub.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    height: 1.03,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: dimension,
-                  height: dimension,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.slate100,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: sub.image.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: sub.image,
-                          fit: BoxFit.cover,
-                        )
-                      : const Icon(
-                          Icons.category_outlined,
-                          color: AppColors.slate400,
-                        ),
-                ),
-                const SizedBox(height: 5),
-                SizedBox(
-                  height: 28,
-                  child: Text(
-                    sub.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      height: 1.03,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+            ],
+          ),
+        ),
+      );
+    }
+
+    Widget row(List<SubCategory> values) {
+      return SizedBox(
+        height: 98,
+        child: ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          scrollDirection: Axis.horizontal,
+          reverse: true,
+          physics: const BouncingScrollPhysics(),
+          itemCount: values.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 3),
+          itemBuilder: (_, index) => tile(values[index]),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(5, 4, 5, 9),
+      child: Column(
+        children: [
+          row(items.take(5).toList()),
+          if (items.length > 5) row(items.skip(5).take(5).toList()),
+        ],
       ),
     );
   }
