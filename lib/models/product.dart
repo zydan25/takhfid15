@@ -4,6 +4,7 @@ class Product {
   final String category;
   final List<String> categories;
   final String subCategory;
+  final List<String> subCategories;
   final List<String> styleTabs;
   final String image;
   final List<String> gallery;
@@ -29,6 +30,7 @@ class Product {
     required this.category,
     required this.categories,
     required this.subCategory,
+    this.subCategories = const [],
     required this.styleTabs,
     required this.image,
     required this.gallery,
@@ -76,6 +78,11 @@ class Product {
         ? rawCategories.map((e) => e.toString()).toList()
         : <String>['all', category];
 
+    final rawSubCategories = json['subCategories'];
+    final subCategories = rawSubCategories is List
+        ? rawSubCategories.map((e) => e.toString()).where((e) => e.isNotEmpty).toList()
+        : <String>[];
+
     final rawStyles = json['styleTabs'] ?? json['styleTabIds'] ?? json['styles'];
     final styleTabs = rawStyles is List
         ? rawStyles.map((e) => e.toString()).toList()
@@ -105,6 +112,7 @@ class Product {
       category: category,
       categories: categories,
       subCategory: (json['subCategory'] ?? json['subcategory'] ?? 'عام').toString(),
+      subCategories: subCategories,
       styleTabs: styleTabs,
       image: image,
       gallery: gallery.isEmpty
