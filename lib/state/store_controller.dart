@@ -113,9 +113,45 @@ class StoreController extends ChangeNotifier {
       store['pricing'] is Map ? store['pricing'] : const {},
     );
 
-    final content = Map<String, dynamic>.from(
-      store['content'] is Map ? store['content'] : const {},
-    );
+    final nestedContent = store['content'] is Map
+        ? Map<String, dynamic>.from(store['content'] as Map)
+        : <String, dynamic>{};
+    final content = <String, dynamic>{...nestedContent};
+
+    // The legacy web client and the current API have both returned parts of
+    // the catalog at the /store root. Prefer nested content, but transparently
+    // fill any missing/empty sections from the root so Flutter stays server-driven.
+    for (final key in const [
+      'categories',
+      'banners',
+      'campaigns',
+      'announcements',
+      'homeTopTabs',
+      'topTabs',
+      'navigationTabs',
+      'homeNavigationTabs',
+      'homeStyleTabs',
+      'styleTabs',
+      'looks',
+      'homeLooks',
+      'sideCategories',
+      'sidebarCategories',
+      'recommendationTabs',
+      'categoryTabsConfig',
+      'styleTabsConfig',
+      'hashtags',
+      'trendHashtags',
+      'products',
+    ]) {
+      final current = content[key];
+      final root = store[key];
+      final currentEmpty = current == null ||
+          (current is List && current.isEmpty) ||
+          (current is Map && current.isEmpty);
+      if (currentEmpty && root != null) {
+        content[key] = root;
+      }
+    }
 
     categoryTabsConfig = content['categoryTabsConfig'] is Map
         ? Map<String, dynamic>.from(content['categoryTabsConfig'])
@@ -141,7 +177,9 @@ class StoreController extends ChangeNotifier {
 
     announcements = content['announcements'] is Map
         ? Map<String, dynamic>.from(content['announcements'])
-        : <String, dynamic>{};
+        : (store['announcements'] is Map
+            ? Map<String, dynamic>.from(store['announcements'] as Map)
+            : <String, dynamic>{});
     recommendationTabs = content['recommendationTabs'] is List
         ? content['recommendationTabs'].whereType<Map>().map((raw) =>
             RecommendationTab.fromJson(Map<String, dynamic>.from(raw)))
@@ -306,9 +344,21 @@ class StoreController extends ChangeNotifier {
 
     final rawBanners = content['banners'];
     if (rawBanners is List) {
-      banners = rawBanners.whereType<Map>().map((raw) {
-        return BannerItem.fromJson(Map<String, dynamic>.from(raw));
-      }).where((item) => item.image.isNotEmpty).toList();
+      final ordered = rawBanners
+          .whereType<Map>()
+          .map((raw) => Map<String, dynamic>.from(raw))
+          .where((raw) => raw['isActive'] != false)
+          .toList()
+        ..sort(
+          (a, b) =>
+              ((a['order'] is num) ? a['order'] as num : 0)
+                  .compareTo((b['order'] is num) ? b['order'] as num : 0),
+        );
+
+      banners = ordered
+          .map(BannerItem.fromJson)
+          .where((item) => item.image.isNotEmpty)
+          .toList();
     }
 
     final rawCampaigns = content['campaigns'];
