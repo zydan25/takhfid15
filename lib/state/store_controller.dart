@@ -62,7 +62,7 @@ class StoreController extends ChangeNotifier {
       _restoreProfile().then((_) => profile != null),
       _restoreOrders().then((_) => orders.isNotEmpty),
       _restoreNotifications().then((_) => notifications.isNotEmpty),
-      _restorePreferences(),
+      _restorePreferences().then((_) => true),
     ]);
     await _restoreCartAndWishlist();
 
