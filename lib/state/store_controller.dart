@@ -516,15 +516,36 @@ class StoreController extends ChangeNotifier {
 
     final rawCampaigns = content['campaigns'];
     if (rawCampaigns is List) {
-      campaigns = rawCampaigns.whereType<Map>().map((raw) {
-        return TrendCampaign.fromJson(Map<String, dynamic>.from(raw));
-      }).toList();
+      final activeCampaigns = rawCampaigns
+          .whereType<Map>()
+          .map((raw) => Map<String, dynamic>.from(raw))
+          .where((raw) => raw['isActive'] != false)
+          .toList()
+        ..sort(
+          (a, b) =>
+              ((a['order'] is num) ? a['order'] as num : 0)
+                  .compareTo((b['order'] is num) ? b['order'] as num : 0),
+        );
+
+      campaigns = activeCampaigns
+          .map(TrendCampaign.fromJson)
+          .where((item) => item.id.isNotEmpty)
+          .toList();
     }
 
-    final rawTags = content['hashtags'] ?? content['trendHashtags'];
-    if (rawTags is List) {
-      hashtags = rawTags.map((e) => e.toString()).toList();
+    final allTags = <String>[];
+    for (final key in const ['hashtags', 'trendHashtags']) {
+      final rawTags = content[key];
+      if (rawTags is List) {
+        for (final rawTag in rawTags) {
+          final tag = rawTag.toString().trim();
+          if (tag.isNotEmpty && !allTags.contains(tag)) {
+            allTags.add(tag);
+          }
+        }
+      }
     }
+    hashtags = allTags;
   }
 
   Future<void> refresh() async {
@@ -783,9 +804,31 @@ class StoreController extends ChangeNotifier {
     var list = products.toList();
 
     if (category != 'all') {
+      final wanted = category.trim().toLowerCase();
+
+      bool matchesValue(String value) =>
+          value.trim().toLowerCase() == wanted ||
+          value.trim().toLowerCase().contains(wanted) ||
+          wanted.contains(value.trim().toLowerCase());
+
       list = list.where((p) {
-        return p.category == category ||
-            p.categories.contains(category);
+        final values = <String>[
+          p.category,
+          ...p.categories,
+          p.serverData['category']?.toString() ?? '',
+          p.serverData['categoryId']?.toString() ?? '',
+          p.serverData['department']?.toString() ?? '',
+        ];
+
+        if (values.any(matchesValue)) return true;
+
+        final raw = p.serverData['categories'];
+        if (raw is List &&
+            raw.any((value) => matchesValue(value.toString()))) {
+          return true;
+        }
+
+        return false;
       }).toList();
     }
 
@@ -808,7 +851,17 @@ class StoreController extends ChangeNotifier {
 
       list = list.where((p) {
         final primary = p.subCategory.toLowerCase();
-        final labels = p.subCategories.map((item) => item.toLowerCase());
+        final labels = <String>[
+          ...p.subCategories.map((item) => item.toLowerCase()),
+          p.serverData['subCategory']?.toString().toLowerCase() ?? '',
+          p.serverData['subcategory']?.toString().toLowerCase() ?? '',
+        ];
+
+        final raw = p.serverData['subCategories'];
+        if (raw is List) {
+          labels.addAll(raw.map((value) => value.toString().toLowerCase()));
+        }
+
         return aliases.contains(primary) ||
             labels.any(aliases.contains) ||
             labels.any(
