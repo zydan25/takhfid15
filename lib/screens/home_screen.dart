@@ -807,9 +807,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     final index =
-        widget.controller.announcements['autoFlip'] == true
-            ? _promoIndex % screens.length
-            : 0;
+        data['autoFlip'] == true ? _promoIndex % screens.length : 0;
     final raw = screens[index];
 
     if (_promoTimer == null &&
