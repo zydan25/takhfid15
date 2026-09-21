@@ -1,39 +1,12 @@
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
+import 'local_cache_io.dart'
+    if (dart.library.html) 'local_cache_web.dart' as impl;
 
 class LocalCache {
-  String _key(String key) => 'takhfid_cache_$key';
+  final impl.LocalCacheImpl _impl = impl.LocalCacheImpl();
 
-  Future<void> writeJson(String key, Object value) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_key(key), jsonEncode(value));
-    } catch (_) {}
-  }
-
-  Future<dynamic> readJson(String key) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_key(key));
-      if (raw == null || raw.trim().isEmpty) return null;
-      return jsonDecode(raw);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<void> delete(String key) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_key(key));
-    } catch (_) {}
-  }
-
-  Future<void> saveString(String key, String value) => writeJson(key, value);
-
-  Future<String?> readString(String key) async {
-    final value = await readJson(key);
-    return value is String ? value : null;
-  }
+  Future<void> writeJson(String key, Object value) => _impl.writeJson(key, value);
+  Future<dynamic> readJson(String key) => _impl.readJson(key);
+  Future<void> delete(String key) => _impl.delete(key);
+  Future<void> saveString(String key, String value) => _impl.saveString(key, value);
+  Future<String?> readString(String key) => _impl.readString(key);
 }
