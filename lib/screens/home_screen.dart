@@ -733,7 +733,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 7),
                 Expanded(
                   child: Row(
-                    textDirection: TextDirection.ltr,
+                    textDirection: TextDirection.rtl,
                     children: [
                       for (var i = 0; i < coupons.length; i++) ...[
                         if (i > 0) const SizedBox(width: 7),
