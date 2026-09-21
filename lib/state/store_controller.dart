@@ -29,6 +29,9 @@ class StoreController extends ChangeNotifier {
   Map<String, dynamic>? profile;
   Map<String, dynamic> storeConfig = {};
   Map<String, dynamic> pricing = {};
+  Map<String, dynamic> categoryTabsConfig = {'shape': 'circle', 'size': 'medium', 'isSquareRatio': true};
+  Map<String, dynamic> announcements = {};
+  List<RecommendationTab> recommendationTabs = [];
   String currency = 'YER';
 
   final List<CartItem> cart = [];
@@ -48,68 +51,53 @@ class StoreController extends ChangeNotifier {
   }) : cache = cache ?? LocalCache();
 
   Future<void> bootstrap() async {
-    loading = true;
     error = null;
+    final restored = await Future.wait<bool>([
+      _restoreProducts().then((_) => products.isNotEmpty),
+      _restoreStore().then((_) => categories.isNotEmpty || banners.isNotEmpty),
+      _restoreProfile().then((_) => profile != null),
+      _restoreOrders().then((_) => orders.isNotEmpty),
+      _restoreNotifications().then((_) => notifications.isNotEmpty),
+    ]);
+    await _restoreCartAndWishlist();
+
+    final hasCachedData = restored.any((value) => value);
+    loading = !hasCachedData;
     notifyListeners();
 
-    var onlineSuccess = false;
+    _startPoller();
+    unawaited(_backgroundRefresh(initial: true));
+  }
+
+  Future<void> _backgroundRefresh({bool initial = false}) async {
+    if (refreshing && !initial) return;
+
+    refreshing = true;
+    notifyListeners();
 
     try {
       final rawProducts = await api.fetchAllProductMaps();
-      products = rawProducts.map(Product.fromJson).toList();
-      await cache.writeJson('products', rawProducts);
-      onlineSuccess = true;
-    } catch (e) {
-      await _restoreProducts();
-      error = e.toString();
-    }
+      if (rawProducts.isNotEmpty) {
+        products = rawProducts.map(Product.fromJson).toList();
+        await cache.writeJson('products', rawProducts);
+      }
+    } catch (_) {}
 
     try {
       final store = await api.fetchStore();
-      _applyStore(store);
-      await cache.writeJson('store', store);
-      onlineSuccess = true;
-    } catch (e) {
-      await _restoreStore();
-      error ??= e.toString();
-    }
-
-    final token = await api.client.token();
-
-    if (token != null && token.isNotEmpty) {
-      try {
-        final remoteProfile = await api.currentUser();
-        profile = remoteProfile;
-
-        if (profile != null) {
-          await cache.writeJson('profile', profile!);
-          await _refreshCustomerData();
-        }
-      } on Object catch (e) {
-        if (e.toString().contains('ApiException(401)')) {
-          await api.client.clearToken();
-          profile = null;
-          await cache.delete('profile');
-          await cache.delete('orders');
-          await cache.delete('notifications');
-        } else {
-          await _restoreProfile();
-          await _restoreOrders();
-          await _restoreNotifications();
-          error ??= e.toString();
-        }
+      if (store.isNotEmpty) {
+        _applyStore(store);
+        await cache.writeJson('store', store);
       }
+    } catch (_) {}
+
+    if (profile != null) {
+      await _refreshCustomerData();
     }
 
-    await _restoreCartAndWishlist();
-
-    loading = false;
-    if (!onlineSuccess && products.isEmpty) {
-      error ??= 'تعذر الوصول إلى بيانات المتجر.';
-    }
-
+    refreshing = false;
+    if (initial || loading) loading = false;
     notifyListeners();
-    _startPoller();
   }
 
   void _applyStore(Map<String, dynamic> store) {
@@ -119,30 +107,54 @@ class StoreController extends ChangeNotifier {
     pricing = Map<String, dynamic>.from(
       store['pricing'] is Map ? store['pricing'] : const {},
     );
-    currency = (storeConfig['currency'] ?? currency).toString().toUpperCase();
 
     final content = Map<String, dynamic>.from(
       store['content'] is Map ? store['content'] : const {},
     );
 
+    categoryTabsConfig = content['categoryTabsConfig'] is Map
+        ? Map<String, dynamic>.from(content['categoryTabsConfig'])
+        : <String, dynamic>{
+            'shape': 'circle',
+            'size': 'medium',
+            'isSquareRatio': true,
+          };
+    announcements = content['announcements'] is Map
+        ? Map<String, dynamic>.from(content['announcements'])
+        : <String, dynamic>{};
+    recommendationTabs = content['recommendationTabs'] is List
+        ? content['recommendationTabs'].whereType<Map>().map((raw) =>
+            RecommendationTab.fromJson(Map<String, dynamic>.from(raw)))
+          .where((x) => x.isActive).toList()
+        : <RecommendationTab>[];
+    recommendationTabs.sort((a, b) => a.order.compareTo(b.order));
+
+    storeConfig['categoryTabsConfig'] = categoryTabsConfig;
+    storeConfig['announcements'] = announcements;
+    storeConfig['recommendationTabs'] = recommendationTabs
+        .map((x) => {'id': x.id, 'label': x.label})
+        .toList();
+
+    currency = (storeConfig['currency'] ?? currency).toString().toUpperCase();
+
     final rawCategories = content['categories'];
     if (rawCategories is List) {
-      categories = rawCategories.whereType<Map>().map((item) {
-        return Category.fromJson(Map<String, dynamic>.from(item));
+      categories = rawCategories.whereType<Map>().map((raw) {
+        return Category.fromJson(Map<String, dynamic>.from(raw));
       }).toList();
     }
 
     final rawBanners = content['banners'];
     if (rawBanners is List) {
-      banners = rawBanners.whereType<Map>().map((item) {
-        return BannerItem.fromJson(Map<String, dynamic>.from(item));
+      banners = rawBanners.whereType<Map>().map((raw) {
+        return BannerItem.fromJson(Map<String, dynamic>.from(raw));
       }).where((item) => item.image.isNotEmpty).toList();
     }
 
     final rawCampaigns = content['campaigns'];
     if (rawCampaigns is List) {
-      campaigns = rawCampaigns.whereType<Map>().map((item) {
-        return TrendCampaign.fromJson(Map<String, dynamic>.from(item));
+      campaigns = rawCampaigns.whereType<Map>().map((raw) {
+        return TrendCampaign.fromJson(Map<String, dynamic>.from(raw));
       }).toList();
     }
 
@@ -154,31 +166,7 @@ class StoreController extends ChangeNotifier {
 
   Future<void> refresh() async {
     if (refreshing) return;
-
-    refreshing = true;
-    error = null;
-    notifyListeners();
-
-    try {
-      final rawProducts = await api.fetchAllProductMaps();
-      products = rawProducts.map(Product.fromJson).toList();
-      await cache.writeJson('products', rawProducts);
-
-      final store = await api.fetchStore();
-      _applyStore(store);
-      await cache.writeJson('store', store);
-
-      if (profile != null) {
-        await _refreshCustomerData();
-      }
-
-      await _restoreCartAndWishlist();
-    } catch (e) {
-      error = e.toString();
-    } finally {
-      refreshing = false;
-      notifyListeners();
-    }
+    await _backgroundRefresh();
   }
 
   Future<void> sendOtp(String phone) => api.sendOtp(phone);
@@ -340,6 +328,37 @@ class StoreController extends ChangeNotifier {
 
   int get cartCount =>
       cart.fold(0, (sum, item) => sum + item.quantity);
+  List<Product> productsByIds(List<String> ids) {
+    if (ids.isEmpty) return [];
+    final wanted = ids.toSet();
+    return products.where((item) => wanted.contains(item.id)).toList();
+  }
+
+  List<Product> recommendations(RecommendationTab tab) {
+    if (tab.linkedProductIds.isNotEmpty) return productsByIds(tab.linkedProductIds);
+    var list = products.toList();
+    if (tab.targetCategories.isNotEmpty) {
+      list = list.where((item) =>
+        tab.targetCategories.contains(item.category) ||
+        item.categories.any(tab.targetCategories.contains)
+      ).toList();
+    }
+    if (tab.targetSubCategories.isNotEmpty) {
+      list = list.where((item) =>
+        tab.targetSubCategories.contains(item.subCategory) ||
+        tab.targetSubCategories.any((sub) => item.name.contains(sub))
+      ).toList();
+    }
+    if (tab.keywords.isNotEmpty) {
+      list = list.where((item) {
+        final haystack = item.name + ' ' + item.description + ' ' + item.category + ' ' + item.subCategory;
+        return tab.keywords.any((keyword) =>
+            haystack.toLowerCase().contains(keyword.toLowerCase()));
+      }).toList();
+    }
+    return list;
+  }
+
 
   double get cartTotal => cart.fold(
         0,
@@ -353,6 +372,7 @@ class StoreController extends ChangeNotifier {
     String? styleTab,
     String sort = 'for_you',
     bool saleOnly = false,
+    String? trend,
   }) {
     var list = products.toList();
 
@@ -379,6 +399,9 @@ class StoreController extends ChangeNotifier {
 
     if (saleOnly) {
       list = list.where((p) => p.discountPercentage > 0).toList();
+    }
+    if (trend != null && trend.isNotEmpty) {
+      list = list.where((p) => p.trends.contains(trend) || p.name.contains(trend)).toList();
     }
 
     switch (sort) {
