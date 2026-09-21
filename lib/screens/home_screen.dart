@@ -1449,7 +1449,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 8.5,
+                      fontSize: 10.5,
                       height: 1.05,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1465,7 +1465,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 7),
             scrollDirection: Axis.horizontal,
-            reverse: true,
+            reverse: false,
             physics: const BouncingScrollPhysics(
               parent: AlwaysScrollableScrollPhysics(),
             ),
@@ -1475,19 +1475,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
 
-    final firstRow = items.take(5).toList();
-    final secondRow = items.skip(5).take(5).toList();
-    final extras = items.skip(10).toList();
-    if (extras.isNotEmpty) {
-      firstRow.addAll(extras.take(3));
-      secondRow.addAll(extras.skip(3));
-    }
+    final firstRow = items.take(8).toList();
+    final secondRow = items.skip(8).toList();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 3, 4, 6),
+      padding: const EdgeInsets.fromLTRB(4, 1, 4, 6),
       child: Column(
         children: [
-          const SizedBox(height: 4),
           row(firstRow),
           if (secondRow.isNotEmpty) row(secondRow),
         ],
