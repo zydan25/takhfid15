@@ -62,14 +62,57 @@ class Product {
       return int.tryParse(value?.toString() ?? '') ?? 0;
     }
 
-    final image = (json['image'] ?? '').toString();
-    final rawGallery =
-        json['images'] is List
-            ? json['images']
-            : (json['galleryImages'] is List ? json['galleryImages'] : json['gallery']);
-    final gallery = rawGallery is List
-        ? rawGallery.map((e) => e.toString()).where((e) => e.isNotEmpty).toList()
-        : <String>[];
+    String cleanImage(dynamic value) {
+      var url = value?.toString().trim() ?? '';
+      if (url.isEmpty) return '';
+      if (url.startsWith('//')) return 'https:$url';
+      if (url.startsWith('http://') ||
+          url.startsWith('https://') ||
+          url.startsWith('data:')) {
+        return url;
+      }
+      if (url.startsWith('/')) return 'https://whats.alattab.site$url';
+      return 'https://whats.alattab.site/$url';
+    }
+
+    final image = cleanImage(
+      json['image'] ??
+          json['imageUrl'] ??
+          json['thumbnail'] ??
+          json['thumbnailUrl'],
+    );
+
+    final galleryCandidates = <dynamic>[
+      json['images'],
+      json['galleryImages'],
+      json['gallery'],
+      json['imageUrls'],
+      json['photos'],
+      json['media'],
+    ];
+
+    final gallery = <String>[];
+    for (final candidate in galleryCandidates) {
+      if (candidate is List) {
+        for (final item in candidate) {
+          if (item is Map) {
+            final value = item['url'] ??
+                item['image'] ??
+                item['imageUrl'] ??
+                item['src'];
+            final normalized = cleanImage(value);
+            if (normalized.isNotEmpty && !gallery.contains(normalized)) {
+              gallery.add(normalized);
+            }
+          } else {
+            final normalized = cleanImage(item);
+            if (normalized.isNotEmpty && !gallery.contains(normalized)) {
+              gallery.add(normalized);
+            }
+          }
+        }
+      }
+    }
 
     final category =
         (json['categoryId'] ?? json['category'] ?? 'all').toString();
@@ -105,6 +148,16 @@ class Product {
         : (compare > calculated && compare > 0)
             ? (((compare - calculated) / compare) * 100).round()
             : 0;
+
+    if (json['colors'] is List) {
+      for (final rawColor in (json['colors'] as List).whereType<Map>()) {
+        final value = rawColor['image'] ?? rawColor['imageUrl'];
+        final normalized = cleanImage(value);
+        if (normalized.isNotEmpty && !gallery.contains(normalized)) {
+          gallery.add(normalized);
+        }
+      }
+    }
 
     return Product(
       id: (json['id'] ?? '').toString(),
