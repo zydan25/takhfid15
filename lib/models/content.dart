@@ -75,6 +75,9 @@ class BannerItem {
   final String title;
   final String subtitle;
   final String image;
+  final String badge;
+  final String code;
+  final String buttonText;
   final String targetType;
   final String categoryTarget;
   final String subTarget;
@@ -88,6 +91,9 @@ class BannerItem {
     required this.title,
     required this.subtitle,
     required this.image,
+    this.badge = '',
+    this.code = '',
+    this.buttonText = '',
     required this.targetType,
     required this.categoryTarget,
     required this.subTarget,
@@ -106,6 +112,9 @@ class BannerItem {
       title: (json['title'] ?? 'عرض').toString(),
       subtitle: (json['subtitle'] ?? '').toString(),
       image: (json['image'] ?? '').toString(),
+      badge: (json['badge'] ?? '').toString(),
+      code: (json['code'] ?? '').toString(),
+      buttonText: (json['buttonText'] ?? json['ctaText'] ?? '').toString(),
       targetType: (json['targetType'] ?? 'category').toString(),
       categoryTarget:
           (json['categoryTarget'] ?? json['categoryId'] ?? 'all').toString(),
