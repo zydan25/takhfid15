@@ -139,8 +139,80 @@ class _HomeScreenState extends State<HomeScreen> {
               else
                 const ColoredBox(color: AppColors.slate100),
 
-              // Very subtle darkening only where the white navigation sits.
-              const Positioned.fill(
+              if (banner != null && (banner.title.isNotEmpty || banner.subtitle.isNotEmpty))
+                Positioned(
+                  right: 16,
+                  left: 16,
+                  bottom: 30,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (banner.badge.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(.48),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            banner.badge,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      if (banner.title.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5),
+                          child: Text(
+                            banner.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              shadows: [
+                                Shadow(
+                                  color: Color(0x99000000),
+                                  blurRadius: 5,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (banner.subtitle.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 3),
+                          child: Text(
+                            banner.subtitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              shadows: [
+                                Shadow(
+                                  color: Color(0x99000000),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+              $overlayMarker
                 child: IgnorePointer(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
@@ -174,17 +246,21 @@ class _HomeScreenState extends State<HomeScreen> {
               // Server-driven top category navigation, over the banner.
               if (tabs.isNotEmpty)
                 Positioned(
-                  top: width * .26,
+                  top: width * .19,
                   left: 0,
                   right: 0,
                   child: SizedBox(
                     height: width * .055,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      reverse: true,
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Row(
+                    child: Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        reverse: false,
+                        physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: tabs.map((tab) {
                           final active = tab.id == _topCategory;
@@ -223,7 +299,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           );
-                        }).toList(),
+                          }).toList(),
+                        ),
                       ),
                     ),
                   ),
@@ -732,7 +809,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           textAlign: TextAlign.right,
                           style: TextStyle(
                             color: textColor.withOpacity(.82),
-                            fontSize: 8.5,
+                            fontSize: 10.5,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -1197,13 +1274,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(3, 2, 3, 6),
-            child: Text(
-              'إطلالات من أجلك',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
-            ),
-          ),
+          const SizedBox(height: 3),
           SizedBox(
             height: 104,
             child: ListView.separated(
@@ -1347,8 +1418,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 48,
+                  height: 48,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.slate100,
@@ -1416,31 +1487,25 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.fromLTRB(4, 3, 4, 6),
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(5, 2, 5, 4),
-            child: Row(
-              children: [
-                const Text(
-                  'التصنيفات',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
-                ),
-                const Spacer(),
-                Text(
-                  'اسحب للتصفح',
-                  style: TextStyle(
-                    fontSize: 8,
-                    color: AppColors.slate400,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SizedBox(height: 4),
           row(firstRow),
           if (secondRow.isNotEmpty) row(secondRow),
         ],
       ),
     );
+  }
+
+  IconData _feedIcon(String id) {
+    switch (id) {
+      case 'new':
+        return Icons.auto_awesome_outlined;
+      case 'discount':
+        return Icons.sell_outlined;
+      case 'popular':
+        return Icons.emoji_events_outlined;
+      default:
+        return Icons.auto_awesome_rounded;
+    }
   }
 
   Widget _feedTabs(StoreController c) {
@@ -1455,32 +1520,64 @@ class _HomeScreenState extends State<HomeScreen> {
         tabs.any((tab) => tab.id == _feedTab) ? _feedTab : tabs.first.id;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 3, 18, 0),
-      child: Row(
-        children: tabs.map((tab) {
-          final active = tab.id == activeId;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _feedTab = tab.id),
-              child: Container(
-                height: 48,
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                color: active ? Colors.black : AppColors.slate100,
-                alignment: Alignment.center,
-                child: Text(
-                  tab.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: active ? Colors.white : AppColors.ink,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
+      padding: const EdgeInsets.fromLTRB(9, 5, 9, 2),
+      child: SizedBox(
+        height: 41,
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
             ),
-          );
-        }).toList(),
+            child: Row(
+              children: tabs.map((tab) {
+                final active = tab.id == activeId;
+                return GestureDetector(
+                  onTap: () => setState(() => _feedTab = tab.id),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    width: 118,
+                    height: 38,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: active ? Colors.black : const Color(0xFFF5F5F6),
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(
+                        color: active ? Colors.black : const Color(0xFFE1E1E3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _feedIcon(tab.id),
+                          size: 14,
+                          color: active ? Colors.white : AppColors.slate500,
+                        ),
+                        const SizedBox(width: 5),
+                        Flexible(
+                          child: Text(
+                            tab.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: active ? Colors.white : AppColors.ink,
+                              fontSize: 10.5,
+                              fontWeight:
+                                  active ? FontWeight.w900 : FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
       ),
     );
   }
