@@ -219,6 +219,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           if (p.sizes.isNotEmpty)
             SliverToBoxAdapter(child: _sizeSelector(p)),
           SliverToBoxAdapter(child: _quantitySelector()),
+          SliverToBoxAdapter(child: _trustAndPolicyCards(p)),
           SliverToBoxAdapter(child: _shippingCard()),
           SliverToBoxAdapter(child: _serverDetailsCard(p)),
           SliverToBoxAdapter(child: _reviewsCard(p)),
@@ -599,6 +600,161 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _trustAndPolicyCards(Product p) {
+    final raw = p.serverData;
+
+    dynamic firstValue(List<String> keys) {
+      for (final key in keys) {
+        final value = raw[key];
+        if (value == null) continue;
+        if (value is String && value.trim().isEmpty) continue;
+        return value;
+      }
+      return null;
+    }
+
+    final governorate =
+        (widget.controller.profile?['governorate'] ?? 'أمانة العاصمة')
+            .toString();
+
+    final shippingTarget = (firstValue(
+              ['shippingDestination', 'shippingTitle', 'deliveryDestination'],
+            ) ??
+            'الشحن إلى اليمن • $governorate')
+        .toString();
+
+    final freeShipping =
+        (firstValue(['freeShippingText', 'freeDeliveryText']) ??
+                'شحن مجاني (للطلبات ≥ 99.00 ر.س)')
+            .toString();
+
+    final deliveryNote =
+        (firstValue(['deliveryNote', 'deliveryText', 'shippingText']) ??
+                'التوصيل المتوقع: خلال 3 - 5 أيام عمل (إلى باب منزلك في $governorate)')
+            .toString();
+
+    final couponText =
+        (firstValue(['couponShippingText', 'shippingCouponText']) ??
+                'انضم للحصول على 15X كوبونات شحن مجاني (بقيمة 450.00 ر.س)')
+            .toString();
+
+    final returnText =
+        (firstValue(['returnPolicyText', 'returnsText', 'returnPolicy']) ??
+                'إرجاع مجاني خلال 14 يوم')
+            .toString();
+
+    final paymentText =
+        (firstValue(['paymentPolicyText', 'paymentsText', 'paymentMethods']) ??
+                'الدفع عند الاستلام متاح • مدفوعات آمنة • حماية الخصوصية 100%')
+            .toString();
+
+    final sellerText =
+        (firstValue(['sellerText', 'sellerPolicyText', 'sellerName']) ??
+                'تم البيع بواسطة التخفيض الصح المعتمد')
+            .toString();
+
+    final rows = <(IconData, String, String, Color)>[
+      (
+        Icons.location_on_outlined,
+        shippingTarget,
+        '',
+        AppColors.slate500,
+      ),
+      (
+        Icons.local_shipping_outlined,
+        freeShipping,
+        deliveryNote,
+        AppColors.emerald,
+      ),
+      (
+        Icons.local_offer_outlined,
+        couponText,
+        '',
+        AppColors.amber,
+      ),
+      (
+        Icons.rotate_left_rounded,
+        returnText,
+        '',
+        AppColors.slate500,
+      ),
+      (
+        Icons.verified_user_outlined,
+        paymentText,
+        '',
+        AppColors.emerald,
+      ),
+      (
+        Icons.storefront_outlined,
+        sellerText,
+        '',
+        AppColors.ink,
+      ),
+    ];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(0, 7, 0, 4),
+      color: Colors.white,
+      child: Column(
+        children: rows.map((row) {
+          return Container(
+            padding: const EdgeInsets.fromLTRB(12, 11, 12, 10),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.slate200,
+                  width: .7,
+                ),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              textDirection: TextDirection.rtl,
+              children: [
+                Icon(
+                  row.$1,
+                  color: row.$4,
+                  size: 19,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        row.$2,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: row.$4,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w900,
+                          height: 1.45,
+                        ),
+                      ),
+                      if (row.$3.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            row.$3,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              color: AppColors.slate500,
+                              fontSize: 8.5,
+                              height: 1.45,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }
