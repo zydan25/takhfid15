@@ -144,39 +144,63 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _quickCategoryBar(List<Category> categories) {
     return SizedBox(
-      height: 42,
+      height: 104,
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(10, 2, 10, 6),
+        padding: const EdgeInsets.fromLTRB(10, 5, 10, 7),
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 6),
+        separatorBuilder: (_, __) => const SizedBox(width: 7),
         itemBuilder: (_, index) {
           final category = categories[index];
           final active = category.id == _category;
-          return InkWell(
-            borderRadius: BorderRadius.circular(18),
+          return GestureDetector(
             onTap: () => setState(() {
               _category = category.id;
               _subCategory = null;
               _styleTab = null;
             }),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-              decoration: BoxDecoration(
-                color: active ? AppColors.black : AppColors.slate50,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: active ? AppColors.black : AppColors.slate200,
-                ),
-              ),
-              child: Text(
-                category.name,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  color: active ? Colors.white : AppColors.slate600,
-                ),
+            child: SizedBox(
+              width: 66,
+              child: Column(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      color: AppColors.slate100,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: active ? AppColors.black : AppColors.slate200,
+                        width: active ? 2 : 1,
+                      ),
+                      boxShadow: active
+                          ? [BoxShadow(color: Colors.black.withOpacity(.10), blurRadius: 6)]
+                          : null,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: category.image.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: category.image,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) =>
+                                const Icon(Icons.category_outlined, color: AppColors.slate400),
+                          )
+                        : const Icon(Icons.category_outlined, color: AppColors.slate400),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    category.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 8,
+                      fontWeight: active ? FontWeight.w900 : FontWeight.w700,
+                      color: active ? AppColors.ink : AppColors.slate500,
+                    ),
+                  ),
+                ],
               ),
             ),
           );
