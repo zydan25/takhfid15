@@ -779,6 +779,12 @@ class _TrendsScreenState extends State<TrendsScreen> {
     );
   }
 
+  String _primaryImage(Product product) {
+    if (product.image.isNotEmpty) return product.image;
+    if (product.gallery.isNotEmpty) return product.gallery.first;
+    return '';
+  }
+
   Widget _empty() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 70, horizontal: 20),
