@@ -118,6 +118,42 @@ class StoreApi {
     return maps.map(Product.fromJson).toList();
   }
 
+  Future<Map<String, dynamic>> fetchContent() async {
+    final raw = await client.get('/content');
+    if (raw is Map) {
+      final map = Map<String, dynamic>.from(raw);
+      if (map['content'] is Map) {
+        return Map<String, dynamic>.from(map['content'] as Map);
+      }
+      return map;
+    }
+    return <String, dynamic>{};
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCategories() async {
+    final raw = await client.get('/categories');
+    final list = raw is Map && raw['categories'] is List
+        ? raw['categories'] as List
+        : raw is List
+            ? raw
+            : const [];
+    return list
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+  }
+
+  Future<Map<String, dynamic>> fetchPricing() async {
+    final raw = await client.get('/pricing');
+    if (raw is Map) {
+      final map = Map<String, dynamic>.from(raw);
+      return map['pricing'] is Map
+          ? Map<String, dynamic>.from(map['pricing'] as Map)
+          : map;
+    }
+    return <String, dynamic>{};
+  }
+
   Future<Map<String, dynamic>?> currentUser() async {
     if ((await client.token()) == null) return null;
     final raw = await client.get('/auth/me');
