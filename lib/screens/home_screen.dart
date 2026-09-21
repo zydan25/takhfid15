@@ -104,6 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
       height: bannerHeight,
       child: ClipRect(
         child: GestureDetector(
+          onTap: banner == null ? null : () => _openBanner(banner),
           onHorizontalDragEnd: (details) {
             final velocity = details.primaryVelocity ?? 0;
             if (banners.length < 2 || velocity.abs() < 120) return;
@@ -253,42 +254,36 @@ class _HomeScreenState extends State<HomeScreen> {
                   left: 0,
                   right: 0,
                   child: SizedBox(
-                    height: width * .055,
+                    height: width * .09,
                     child: Directionality(
                       textDirection: TextDirection.rtl,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        reverse: false,
-                        physics: const BouncingScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics(),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: tabs.map((tab) {
-                          final active = tab.id == _topCategory;
-                          return GestureDetector(
-                            onTap: () => _openTopCategory(tab),
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 7),
-                              padding: const EdgeInsets.fromLTRB(2, 2, 2, 6),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: active
-                                        ? Colors.white
-                                        : Colors.transparent,
-                                    width: active ? 3 : 0,
-                                  ),
-                                ),
-                              ),
-                              child: tab.id == 'all'
-                                  ? Column(
+                      child: Row(
+                        children: [
+                          ...tabs
+                              .where((tab) => tab.id == 'all')
+                              .take(1)
+                              .map(
+                                (tab) => GestureDetector(
+                                  onTap: () => _openTopCategory(tab),
+                                  child: Container(
+                                    margin: const EdgeInsets.only(right: 8),
+                                    padding: const EdgeInsets.fromLTRB(5, 2, 5, 5),
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: tab.id == _topCategory
+                                              ? Colors.white
+                                              : Colors.transparent,
+                                          width: 3,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
+                                            horizontal: 5,
                                             vertical: 2,
                                           ),
                                           decoration: BoxDecoration(
@@ -299,55 +294,95 @@ class _HomeScreenState extends State<HomeScreen> {
                                             'شامل',
                                             style: TextStyle(
                                               color: Colors.white,
-                                              fontSize: 6.5,
+                                              fontSize: 6,
                                               fontWeight: FontWeight.w900,
                                               height: 1,
                                             ),
                                           ),
                                         ),
                                         const SizedBox(height: 2),
-                                        Text(
+                                        const Text(
                                           'كل',
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 11.5,
-                                            fontWeight: active
-                                                ? FontWeight.w900
-                                                : FontWeight.w800,
-                                            height: 1,
-                                            shadows: const [
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w900,
+                                            shadows: [
                                               Shadow(
                                                 color: Color(0x70000000),
                                                 blurRadius: 4,
-                                                offset: Offset(0, 1),
                                               ),
                                             ],
                                           ),
                                         ),
                                       ],
-                                    )
-                                  : Text(
-                                      tab.label,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11.5,
-                                        fontWeight: active
-                                            ? FontWeight.w900
-                                            : FontWeight.w800,
-                                        height: 1,
-                                        shadows: const [
-                                          Shadow(
-                                            color: Color(0x70000000),
-                                            blurRadius: 4,
-                                            offset: Offset(0, 1),
-                                          ),
-                                        ],
-                                      ),
                                     ),
+                                  ),
+                                ),
+                              ),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              reverse: false,
+                              physics: const BouncingScrollPhysics(
+                                parent: AlwaysScrollableScrollPhysics(),
+                              ),
+                              padding: const EdgeInsets.only(left: 7),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: tabs
+                                    .where((tab) => tab.id != 'all')
+                                    .map(
+                                      (tab) {
+                                        final active = tab.id == _topCategory;
+                                        return GestureDetector(
+                                          onTap: () => _openTopCategory(tab),
+                                          child: Container(
+                                            margin: const EdgeInsets.symmetric(
+                                              horizontal: 7,
+                                            ),
+                                            padding: const EdgeInsets.fromLTRB(
+                                              2,
+                                              4,
+                                              2,
+                                              6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              border: Border(
+                                                bottom: BorderSide(
+                                                  color: active
+                                                      ? Colors.white
+                                                      : Colors.transparent,
+                                                  width: active ? 3 : 0,
+                                                ),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              tab.label,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 11.5,
+                                                fontWeight: active
+                                                    ? FontWeight.w900
+                                                    : FontWeight.w800,
+                                                shadows: const [
+                                                  Shadow(
+                                                    color: Color(0x70000000),
+                                                    blurRadius: 4,
+                                                    offset: Offset(0, 1),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                    .toList(),
+                              ),
                             ),
-                          );
-                          }).toList(),
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
