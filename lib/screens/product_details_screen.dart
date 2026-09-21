@@ -747,18 +747,70 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       'storeBadgeTag': 'المتجر',
       'couponTag': 'القسيمة',
       'stockUrgency': 'المخزون',
+      'stock': 'الكمية المتاحة',
       'sellersCount': 'عدد البائعين',
+      'sellerName': 'البائع',
+      'seller': 'البائع',
+      'merchant': 'التاجر',
       'material': 'الخامة',
+      'materials': 'المواد',
       'fabric': 'القماش',
       'ageGroup': 'الفئة العمرية',
       'productType': 'نوع المنتج',
+      'department': 'القسم',
+      'subCategory': 'التصنيف الفرعي',
+      'returnPolicy': 'سياسة الإرجاع',
+      'returnDays': 'مدة الإرجاع',
+      'sizeGuide': 'مرجع المقاس',
+      'sizeReference': 'مرجع المقاس',
+      'paymentMethods': 'طرق الدفع',
+      'paymentMethod': 'طريقة الدفع',
+      'cashOnDelivery': 'الدفع عند الاستلام',
+      'isLocalFastShipping': 'شحن محلي سريع',
+      'showCardShipping': 'إظهار الشحن',
+      'cardShippingText': 'معلومات الشحن',
+      'shippingText': 'معلومات الشحن',
+      'deliveryText': 'معلومات التوصيل',
       'trendTag': 'الترند',
       'priceDropBadge': 'تنبيه السعر',
       'badgeText': 'شارة المنتج',
+      'sku': 'رمز المنتج',
     };
 
     for (final item in labels.entries) {
       add(item.value, raw[item.key]);
+    }
+
+    final knownKeys = labels.keys.toSet();
+
+    for (final entry in raw.entries) {
+      final key = entry.key.toString();
+      final value = entry.value;
+
+      if (knownKeys.contains(key)) continue;
+      if (const {
+        'image',
+        'images',
+        'gallery',
+        'galleryImages',
+        'imageUrls',
+        'photos',
+        'media',
+        'mediaItems',
+        'productImages',
+        'variants',
+        'colors',
+      }.contains(key)) {
+        continue;
+      }
+
+      final pretty = key
+          .replaceAll('_', ' ')
+          .replaceAll('-', ' ')
+          .trim();
+
+      if (pretty.isEmpty) continue;
+      add(pretty, value);
     }
 
     for (final key in const [
