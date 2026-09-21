@@ -1475,8 +1475,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
 
-    final firstRow = items.take(8).toList();
-    final secondRow = items.skip(8).toList();
+    // Match the reference's two-row composition: five items are visible in
+    // each row initially, while the rest remain horizontally scrollable.
+    final firstRow = items.take(5).toList();
+    final secondRow = items.skip(5).toList();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 1, 4, 6),
