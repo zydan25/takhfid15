@@ -72,7 +72,17 @@ class Product {
             value['image'] ??
             value['imageUrl'] ??
             value['original'] ??
-            value['thumbnail'];
+            value['originalUrl'] ??
+            value['thumbnail'] ??
+            value['thumbnailUrl'] ??
+            value['srcUrl'] ??
+            value['photo'] ??
+            value['photoUrl'] ??
+            value['cover'] ??
+            value['coverUrl'] ??
+            value['large'] ??
+            value['medium'] ??
+            value['small'];
       }
       return value;
     }
@@ -147,14 +157,22 @@ class Product {
           'imageUrl',
           'src',
           'original',
+          'originalUrl',
           'thumbnail',
+          'thumbnailUrl',
           'srcUrl',
           'photo',
           'photoUrl',
           'cover',
           'coverUrl',
+          'large',
+          'medium',
+          'small',
           'images',
           'media',
+          'mediaItems',
+          'productImages',
+          'photos',
         ]) {
           final value = candidate[key];
           if (value != null) {
