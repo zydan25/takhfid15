@@ -13,7 +13,12 @@ String _assetUrl(dynamic value) {
         value['image'] ??
         value['imageUrl'] ??
         value['original'] ??
-        value['thumbnail'];
+        value['thumbnail'] ??
+        value['srcUrl'] ??
+        value['photo'] ??
+        value['photoUrl'] ??
+        value['cover'] ??
+        value['coverUrl'];
   }
 
   var url = value?.toString().trim() ?? '';
@@ -52,10 +57,22 @@ dynamic _normalizeProductMap(dynamic raw) {
     item['image'] = _assetUrl(item['image']);
   }
 
-  for (final key in const ['images', 'gallery', 'galleryImages', 'imageUrls', 'photos']) {
+  for (final key in const [
+    'images',
+    'gallery',
+    'galleryImages',
+    'imageUrls',
+    'photos',
+    'media',
+    'mediaItems',
+    'productImages',
+  ]) {
     final value = item[key];
     if (value is List) {
-      item[key] = value.map(_assetUrl).where((x) => x.isNotEmpty).toList();
+      item[key] = value
+          .map(_assetUrl)
+          .where((x) => x.isNotEmpty)
+          .toList();
     }
   }
 
@@ -374,15 +391,30 @@ class StoreApi {
   }
 
   Future<Map<String, dynamic>> createChatSession({String? orderId}) async {
-    final raw = await client.send(
-      'POST',
-      '/chat/sessions',
-      body: {
-        if (orderId != null && orderId.isNotEmpty) 'orderId': orderId,
-      },
-    );
-    if (raw is Map) return Map<String, dynamic>.from(raw);
-    return <String, dynamic>{};
+    try {
+      final raw = await client.send(
+        'POST',
+        '/chat/sessions',
+        body: {
+          if (orderId != null && orderId.isNotEmpty) 'orderId': orderId,
+        },
+      );
+      if (raw is Map) return Map<String, dynamic>.from(raw);
+      return <String, dynamic>{};
+    } on ApiException catch (error) {
+      // Some server deployments deny creating an order-scoped session (403)
+      // even though the customer's general chat session is allowed. Fall back
+      // to the general customer conversation so the chat screen remains usable.
+      if (error.statusCode == 403 && orderId != null && orderId.isNotEmpty) {
+        final raw = await client.send(
+          'POST',
+          '/chat/sessions',
+          body: const {},
+        );
+        if (raw is Map) return Map<String, dynamic>.from(raw);
+      }
+      rethrow;
+    }
   }
 
   Future<List<Map<String, dynamic>>> chatMessages(
