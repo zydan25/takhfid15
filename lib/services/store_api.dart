@@ -7,10 +7,22 @@ import '../models/product.dart';
 import 'api_client.dart';
 
 String _assetUrl(dynamic value) {
+  if (value is Map) {
+    value = value['url'] ??
+        value['src'] ??
+        value['image'] ??
+        value['imageUrl'] ??
+        value['original'] ??
+        value['thumbnail'];
+  }
+
   var url = value?.toString().trim() ?? '';
-  if (url.isEmpty) return '';
+  if (url.isEmpty || url == 'null') return '';
   if (url.startsWith('//')) return 'https:$url';
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+  if (url.startsWith('http://') ||
+      url.startsWith('https://') ||
+      url.startsWith('data:') ||
+      url.startsWith('blob:')) {
     return url;
   }
   if (url.startsWith('/')) return 'https://whats.alattab.site$url';
@@ -23,8 +35,12 @@ dynamic _normalizeProductMap(dynamic raw) {
 
   final imageCandidate = item['image'] ??
       item['imageUrl'] ??
+      item['mainImage'] ??
+      item['coverImage'] ??
+      item['cover_image'] ??
       item['thumbnail'] ??
-      item['thumbnailUrl'];
+      item['thumbnailUrl'] ??
+      item['image_url'];
   if ((item['image'] ?? '').toString().trim().isEmpty && imageCandidate != null) {
     item['image'] = _assetUrl(imageCandidate);
   } else if (item['image'] != null) {
