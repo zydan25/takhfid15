@@ -6,6 +6,51 @@ import '../models/order.dart';
 import '../models/product.dart';
 import 'api_client.dart';
 
+String _assetUrl(dynamic value) {
+  var url = value?.toString().trim() ?? '';
+  if (url.isEmpty) return '';
+  if (url.startsWith('//')) return 'https:$url';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  if (url.startsWith('/')) return 'https://whats.alattab.site$url';
+  return 'https://whats.alattab.site/$url';
+}
+
+dynamic _normalizeProductMap(dynamic raw) {
+  if (raw is! Map) return raw;
+  final item = Map<String, dynamic>.from(raw);
+
+  final imageCandidate = item['image'] ??
+      item['imageUrl'] ??
+      item['thumbnail'] ??
+      item['thumbnailUrl'];
+  if ((item['image'] ?? '').toString().trim().isEmpty && imageCandidate != null) {
+    item['image'] = _assetUrl(imageCandidate);
+  } else if (item['image'] != null) {
+    item['image'] = _assetUrl(item['image']);
+  }
+
+  for (final key in const ['images', 'gallery', 'galleryImages', 'imageUrls', 'photos']) {
+    final value = item[key];
+    if (value is List) {
+      item[key] = value.map(_assetUrl).where((x) => x.isNotEmpty).toList();
+    }
+  }
+
+  final colors = item['colors'];
+  if (colors is List) {
+    item['colors'] = colors.whereType<Map>().map((rawColor) {
+      final color = Map<String, dynamic>.from(rawColor);
+      final image = color['image'] ?? color['imageUrl'];
+      if (image != null) color['image'] = _assetUrl(image);
+      return color;
+    }).toList();
+  }
+
+  return item;
+}
+
 class StoreApi {
   final ApiClient client;
 
@@ -30,18 +75,25 @@ class StoreApi {
         },
       );
       final map = raw is Map ? Map<String, dynamic>.from(raw) : const {};
-      final list = map['products'] is List ? map['products'] as List : const [];
+      final list = map['products'] is List
+          ? map['products'] as List
+          : map['data'] is List
+              ? map['data'] as List
+              : map['items'] is List
+                  ? map['items'] as List
+                  : const [];
 
-      final page = list.whereType<Map>().map((item) {
+      final page = list.whereType<Map>().map(_normalizeProductMap).whereType<Map>().map((item) {
         return Map<String, dynamic>.from(item);
       }).toList();
 
       products.addAll(page);
 
-      final total =
-          map['total'] is num ? (map['total'] as num).toInt() : null;
+      final total = map['total'] is num ? (map['total'] as num).toInt() : null;
+      final hasMore = map['hasMore'] == true || map['has_next'] == true || map['next'] != null;
       if (page.length < pageSize ||
-          (total != null && products.length >= total)) {
+          (total != null && products.length >= total) ||
+          (!hasMore && total == null && page.isEmpty)) {
         break;
       }
       offset += pageSize;
@@ -112,6 +164,48 @@ class StoreApi {
       },
     );
     return Map<String, dynamic>.from(raw as Map);
+  }
+
+  Future<Product?> fetchProductById(String productId) async {
+    if (productId.trim().isEmpty) return null;
+    final raw = await client.get('/products/${Uri.encodeComponent(productId)}');
+    final map = raw is Map
+        ? Map<String, dynamic>.from(raw)
+        : <String, dynamic>{};
+    final candidate = map['product'] ?? map['data'] ?? raw;
+    return candidate is Map
+        ? Product.fromJson(
+            Map<String, dynamic>.from(_normalizeProductMap(candidate)),
+          )
+        : null;
+  }
+
+  Future<Map<String, dynamic>> updateProfile({
+    required String firstName,
+    String? secondName,
+    String? thirdName,
+    String? lastName,
+    required String governorate,
+  }) async {
+    final payload = {
+      'firstName': firstName.trim(),
+      'secondName': secondName?.trim() ?? '',
+      'thirdName': thirdName?.trim() ?? '',
+      'lastName': lastName?.trim() ?? '',
+      'governorate': governorate.trim(),
+    };
+
+    try {
+      final raw = await client.send('PATCH', '/auth/me', body: payload);
+      return raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+    } on ApiException {
+      final raw = await client.send(
+        'POST',
+        '/auth/complete-profile',
+        body: payload,
+      );
+      return raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchOrderMaps() async {
