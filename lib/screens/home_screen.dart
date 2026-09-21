@@ -624,10 +624,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _looksSection(StoreController c) {
-    final allCategory = c.categories
+    final allMatches = c.categories
         .where((category) => category.id == 'all')
-        .cast<Category?>()
-        .firstOrNull;
+        .toList();
+    final allCategory = allMatches.isEmpty ? null : allMatches.first;
 
     final source = allCategory?.styleTabs ?? c.homeStyleTabs;
     const preferred = <String>[
@@ -760,10 +760,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _categoriesGrid(StoreController c) {
-    final allCategory = c.categories
+    final allMatches = c.categories
         .where((category) => category.id == 'all')
-        .cast<Category?>()
-        .firstOrNull;
+        .toList();
+    final allCategory = allMatches.isEmpty ? null : allMatches.first;
     if (allCategory == null || allCategory.subCategories.isEmpty) {
       return const SizedBox.shrink();
     }
