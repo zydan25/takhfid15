@@ -167,7 +167,11 @@ class StoreController extends ChangeNotifier {
       store['store'] is Map ? store['store'] : const {},
     );
     pricing = Map<String, dynamic>.from(
-      store['pricing'] is Map ? store['pricing'] : const {},
+      store['pricing'] is Map
+          ? store['pricing']
+          : (store['pricingSettings'] is Map
+              ? store['pricingSettings']
+              : const {}),
     );
 
     final nestedContent = store['content'] is Map
