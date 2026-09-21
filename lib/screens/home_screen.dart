@@ -684,8 +684,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         controller: c,
                         title: style.name,
                         category: 'all',
-                        styleTab:
-                            style.id.isNotEmpty ? style.id : style.name,
+                        styleTab: style.name,
                         image: style.image,
                       ),
                     ),
