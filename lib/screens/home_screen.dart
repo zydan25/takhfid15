@@ -302,10 +302,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
-        child: const SizedBox(
+        child: SizedBox(
           width: 47,
           height: 47,
-          child: Icon(Icons.favorite_border, color: AppColors.ink, size: 25),
+          child: Icon(icon, color: AppColors.ink, size: 25),
         ),
       ),
     );
