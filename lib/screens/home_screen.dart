@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
         : banners[_bannerIndex.clamp(0, banners.length - 1)];
 
     if (banner != null && _bannerTimer == null && banners.length > 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _restartBannerTimer());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _restartBannerTimer(banners.length));
     }
 
     return SizedBox(
