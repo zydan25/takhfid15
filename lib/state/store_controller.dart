@@ -165,6 +165,7 @@ class StoreController extends ChangeNotifier {
     if (node is! Map) return null;
 
     final map = Map<String, dynamic>.from(node);
+
     for (final key in const [
       'announcements',
       'announcementSettings',
@@ -173,13 +174,16 @@ class StoreController extends ChangeNotifier {
       'promotions',
     ]) {
       final candidate = map[key];
+
       if (candidate is Map) {
         final value = Map<String, dynamic>.from(candidate);
         final screens = value['screens'];
         final hasScreenCoupons = screens is List &&
             screens.any(
-              (item) => item is Map &&
-                  ((item['coupons'] is List && (item['coupons'] as List).isNotEmpty) ||
+              (item) =>
+                  item is Map &&
+                  ((item['coupons'] is List &&
+                          (item['coupons'] as List).isNotEmpty) ||
                       item['discount'] != null ||
                       item['discountText'] != null),
             );
@@ -187,6 +191,50 @@ class StoreController extends ChangeNotifier {
           return value;
         }
       }
+
+      if (candidate is List && candidate.isNotEmpty) {
+        final couponList = candidate
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList();
+        if (couponList.isNotEmpty) {
+          return <String, dynamic>{
+            'isEnabled': true,
+            'autoFlip': true,
+            'screens': [
+              {
+                'id': 'server-coupons',
+                'isActive': true,
+                'order': 1,
+                'badgeText':
+                    map['badgeText'] ?? map['badge'] ?? 'عروض حصرية',
+                'mainTitle':
+                    map['mainTitle'] ?? map['title'] ?? 'قسائم وعروض',
+                'subTitle':
+                    map['subTitle'] ?? map['subtitle'] ?? '',
+                'coupons': couponList,
+                'backgroundColor':
+                    map['backgroundColor'] ?? '#FEF6EE',
+                'cardBackgroundColor':
+                    map['cardBackgroundColor'] ?? '#FFF0F2',
+                'textColor': map['textColor'] ?? '#9F1239',
+                'badgeBackgroundColor':
+                    map['badgeBackgroundColor'] ?? '#FF385C',
+                'borderColor':
+                    map['borderColor'] ?? '#FED7AA',
+              },
+            ],
+          };
+        }
+      }
+    }
+
+    final directScreens = map['screens'];
+    if (directScreens is List && directScreens.isNotEmpty) {
+      return <String, dynamic>{
+        ...map,
+        'screens': directScreens,
+      };
     }
 
     for (final value in map.values) {
@@ -308,6 +356,7 @@ class StoreController extends ChangeNotifier {
     }
     // Mirror announcements at store root for cached/offline readers.
     storeConfig['announcements'] = announcements;
+    storeConfig['couponScreens'] = announcements['screens'] ?? const [];
     recommendationTabs = content['recommendationTabs'] is List
         ? content['recommendationTabs'].whereType<Map>().map((raw) =>
             RecommendationTab.fromJson(Map<String, dynamic>.from(raw)))
