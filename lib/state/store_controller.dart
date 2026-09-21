@@ -405,9 +405,12 @@ class StoreController extends ChangeNotifier {
     }
 
     if (subCategory != null && subCategory.isNotEmpty) {
+      final needle = subCategory.toLowerCase();
       list = list.where((p) {
-        return p.subCategory == subCategory ||
-            p.name.contains(subCategory);
+        return p.subCategory.toLowerCase() == needle ||
+            p.subCategories.any((item) => item.toLowerCase() == needle) ||
+            p.subCategories.any((item) => item.toLowerCase().contains(needle)) ||
+            p.name.toLowerCase().contains(needle);
       }).toList();
     }
 
