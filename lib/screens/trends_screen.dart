@@ -203,6 +203,17 @@ class _TrendsScreenState extends State<TrendsScreen> {
 
     return GestureDetector(
       onTap: () => _openCampaign(campaign),
+      onHorizontalDragEnd: (details) {
+        final count = widget.controller.campaigns.length;
+        final velocity = details.primaryVelocity ?? 0;
+        if (count < 2 || velocity.abs() < 120) return;
+        setState(() {
+          campaignIndex = velocity < 0
+              ? (campaignIndex + 1) % count
+              : (campaignIndex - 1 + count) % count;
+          selectedHash = '';
+        });
+      },
       child: SizedBox(
         height: height,
         child: Stack(
@@ -261,6 +272,30 @@ class _TrendsScreenState extends State<TrendsScreen> {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 14,
+              bottom: 22,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 9,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xA8000000),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Text(
+                  (campaignIndex + 1).toString() +
+                      ' / ' +
+                      widget.controller.campaigns.length.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
             ),
