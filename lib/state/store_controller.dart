@@ -162,6 +162,14 @@ class StoreController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Map<String, dynamic>? contentPricing(Map<String, dynamic> source) {
+    final value = source['content'];
+    if (value is Map && value['pricingSettings'] is Map) {
+      return Map<String, dynamic>.from(value['pricingSettings'] as Map);
+    }
+    return null;
+  }
+
   void _applyStore(Map<String, dynamic> store) {
     storeConfig = Map<String, dynamic>.from(
       store['store'] is Map ? store['store'] : const {},
@@ -171,7 +179,7 @@ class StoreController extends ChangeNotifier {
           ? store['pricing']
           : (store['pricingSettings'] is Map
               ? store['pricingSettings']
-              : const {}),
+              : (contentPricing(store) ?? const {})),
     );
 
     final nestedContent = store['content'] is Map
@@ -323,10 +331,26 @@ class StoreController extends ChangeNotifier {
           final colorImages = source['colors'];
           if (colorImages is List) {
             for (final rawColor in colorImages.whereType<Map>()) {
-              final image =
-                  (rawColor['image'] ?? rawColor['imageUrl'])?.toString().trim();
-              if (image != null && image.isNotEmpty) {
-                sourceGallery.add(image);
+              for (final key in const [
+                'image',
+                'imageUrl',
+                'images',
+                'gallery',
+                'galleryImages',
+                'photos',
+                'media',
+              ]) {
+                final values = rawColor[key];
+                if (values is List) {
+                  sourceGallery.addAll(
+                    values
+                        .map((value) => value.toString().trim())
+                        .where((value) => value.isNotEmpty),
+                  );
+                } else if (values != null) {
+                  final value = values.toString().trim();
+                  if (value.isNotEmpty) sourceGallery.add(value);
+                }
               }
             }
           }
@@ -350,37 +374,47 @@ class StoreController extends ChangeNotifier {
       }).toList();
     }
 
-    if (categories.isNotEmpty && homeTopTabs.isNotEmpty) {
+    if (categories.isNotEmpty) {
       final existing = <String>{for (final tab in homeTopTabs) tab.id};
-      final missingOrder = homeTopTabs.isEmpty
+      var order = homeTopTabs.isEmpty
           ? 0
           : homeTopTabs.map((e) => e.order).reduce((a, b) => a > b ? a : b) + 1;
 
-      final additions = <String>[
-        'shoes',
-        'girls',
-        'perfumes',
-      ];
-
-      var order = missingOrder;
-      for (final id in additions) {
-        if (existing.contains(id)) continue;
-        final matches = categories.where((item) => item.id == id);
-        if (matches.isEmpty) continue;
-        final item = matches.first;
+      for (final item in categories) {
+        if (existing.contains(item.id) || item.id == 'all') continue;
+        final label = item.id == 'girls'
+            ? 'مقاسات كبيرة'
+            : item.id == 'perfumes'
+                ? 'لانجري وملابس النوم'
+                : item.name;
         homeTopTabs.add(
           HomeTopTab(
             id: item.id,
-            label: id == 'girls'
-                ? 'مقاسات كبيرة'
-                : id == 'perfumes'
-                    ? 'لانجري وملابس النوم'
-                    : item.name,
+            label: label,
             categoryId: item.id,
             order: order++,
           ),
         );
+        existing.add(item.id);
       }
+
+      // Keep "كل" as the first item and "أحدث" immediately after رجال.
+      if (!existing.contains('__new')) {
+        final menIndex = homeTopTabs.indexWhere((tab) => tab.id == 'men');
+        final newOrder =
+            menIndex >= 0 ? homeTopTabs[menIndex].order + 1 : 3;
+        homeTopTabs.add(
+          HomeTopTab(
+            id: '__new',
+            label: 'أحدث',
+            targetType: 'new',
+            categoryId: 'all',
+            order: newOrder,
+          ),
+        );
+      }
+
+      homeTopTabs.sort((a, b) => a.order.compareTo(b.order));
     }
 
     if (homeTopTabs.isEmpty && categories.isNotEmpty) {
