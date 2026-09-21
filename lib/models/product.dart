@@ -92,22 +92,30 @@ class Product {
       return 'https://whats.alattab.site/$url';
     }
 
-    final image = cleanImage(
-      json['image'] ??
-          json['imageUrl'] ??
-          json['mainImage'] ??
-          json['coverImage'] ??
-          json['cover_image'] ??
-          json['thumbnail'] ??
-          json['thumbnailUrl'] ??
-          json['image_url'] ??
-          json['imageUrlHttps'] ??
-          json['src'] ??
-          json['photo'] ??
-          json['photoUrl'] ??
-          json['cover'] ??
-          json['coverUrl'],
-    );
+    dynamic firstNonEmptyImage() {
+      for (final value in [
+        json['image'],
+        json['imageUrl'],
+        json['mainImage'],
+        json['coverImage'],
+        json['cover_image'],
+        json['thumbnail'],
+        json['thumbnailUrl'],
+        json['image_url'],
+        json['imageUrlHttps'],
+        json['src'],
+        json['photo'],
+        json['photoUrl'],
+        json['cover'],
+        json['coverUrl'],
+      ]) {
+        final normalized = cleanImage(value);
+        if (normalized.isNotEmpty) return normalized;
+      }
+      return '';
+    }
+
+    final image = firstNonEmptyImage();
 
     final galleryCandidates = <dynamic>[
       json['images'],
