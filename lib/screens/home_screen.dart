@@ -235,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       styleTab: b.targetType == 'styleTab' ? b.styleTarget : null,
                       saleOnly: b.targetType == 'flashSale',
                       trend: b.targetType == 'trend'
-                          ? (b.targetStyle.isNotEmpty ? b.targetStyle : null)
+                          ? (b.trendTarget.isNotEmpty ? b.trendTarget : null)
                           : null,
                       banner: b,
                     ),
