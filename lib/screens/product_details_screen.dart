@@ -26,13 +26,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   ProductColor? _color;
   String? _size;
   int _quantity = 1;
+  late Product _detailProduct;
+  bool _loadingFullProduct = false;
 
   @override
   void initState() {
     super.initState();
     _galleryController = PageController();
-    _color = widget.product.colors.isNotEmpty ? widget.product.colors.first : null;
-    _size = widget.product.sizes.isNotEmpty ? widget.product.sizes.first : null;
+    _detailProduct = widget.product;
+    _color = _detailProduct.colors.isNotEmpty ? _detailProduct.colors.first : null;
+    _size = _detailProduct.sizes.isNotEmpty ? _detailProduct.sizes.first : null;
+    _loadFullProduct();
   }
 
   @override
@@ -42,14 +46,50 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   List<String> get _images {
-    final base = widget.product.gallery.where((x) => x.isNotEmpty).toList();
-    if (base.isEmpty && widget.product.image.isNotEmpty) return [widget.product.image];
+    final base = _detailProduct.gallery.where((x) => x.isNotEmpty).toList();
+
+    if (_color?.image != null && _color!.image!.isNotEmpty) {
+      final colorImage = _color!.image!;
+      base.remove(colorImage);
+      base.insert(0, colorImage);
+    }
+
+    if (base.isEmpty && _detailProduct.image.isNotEmpty) {
+      return [_detailProduct.image];
+    }
     return base;
+  }
+
+  Future<void> _loadFullProduct() async {
+    if (_detailProduct.gallery.length > 1) return;
+    if (_loadingFullProduct) return;
+    _loadingFullProduct = true;
+    try {
+      final full = await widget.controller.api.fetchProductById(_detailProduct.id);
+      if (!mounted || full == null) return;
+      if (full.id != _detailProduct.id) return;
+      setState(() {
+        _detailProduct = full;
+        _color = _color == null
+            ? (full.colors.isNotEmpty ? full.colors.first : null)
+            : full.colors.firstWhere(
+                (item) => item.hex == _color!.hex,
+                orElse: () => full.colors.isNotEmpty ? full.colors.first : _color!,
+              );
+        _size = _size != null && full.sizes.contains(_size)
+            ? _size
+            : (full.sizes.isNotEmpty ? full.sizes.first : null);
+      });
+    } catch (_) {
+      // The list response remains usable when the detail endpoint is unavailable.
+    } finally {
+      _loadingFullProduct = false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final p = widget.product;
+    final p = _detailProduct;
     final images = _images;
     final related = widget.controller
         .filtered(category: p.category, sort: 'for_you')
@@ -155,7 +195,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           SliverToBoxAdapter(child: _gallery(images)),
           SliverToBoxAdapter(child: _summary(p)),
           if (p.colors.isNotEmpty)
-            SliverToBoxAdapter(child: _colorSelector(p, images)),
+            SliverToBoxAdapter(child: _colorSelector(p)),
           if (p.sizes.isNotEmpty)
             SliverToBoxAdapter(child: _sizeSelector(p)),
           SliverToBoxAdapter(child: _quantitySelector()),
@@ -178,6 +218,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             children: [
               PageView.builder(
                 controller: _galleryController,
+                physics: const BouncingScrollPhysics(),
                 itemCount: images.isEmpty ? 1 : images.length,
                 onPageChanged: (index) {
                   if (mounted) setState(() => _imageIndex = index);
@@ -223,6 +264,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ],
           ),
         ),
+
         if (images.length > 1)
           SizedBox(
             height: 76,
@@ -256,6 +298,26 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                 );
               },
+            ),
+          ),
+        if (images.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                images.length.clamp(1, 9),
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  width: index == _imageIndex ? 18 : 5,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: index == _imageIndex ? AppColors.black : AppColors.slate300,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ),
             ),
           ),
       ],
@@ -364,7 +426,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget _colorSelector(Product p, List<String> images) {
+  Widget _colorSelector(Product p) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 3),
       child: Column(
