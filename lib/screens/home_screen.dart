@@ -321,9 +321,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final rawScreens = data['screens'];
     if (rawScreens is List) {
       screens.addAll(
-        rawScreens.whereType<Map>().map(
-          (item) => Map<String, dynamic>.from(item),
-        ),
+        rawScreens
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .where((item) => item['isActive'] != false),
       );
     }
 
