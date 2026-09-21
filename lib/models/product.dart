@@ -20,6 +20,7 @@ class Product {
   final int soldCount;
   final String? couponText;
   final String? videoUrl;
+  final List<String> trends;
   final String sku;
 
   const Product({
@@ -44,6 +45,7 @@ class Product {
     required this.soldCount,
     required this.couponText,
     required this.videoUrl,
+    this.trends = const [],
     required this.sku,
   });
 
@@ -128,6 +130,9 @@ class Product {
       soldCount: integer(json['soldCount']),
       couponText: json['couponText']?.toString(),
       videoUrl: json['videoUrl']?.toString(),
+      trends: json['trends'] is List
+          ? (json['trends'] as List).map((e) => e.toString()).toList()
+          : const [],
       sku: (json['sku'] ?? '').toString(),
     );
   }
@@ -136,16 +141,19 @@ class Product {
 class ProductColor {
   final String name;
   final String hex;
+  final String? image;
 
   const ProductColor({
     required this.name,
     required this.hex,
+    this.image,
   });
 
   factory ProductColor.fromJson(Map<String, dynamic> json) {
     return ProductColor(
       name: (json['name'] ?? json['label'] ?? 'أساسي').toString(),
       hex: (json['hex'] ?? json['color'] ?? '#111827').toString(),
+      image: json['image']?.toString() ?? json['imageUrl']?.toString(),
     );
   }
 }
