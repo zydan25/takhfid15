@@ -283,14 +283,29 @@ class StoreApi {
 
   Future<Product?> fetchProductById(String productId) async {
     if (productId.trim().isEmpty) return null;
-    final raw = await client.get('/products/${Uri.encodeComponent(productId)}');
-    final map = raw is Map
-        ? Map<String, dynamic>.from(raw)
-        : <String, dynamic>{};
-    final candidate = map['product'] ?? map['data'] ?? raw;
+
+    final raw = await client.get(
+      '/products/${Uri.encodeComponent(productId)}',
+    );
+
+    dynamic unwrap(dynamic value) {
+      if (value is! Map) return value;
+
+      for (final key in const ['product', 'item', 'data', 'result']) {
+        final nested = value[key];
+        if (nested is Map) {
+          return unwrap(nested);
+        }
+      }
+      return value;
+    }
+
+    final candidate = unwrap(raw);
     return candidate is Map
         ? Product.fromJson(
-            Map<String, dynamic>.from(_normalizeProductMap(candidate)),
+            Map<String, dynamic>.from(
+              _normalizeProductMap(candidate),
+            ),
           )
         : null;
   }
