@@ -171,11 +171,11 @@ class _HomeScreenState extends State<HomeScreen> {
               // Server-driven top category navigation, over the banner.
               if (tabs.isNotEmpty)
                 Positioned(
-                  top: 174,
+                  top: width * .235,
                   left: 0,
                   right: 0,
                   child: SizedBox(
-                    height: 42,
+                    height: width * .055,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       reverse: true,
@@ -188,8 +188,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           return GestureDetector(
                             onTap: () => _openTopCategory(tab),
                             child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 8),
-                              padding: const EdgeInsets.fromLTRB(2, 3, 2, 8),
+                              margin: const EdgeInsets.symmetric(horizontal: 7),
+                              padding: const EdgeInsets.fromLTRB(2, 2, 2, 6),
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
@@ -204,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 tab.label,
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 15,
+                                  fontSize: 11.5,
                                   fontWeight: active
                                       ? FontWeight.w900
                                       : FontWeight.w800,
@@ -429,6 +429,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final width = MediaQuery.sizeOf(context).width;
     final searchWidth = math.min(width * .62, 255.0);
 
+    final searchHeight = width * .098;
+    final actionWidth = width * .068;
+
     return Row(
       textDirection: TextDirection.ltr,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -445,7 +448,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(width: 6),
         SizedBox(
           width: searchWidth,
-          height: 70,
+          height: searchHeight,
           child: Material(
             color: Colors.transparent,
             child: InkWell(
@@ -457,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               borderRadius: BorderRadius.circular(18),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7),
+                padding: const EdgeInsets.symmetric(horizontal: 5),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(.97),
                   borderRadius: BorderRadius.circular(18),
@@ -473,26 +476,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   textDirection: TextDirection.ltr,
                   children: [
                     Container(
-                      width: 55,
-                      height: 58,
+                      width: searchHeight * .82,
+                      height: searchHeight * .82,
                       decoration: BoxDecoration(
                         color: const Color(0xFF8F410F),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       alignment: Alignment.center,
                       child: const Icon(
                         Icons.search_rounded,
                         color: Colors.white,
-                        size: 31,
+                        size: 19,
                       ),
                     ),
-                    const SizedBox(width: 13),
+                    const SizedBox(width: 7),
                     const Icon(
                       Icons.photo_camera_outlined,
                       color: AppColors.slate500,
-                      size: 25,
+                      size: 16,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 7),
                     const Expanded(
                       child: Text(
                         'ابحث عن فساتين، أحذية، ملابس أو عروض...',
@@ -502,7 +505,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         textDirection: TextDirection.rtl,
                         style: TextStyle(
                           color: AppColors.ink,
-                          fontSize: 13,
+                          fontSize: 10.5,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -681,11 +684,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 4),
       child: Container(
-        height: 108,
-        padding: const EdgeInsets.fromLTRB(9, 7, 9, 7),
+        height: width * .15,
+        padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(13),
           border: Border.all(color: border, width: 1.2),
         ),
         child: Stack(
@@ -696,9 +699,9 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
-                  width: 164,
+                  width: width * .20,
                   child: Padding(
-                    padding: EdgeInsets.only(top: badge.isNotEmpty ? 22 : 0),
+                    padding: EdgeInsets.only(top: badge.isNotEmpty ? 11 : 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -710,11 +713,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           textAlign: TextAlign.right,
                           style: TextStyle(
                             color: textColor,
-                            fontSize: 16,
+                            fontSize: 11.5,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
                         Text(
                           subtitle,
                           maxLines: 1,
@@ -722,7 +725,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           textAlign: TextAlign.right,
                           style: TextStyle(
                             color: textColor.withOpacity(.82),
-                            fontSize: 10,
+                            fontSize: 8.5,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -739,7 +742,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         if (i > 0) const SizedBox(width: 7),
                         Expanded(
                           child: Container(
-                            height: 83,
+                            height: width * .114,
                             padding: const EdgeInsets.fromLTRB(6, 7, 6, 5),
                             decoration: BoxDecoration(
                               color: cardBg,
@@ -761,7 +764,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: textColor,
-                                    fontSize: 17,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 ),
@@ -777,7 +780,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: textColor.withOpacity(.82),
-                                    fontSize: 10,
+                                    fontSize: 8,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -813,7 +816,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     badge,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 8.5,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -1191,11 +1194,11 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: EdgeInsets.fromLTRB(3, 2, 3, 6),
             child: Text(
               'إطلالات من أجلك',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
             ),
           ),
           SizedBox(
-            height: 126,
+            height: 112,
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 7),
               scrollDirection: Axis.horizontal,
@@ -1219,7 +1222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: SizedBox(
                     width: cardWidth,
-                    height: 120,
+                    height: 108,
                     child: ClipRRect(
                       borderRadius: _radius(shape, 18),
                       child: Stack(
@@ -1263,7 +1266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 9,
+                                fontSize: 8.5,
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
@@ -1337,8 +1340,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 Container(
-                  width: 58,
-                  height: 58,
+                  width: 52,
+                  height: 52,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.slate100,
@@ -1368,7 +1371,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 10,
+                      fontSize: 8.5,
                       height: 1.05,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1380,7 +1383,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
 
     Widget row(List<SubCategory> values) => SizedBox(
-          height: 84,
+          height: 74,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 7),
             scrollDirection: Axis.horizontal,
@@ -1412,13 +1415,13 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const Text(
                   'التصنيفات',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
                 ),
                 const Spacer(),
                 Text(
                   'اسحب للتصفح',
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 8,
                     color: AppColors.slate400,
                     fontWeight: FontWeight.w700,
                   ),
