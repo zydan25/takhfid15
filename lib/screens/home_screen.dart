@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final width = MediaQuery.sizeOf(context).width;
     // Reference screenshot is 716px wide and the hero occupies ~482px.
     // Keep the same proportion across phones.
-    final bannerHeight = (width * .675).clamp(300.0, 520.0).toDouble();
+    final bannerHeight = (width * .675).clamp(220.0, 520.0).toDouble();
     final tabs = widget.controller.homeTopTabs;
     final banner = banners.isEmpty
         ? null
@@ -212,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-              $overlayMarker
+              const Positioned.fill(
                 child: IgnorePointer(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
