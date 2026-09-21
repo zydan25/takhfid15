@@ -7,6 +7,7 @@ import '../core/theme.dart';
 import '../models/content.dart';
 import '../models/product.dart';
 import '../state/store_controller.dart';
+import '../widgets/product_card.dart';
 import 'notifications_screen.dart';
 import 'product_details_screen.dart';
 import 'search_screen.dart';
@@ -22,7 +23,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final PageController _bannerController = PageController();
   Timer? _bannerTimer;
   int _bannerIndex = 0;
   Timer? _promoTimer;
@@ -34,7 +34,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _bannerTimer?.cancel();
     _promoTimer?.cancel();
-    _bannerController.dispose();
     super.dispose();
   }
 
@@ -63,6 +62,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _restartBannerTimer(int count) {
+    _bannerTimer?.cancel();
+    if (count < 2) return;
+    _bannerTimer = Timer(
+      const Duration(seconds: 4),
+      () {
+        if (!mounted) return;
+        setState(() {
+          _bannerIndex = (_bannerIndex + 1) % count;
+        });
+        _bannerTimer = null;
+      },
     );
   }
 
