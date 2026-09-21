@@ -163,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 left: 0,
                 right: 0,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(13, 76, 13, 0),
+                  padding: EdgeInsets.fromLTRB(13, width * .105, 13, 0),
                   child: _floatingTopBar(),
                 ),
               ),
@@ -555,23 +555,26 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback onTap,
     Widget? badge,
   }) {
+    final width = MediaQuery.sizeOf(context).width;
+    final actionWidth = width * .068;
+    final actionHeight = width * .098;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
         child: SizedBox(
-          width: 48,
-          height: 70,
+          width: actionWidth,
+          height: actionHeight,
           child: Stack(
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
-              Icon(icon, color: Colors.white, size: 34),
+              Icon(icon, color: Colors.white, size: width * .048),
               if (badge != null)
                 Positioned(
-                  top: 19,
-                  right: 2,
+                  top: actionHeight * .08,
+                  right: actionWidth * .03,
                   child: badge,
                 ),
             ],
@@ -601,6 +604,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _promoStrip() {
+    final width = MediaQuery.sizeOf(context).width;
     final data = widget.controller.announcements.isNotEmpty
         ? widget.controller.announcements
         : (widget.controller.storeConfig['announcements'] is Map
