@@ -7,8 +7,6 @@ import '../core/theme.dart';
 import '../models/content.dart';
 import '../models/product.dart';
 import '../state/store_controller.dart';
-import '../widgets/product_card.dart';
-import '../widgets/top_bar.dart';
 import 'notifications_screen.dart';
 import 'product_details_screen.dart';
 import 'search_screen.dart';
@@ -27,11 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _bannerController = PageController();
   Timer? _bannerTimer;
   int _bannerIndex = 0;
-  String _category = 'all';
-  String? _subCategory;
-  String? _styleTab;
-  String? _recommendationTab;
-  String _sort = 'for_you';
+  String _topCategory = 'all';
+  String _feedTab = 'for_you';
 
   @override
   void dispose() {
@@ -48,63 +43,883 @@ class _HomeScreenState extends State<HomeScreen> {
       return const _HomeSkeleton();
     }
 
-    final items = c.filtered(
-      category: _category,
-      subCategory: _subCategory,
-      styleTab: _styleTab,
-      sort: _sort,
-    );
-
     return RefreshIndicator(
       color: AppColors.black,
       onRefresh: c.refresh,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          SliverToBoxAdapter(
-            child: StoreTopBar(
-              onSearch: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => SearchScreen(controller: c)),
-              ),
-              onWishlist: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => WishlistScreen(controller: c)),
-              ),
-              onNotifications: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => NotificationsScreen(controller: c)),
-              ),
-              onVisualSearch: () => _showInfo(
-                context,
-                'البحث البصري',
-                'يمكن تفعيل البحث بالصورة وربطه بعقد البحث في الخادم.',
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(child: _quickCategoryBar(c.categories)),
-          SliverToBoxAdapter(child: _hero(c.banners)),
-          SliverToBoxAdapter(child: _announcementStrip()),
-          SliverToBoxAdapter(child: _styleStrip(c.categories)),
-          SliverToBoxAdapter(child: _subCategoryStrip(c.categories)),
-          if (c.recommendationTabs.isNotEmpty)
-            SliverToBoxAdapter(child: _recommendationSection()),
-          SliverToBoxAdapter(child: _sortTabs()),
+          SliverToBoxAdapter(child: _heroHeader(c.banners, c.categories)),
+          SliverToBoxAdapter(child: _promoStrip()),
+          SliverToBoxAdapter(child: _looksSection(c)),
+          SliverToBoxAdapter(child: _categoriesGrid(c)),
+          SliverToBoxAdapter(child: _feedTabs(c)),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(10, 4, 10, 24),
-            sliver: _productGrid(items),
+            padding: const EdgeInsets.fromLTRB(10, 9, 10, 28),
+            sliver: _productGrid(_feedProducts(c)),
           ),
         ],
       ),
     );
   }
 
+  Widget _heroHeader(List<BannerItem> banners, List<Category> categories) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = (width * .68).clamp(255.0, 490.0).toDouble();
+
+    final tabs = <Map<String, String>>[
+      {'id': 'all', 'label': 'كل شامل'},
+      ...categories
+          .where((item) => item.id.isNotEmpty && item.id != 'all')
+          .map((item) => {'id': item.id, 'label': item.name}),
+    ];
+
+    if (!tabs.any((item) => item['label'] == 'أحدث')) {
+      tabs.insert(tabs.length > 2 ? 3 : tabs.length, {'id': '__new', 'label': 'أحدث'});
+    }
+
+    final shownTabs = tabs.take(6).toList();
+    final banner = banners.isEmpty
+        ? null
+        : banners[_bannerIndex.clamp(0, banners.length - 1)];
+
+    if (banner != null && _bannerTimer == null && banners.length > 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _restartBannerTimer());
+    }
+
+    return SizedBox(
+      height: height,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (banner != null)
+            GestureDetector(
+              onTap: () => _openBanner(banner),
+              child: CachedNetworkImage(
+                imageUrl: banner.image,
+                fit: BoxFit.cover,
+                errorWidget: (_, __, ___) =>
+                    const ColoredBox(color: AppColors.ink),
+              ),
+            )
+          else
+            const ColoredBox(color: AppColors.ink),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x42000000),
+                  Color(0x12000000),
+                  Color(0x12000000),
+                  Color(0x50000000),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 12,
+            right: 12,
+            left: 12,
+            child: _floatingTopBar(),
+          ),
+          Positioned(
+            top: 117,
+            right: 12,
+            left: 12,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              reverse: true,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: shownTabs.map((tab) {
+                  final active = tab['id'] == _topCategory;
+                  return GestureDetector(
+                    onTap: () => _openTopCategory(
+                      tab['id']!,
+                      tab['label']!,
+                      categories,
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.only(bottom: 7),
+                      decoration: BoxDecoration(
+                        border: active
+                            ? const Border(
+                                bottom: BorderSide(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              )
+                            : null,
+                      ),
+                      child: Text(
+                        tab['label']!,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: active ? 14 : 12,
+                          fontWeight: active ? FontWeight.w900 : FontWeight.w600,
+                          shadows: const [
+                            Shadow(color: Colors.black54, blurRadius: 4),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+          if (banners.length > 1)
+            Positioned(
+              right: 0,
+              left: 0,
+              bottom: 11,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  banners.length.clamp(1, 7),
+                  (index) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    width: index == _bannerIndex ? 26 : 7,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: index == _bannerIndex
+                          ? Colors.white
+                          : Colors.white54,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _floatingTopBar() {
+    return Row(
+      children: [
+        _roundAction(
+          icon: Icons.favorite_border,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  WishlistScreen(controller: widget.controller),
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        _roundAction(
+          icon: Icons.grid_view_rounded,
+          onTap: () => widget.controller.selectTab(1),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      SearchScreen(controller: widget.controller),
+                ),
+              ),
+              borderRadius: BorderRadius.circular(17),
+              child: Container(
+                height: 56,
+                padding: const EdgeInsets.symmetric(horizontal: 13),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.96),
+                  borderRadius: BorderRadius.circular(17),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(.10),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.search,
+                      size: 26,
+                      color: AppColors.ink,
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'ابحث عن موديل، لون، مقاس...',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.slate500,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.photo_camera_outlined,
+                      size: 24,
+                      color: AppColors.slate500,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        _roundAction(
+          icon: Icons.notifications_none_rounded,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  NotificationsScreen(controller: widget.controller),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _roundAction({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white.withOpacity(.94),
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: const SizedBox(
+          width: 47,
+          height: 47,
+          child: Icon(Icons.favorite_border, color: AppColors.ink, size: 25),
+        ),
+      ),
+    );
+  }
+
+  Widget _promoStrip() {
+    final data = widget.controller.announcements;
+    if (data['isEnabled'] == false) return const SizedBox.shrink();
+
+    final screens = <Map<String, dynamic>>[];
+    for (final key in const ['screens', 'cards', 'items', 'strips', 'banners']) {
+      final raw = data[key];
+      if (raw is List) {
+        screens.addAll(
+          raw.whereType<Map>().map(
+            (item) => Map<String, dynamic>.from(item),
+          ),
+        );
+      }
+    }
+
+    if (screens.isEmpty && _looksLikePromo(data)) {
+      screens.add(Map<String, dynamic>.from(data));
+    }
+
+    if (screens.isEmpty) {
+      screens.add({
+        'badgeText': 'للمستخدمين الجدد فقط',
+        'mainTitle': 'عروض جديدة',
+        'subTitle': 'خصومات حصرية للطلب الأول',
+        'coupons': [
+          {'discount': 'خصم 30%', 'minOrder': 'أكثر من SR149'},
+          {'discount': 'خصم 25%', 'minOrder': 'أكثر من SR379'},
+        ],
+      });
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(13, 11, 13, 6),
+      child: Column(
+        children: screens.take(2).map(_promoCard).toList(),
+      ),
+    );
+  }
+
+  bool _looksLikePromo(Map<String, dynamic> data) {
+    const keys = [
+      'mainTitle',
+      'title',
+      'subTitle',
+      'subtitle',
+      'coupons',
+      'discount',
+      'discountText',
+      'badgeText',
+      'shipping',
+    ];
+    return keys.any(data.containsKey);
+  }
+
+  Widget _promoCard(Map<String, dynamic> raw) {
+    final bg = _parseColor(raw['backgroundColor'], const Color(0xFFFFF8F1));
+    final cardBg = _parseColor(
+      raw['cardBackgroundColor'],
+      const Color(0xFFFFF2F0),
+    );
+    final text = _parseColor(
+      raw['textColor'],
+      const Color(0xFF9A2041),
+    );
+    final border = _parseColor(
+      raw['borderColor'],
+      const Color(0xFFF2D6B2),
+    );
+
+    final badge = (raw['badgeText'] ?? raw['badge'] ?? '').toString();
+    final title =
+        (raw['mainTitle'] ?? raw['title'] ?? 'عروض جديدة').toString();
+    final subtitle =
+        (raw['subTitle'] ?? raw['subtitle'] ?? '').toString();
+
+    final couponRaw = raw['coupons'] ?? raw['offers'] ?? raw['discounts'];
+    final coupons = couponRaw is List
+        ? couponRaw.whereType<Map>().map(Map<String, dynamic>.from).toList()
+        : <Map<String, dynamic>>[];
+
+    final benefitRaw = raw['benefits'];
+    final benefits = benefitRaw is List
+        ? benefitRaw.map((e) => e.toString()).where((e) => e.isNotEmpty).toList()
+        : <String>[];
+
+    final effectiveCoupons = coupons.isEmpty
+        ? <Map<String, dynamic>>[
+            if ((raw['discount'] ?? raw['discountText']) != null)
+              {
+                'discount':
+                    (raw['discount'] ?? raw['discountText']).toString(),
+                'minOrder': (raw['minOrder'] ?? '').toString(),
+              },
+          ]
+        : coupons;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 5),
+      padding: const EdgeInsets.fromLTRB(10, 13, 10, 10),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: border),
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: badge.isNotEmpty ? 4 : 0),
+            child: Column(
+              children: [
+                if (title.isNotEmpty)
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: text,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                if (subtitle.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      subtitle,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: text.withOpacity(.75),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                if (effectiveCoupons.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 7),
+                    child: Row(
+                      children: effectiveCoupons.take(3).map((coupon) {
+                        final discount =
+                            (coupon['discount'] ??
+                                    coupon['discountText'] ??
+                                    coupon['code'] ??
+                                    '')
+                                .toString();
+                        final minOrder =
+                            (coupon['minOrder'] ??
+                                    coupon['minimum'] ??
+                                    coupon['subtitle'] ??
+                                    '')
+                                .toString();
+
+                        return Expanded(
+                          child: Container(
+                            margin:
+                                const EdgeInsets.symmetric(horizontal: 3),
+                            padding: const EdgeInsets.fromLTRB(6, 7, 6, 6),
+                            decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(15),
+                              border:
+                                  Border.all(color: border.withOpacity(.65)),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  discount,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: text,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                if (minOrder.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text(
+                                      minOrder,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: text.withOpacity(.88),
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                if (benefits.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 5,
+                      runSpacing: 4,
+                      children: benefits.take(4).map((benefit) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Text(
+                            benefit,
+                            style: const TextStyle(
+                              color: AppColors.green,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (badge.isNotEmpty)
+            Positioned(
+              top: -2,
+              right: 4,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.rose,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.rose.withOpacity(.16),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  badge,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _looksSection(StoreController c) {
+    var styles = c.homeStyleTabs;
+    if (styles.isEmpty) {
+      final seen = <String>{};
+      final collected = <StyleTab>[];
+      for (final category in c.categories) {
+        for (final style in category.styleTabs) {
+          final key = style.id.isNotEmpty ? style.id : style.name;
+          if (seen.add(key)) collected.add(style);
+        }
+      }
+      styles = collected;
+    }
+
+    styles = styles.take(4).toList();
+    if (styles.isEmpty) return const SizedBox.shrink();
+
+    final shape = _shape(
+      c.styleTabsConfig.isNotEmpty
+          ? c.styleTabsConfig['shape']
+          : c.categoryTabsConfig['styleShape'],
+      fallback: 'rounded',
+    );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(2, 3, 2, 7),
+            child: Text(
+              'إطلالات من أجلك',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: styles.length,
+            gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: 8,
+              childAspectRatio: .92,
+            ),
+            itemBuilder: (_, index) {
+              final style = styles[index];
+              return GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ShowcaseScreen(
+                      controller: widget.controller,
+                      title: style.name,
+                      category: 'all',
+                      styleTab: style.id.isNotEmpty ? style.id : style.name,
+                      image: style.image,
+                    ),
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: _radius(shape, 24),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (style.image.isNotEmpty)
+                        CachedNetworkImage(
+                          imageUrl: style.image,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => const ColoredBox(
+                            color: AppColors.slate100,
+                            child: Icon(Icons.image_outlined),
+                          ),
+                        )
+                      else
+                        const ColoredBox(
+                          color: AppColors.slate100,
+                          child: Icon(Icons.auto_awesome_outlined),
+                        ),
+                      const Align(
+                        alignment: Alignment.bottomCenter,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Color(0xDE000000),
+                              ],
+                            ),
+                          ),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 45,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: 6,
+                        left: 6,
+                        bottom: 7,
+                        child: Text(
+                          style.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _categoriesGrid(StoreController c) {
+    final categories =
+        c.categories.where((item) => item.id != 'all').take(10).toList();
+    if (categories.isEmpty) return const SizedBox.shrink();
+
+    final configuredShape = _shape(
+      c.categoryTabsConfig['shape'],
+      fallback: 'circle',
+    );
+    final configuredSize = (c.categoryTabsConfig['size'] ?? 'medium').toString();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: categories.length,
+        gridDelegate:
+            const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 5,
+          mainAxisSpacing: 7,
+          crossAxisSpacing: 2,
+          childAspectRatio: .9,
+        ),
+        itemBuilder: (_, index) {
+          final category = categories[index];
+          final rawDimension = configuredSize == 'small'
+              ? 55.0
+              : configuredSize == 'large'
+                  ? 75.0
+                  : 66.0;
+          final dimension = rawDimension.clamp(
+            48.0,
+            (MediaQuery.sizeOf(context).width - 42) / 5,
+          );
+
+          return GestureDetector(
+            onTap: () {
+              _topCategory = category.id;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ShowcaseScreen(
+                    controller: widget.controller,
+                    title: category.name,
+                    category: category.id,
+                    image: category.image,
+                  ),
+                ),
+              );
+            },
+            child: Column(
+              children: [
+                Container(
+                  width: dimension,
+                  height: dimension,
+                  decoration: BoxDecoration(
+                    color: AppColors.slate100,
+                    shape: configuredShape == 'circle'
+                        ? BoxShape.circle
+                        : BoxShape.rectangle,
+                    borderRadius: configuredShape == 'circle'
+                        ? null
+                        : _radius(configuredShape, 18),
+                    border: Border.all(
+                      color: AppColors.slate200,
+                    ),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: category.image.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: category.image,
+                          fit: BoxFit.cover,
+                        )
+                      : const Icon(
+                          Icons.category_outlined,
+                          color: AppColors.slate400,
+                        ),
+                ),
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Text(
+                    category.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 9,
+                      height: 1.08,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _feedTabs(StoreController c) {
+    final dynamicTabs = c.recommendationTabs;
+    final tabs = dynamicTabs.isNotEmpty
+        ? dynamicTabs
+            .take(4)
+            .map(
+              (tab) => _FeedTab(
+                id: tab.id,
+                label: tab.label,
+              ),
+            )
+            .toList()
+        : const [
+            _FeedTab(id: 'for_you', label: 'من أجلك'),
+            _FeedTab(id: 'new', label: 'مدخلات جديدة'),
+            _FeedTab(id: 'discount', label: 'خصومات'),
+            _FeedTab(id: 'popular', label: 'الأكثر مبيعًا'),
+          ];
+
+    final activeId = tabs.any((tab) => tab.id == _feedTab)
+        ? _feedTab
+        : tabs.first.id;
+
+    if (activeId != _feedTab && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => setState(() => _feedTab = activeId),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 7, 12, 0),
+      child: Row(
+        children: tabs.map((tab) {
+          final active = tab.id == activeId;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _feedTab = tab.id),
+              child: Container(
+                height: 46,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: active ? Colors.black : AppColors.slate50,
+                  border: Border.all(
+                    color: active ? Colors.black : AppColors.slate200,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  tab.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: active ? Colors.white : AppColors.ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  List<Product> _feedProducts(StoreController c) {
+    if (c.recommendationTabs.isNotEmpty) {
+      final active = c.recommendationTabs
+          .where((tab) => tab.id == _feedTab)
+          .toList();
+      if (active.isNotEmpty) {
+        final list = c.recommendations(active.first);
+        if (list.isNotEmpty) return list;
+      }
+    }
+
+    var list = c.products.toList();
+    switch (_feedTab) {
+      case 'new':
+        return list.reversed.take(30).toList();
+      case 'discount':
+        list.sort(
+          (a, b) => b.discountPercentage.compareTo(a.discountPercentage),
+        );
+        return list;
+      case 'popular':
+        list.sort((a, b) => b.soldCount.compareTo(a.soldCount));
+        return list;
+      default:
+        return list;
+    }
+  }
+
   Widget _productGrid(List<Product> items) {
+    if (items.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Center(
+            child: Text(
+              'لا توجد منتجات لعرضها الآن',
+              style: TextStyle(
+                color: AppColors.slate500,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-        (context, row) {
+        (_, row) {
           final left = row * 2;
           final right = left + 1;
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(
@@ -112,26 +927,12 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Expanded(
                   child: right < items.length
-                      ? ProductCard(
-                          product: items[right],
-                          index: right,
-                          wishlisted: widget.controller.isWishlisted(items[right]),
-                          onOpen: () => _open(items[right]),
-                          onWishlist: () => widget.controller.toggleWishlist(items[right]),
-                          onCart: () => widget.controller.addToCart(items[right]),
-                        )
+                      ? _product(items[right], right)
                       : const SizedBox.shrink(),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ProductCard(
-                    product: items[left],
-                    index: left,
-                    wishlisted: widget.controller.isWishlisted(items[left]),
-                    onOpen: () => _open(items[left]),
-                    onWishlist: () => widget.controller.toggleWishlist(items[left]),
-                    onCart: () => widget.controller.addToCart(items[left]),
-                  ),
+                  child: _product(items[left], left),
                 ),
               ],
             ),
@@ -142,664 +943,128 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _quickCategoryBar(List<Category> categories) {
-    return SizedBox(
-      height: 104,
-      child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(10, 5, 10, 7),
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 7),
-        itemBuilder: (_, index) {
-          final category = categories[index];
-          final active = category.id == _category;
-          return GestureDetector(
-            onTap: () => setState(() {
-              _category = category.id;
-              _subCategory = null;
-              _styleTab = null;
-            }),
-            child: SizedBox(
-              width: 66,
-              child: Column(
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: AppColors.slate100,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: active ? AppColors.black : AppColors.slate200,
-                        width: active ? 2 : 1,
-                      ),
-                      boxShadow: active
-                          ? [BoxShadow(color: Colors.black.withOpacity(.10), blurRadius: 6)]
-                          : null,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: category.image.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: category.image,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) =>
-                                const Icon(Icons.category_outlined, color: AppColors.slate400),
-                          )
-                        : const Icon(Icons.category_outlined, color: AppColors.slate400),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    category.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 8,
-                      fontWeight: active ? FontWeight.w900 : FontWeight.w700,
-                      color: active ? AppColors.ink : AppColors.slate500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+  Widget _product(Product product, int index) {
+    return ProductCard(
+      product: product,
+      index: index,
+      wishlisted: widget.controller.isWishlisted(product),
+      onOpen: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductDetailsScreen(
+            controller: widget.controller,
+            product: product,
+          ),
+        ),
       ),
+      onWishlist: () => widget.controller.toggleWishlist(product),
+      onCart: () => widget.controller.addToCart(product),
     );
   }
 
-  Widget _hero(List<BannerItem> banners) {
-    if (banners.isEmpty) {
-      return Container(
-        height: 214,
-        margin: const EdgeInsets.only(top: 2),
-        color: AppColors.ink,
-        alignment: Alignment.center,
-        child: const Text(
-          'التخفيض الصح',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      );
-    }
-
-    if (_bannerTimer == null && banners.length > 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _restartBannerTimer());
-    }
-
-    return SizedBox(
-      height: 236,
-      child: Stack(
-        children: [
-          PageView.builder(
-            controller: _bannerController,
-            itemCount: banners.length,
-            onPageChanged: (index) {
-              if (!mounted) return;
-              setState(() => _bannerIndex = index);
-              _restartBannerTimer();
-            },
-            itemBuilder: (_, index) {
-              final b = banners[index];
-              return GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ShowcaseScreen(
-                      controller: widget.controller,
-                      title: b.title,
-                      subtitle: b.subtitle,
-                      image: b.image,
-                      category: b.categoryTarget,
-                      subCategory: b.targetType == 'subcategory' ? b.subTarget : null,
-                      styleTab: b.targetType == 'styleTab' ? b.styleTarget : null,
-                      saleOnly: b.targetType == 'flashSale',
-                      trend: b.targetType == 'trend'
-                          ? (b.trendTarget.isNotEmpty ? b.trendTarget : null)
-                          : null,
-                      banner: b,
-                    ),
-                  ),
-                ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    CachedNetworkImage(
-                      imageUrl: b.image,
-                      fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) => const ColoredBox(color: AppColors.ink),
-                    ),
-                    const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Color(0x65000000),
-                            Color(0x10000000),
-                            Color(0xCC000000),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      right: 15,
-                      left: 15,
-                      bottom: 17,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (b.title.isNotEmpty)
-                            Text(
-                              b.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                height: 1.1,
-                              ),
-                            ),
-                          if (b.subtitle.isNotEmpty) ...[
-                            const SizedBox(height: 5),
-                            Text(
-                              b.subtitle,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                height: 1.45,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 8),
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: AppColors.rose,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-                              child: Text(
-                                'شاهد العروض',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          if (banners.length > 1)
-            Positioned(
-              right: 0,
-              left: 0,
-              bottom: 8,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  banners.length.clamp(1, 6),
-                  (index) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    width: index == _bannerIndex ? 18 : 5,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(index == _bannerIndex ? 1 : .45),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  void _restartBannerTimer() {
-    _bannerTimer?.cancel();
-    final banners = widget.controller.banners;
-    if (banners.length < 2) return;
-    final index = _bannerIndex.clamp(0, banners.length - 1);
-    final seconds = banners[index].slideDuration.clamp(2, 20);
-    _bannerTimer = Timer(Duration(seconds: seconds), () {
-      if (!mounted) return;
-      _bannerIndex = (_bannerIndex + 1) % banners.length;
-      _bannerController.animateToPage(
-        _bannerIndex,
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeOut,
-      );
-      _restartBannerTimer();
-    });
-  }
-
-  Widget _announcementStrip() {
-    final rawScreens = widget.controller.announcements['screens'];
-    if (rawScreens is! List || rawScreens.isEmpty ||
-        widget.controller.announcements['isEnabled'] == false) {
-      return const SizedBox.shrink();
-    }
-
-    final screens = rawScreens.whereType<Map>().toList();
-    if (screens.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 9, 10, 4),
-      child: Row(
-        children: screens.take(2).map((raw) {
-          final bg = _parseColor(raw['backgroundColor'], const Color(0xFFF8FAFC));
-          final cardBg = _parseColor(raw['cardBackgroundColor'], Colors.white);
-          final text = _parseColor(raw['textColor'], AppColors.rose);
-          final title = (raw['mainTitle'] ?? raw['title'] ?? '').toString();
-          final subtitle = (raw['subTitle'] ?? '').toString();
-          final badge = (raw['badgeText'] ?? '').toString();
-          final coupons = raw['coupons'] is List ? (raw['coupons'] as List) : const [];
-          return Expanded(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: bg,
-                borderRadius: BorderRadius.circular(13),
-                border: Border.all(color: _parseColor(raw['borderColor'], text).withOpacity(.35)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (badge.isNotEmpty)
-                    Text(
-                      badge,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: text, fontSize: 8, fontWeight: FontWeight.w900),
-                    ),
-                  const SizedBox(height: 2),
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: text, fontSize: 12, fontWeight: FontWeight.w900),
-                  ),
-                  if (subtitle.isNotEmpty)
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: text.withOpacity(.75), fontSize: 8, fontWeight: FontWeight.w700),
-                    ),
-                  if (coupons.isNotEmpty) ...[
-                    const SizedBox(height: 5),
-                    Row(
-                      children: coupons.take(1).map((coupon) {
-                        final c = coupon is Map ? Map<String, dynamic>.from(coupon) : <String, dynamic>{};
-                        return Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: cardBg,
-                              borderRadius: BorderRadius.circular(9),
-                            ),
-                            child: Text(
-                              (c['code'] ?? c['discount'] ?? '').toString(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: text, fontSize: 8, fontWeight: FontWeight.w900),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _styleStrip(List<Category> categories) {
-    final current = categories.where((item) => item.id == _category).toList();
-    final styles = current.isEmpty ? <StyleTab>[] : current.first.styleTabs;
-    if (styles.isEmpty) return const SizedBox.shrink();
-
-    return _mediaStrip(
-      title: 'إطلالات من أجلك',
-      subtitle: 'تنسيقات مختارة تناسب الفئة الحالية',
-      items: styles,
-      selectedId: _styleTab,
-      onTap: (style) => setState(() {
-        _styleTab = _styleTab == style.id ? null : style.id;
-        _subCategory = null;
-      }),
-    );
-  }
-
-  Widget _subCategoryStrip(List<Category> categories) {
-    final current = categories.where((item) => item.id == _category).toList();
-    final subs = current.isEmpty ? <SubCategory>[] : current.first.subCategories;
-    if (subs.isEmpty) return const SizedBox.shrink();
-
-    return _mediaStrip(
-      title: 'التصنيفات',
-      subtitle: 'اختر قسماً لعرض المنتجات مباشرة',
-      items: subs,
-      selectedId: _subCategory,
-      onTap: (sub) {
-        setState(() {
-          _subCategory = sub.id.isNotEmpty ? sub.id : sub.name;
-          _styleTab = null;
-        });
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ShowcaseScreen(
-              controller: widget.controller,
-              title: sub.name,
-              category: _category,
-              subCategory: sub.name,
-              image: sub.image,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _mediaStrip<T>({
-    required String title,
-    required String subtitle,
-    required List<T> items,
-    required String? selectedId,
-    required ValueChanged<T> onTap,
-  }) {
-    final shape = (widget.controller.categoryTabsConfig['shape'] ?? 'circle').toString();
-    final squareRatio = widget.controller.categoryTabsConfig['isSquareRatio'] != false;
-    final size = (widget.controller.categoryTabsConfig['size'] ?? 'medium').toString();
-
-    double dimension = size == 'small' ? 58 : size == 'large' ? 80 : 70;
-    final height = squareRatio ? dimension : dimension + 14;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(11, 7, 11, 1),
-          child: Row(
-            children: [
-              Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900)),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 8, color: AppColors.slate400, fontWeight: FontWeight.w700),
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: height + 31,
-          child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
-            scrollDirection: Axis.horizontal,
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (_, index) {
-              final item = items[index];
-              final id = item is StyleTab
-                  ? item.id
-                  : item is SubCategory
-                      ? item.id.isNotEmpty ? item.id : item.name
-                      : index.toString();
-              final name = item is StyleTab
-                  ? item.name
-                  : item is SubCategory
-                      ? item.name
-                      : '';
-              final image = item is StyleTab
-                  ? item.image
-                  : item is SubCategory
-                      ? item.image
-                      : '';
-              final selected = id == selectedId || (item is StyleTab && item.name == selectedId);
-
-              return GestureDetector(
-                onTap: () => onTap(item),
-                child: SizedBox(
-                  width: dimension + 2,
-                  child: Column(
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 170),
-                        width: dimension,
-                        height: dimension,
-                        decoration: BoxDecoration(
-                          color: AppColors.slate100,
-                          shape: shape == 'circle' ? BoxShape.circle : BoxShape.rectangle,
-                          borderRadius: shape == 'circle'
-                              ? null
-                              : BorderRadius.circular(
-                                  shape == 'rounded' ? 18 : shape == 'curved' ? 25 : 5,
-                                ),
-                          border: selected
-                              ? Border.all(color: AppColors.black, width: 2)
-                              : Border.all(color: AppColors.slate200, width: 1),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: image.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: image,
-                                fit: BoxFit.cover,
-                                errorWidget: (_, __, ___) =>
-                                    const Icon(Icons.image_outlined, color: AppColors.slate400),
-                              )
-                            : const Icon(Icons.category_outlined, color: AppColors.slate400),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 8,
-                          height: 1.15,
-                          fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
-                          color: selected ? AppColors.ink : AppColors.slate500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _recommendationSection() {
-    final tabs = widget.controller.recommendationTabs;
-    var activeId = _recommendationTab ?? (tabs.isEmpty ? '' : tabs.first.id);
-    final active = tabs.where((item) => item.id == activeId).toList();
-    final selected = active.isEmpty ? tabs.first : active.first;
-    final products = widget.controller.recommendations(selected).take(8).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(11, 9, 11, 4),
-          child: Text('مقترحات من أجلك', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900)),
-        ),
-        SizedBox(
-          height: 36,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            scrollDirection: Axis.horizontal,
-            itemCount: tabs.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 6),
-            itemBuilder: (_, index) {
-              final tab = tabs[index];
-              final activeTab = tab.id == selected.id;
-              return GestureDetector(
-                onTap: () => setState(() => _recommendationTab = tab.id),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: activeTab ? AppColors.black : AppColors.slate50,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: activeTab ? AppColors.black : AppColors.slate200),
-                  ),
-                  child: Text(
-                    tab.label,
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
-                      color: activeTab ? Colors.white : AppColors.slate500,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        if (products.isNotEmpty)
-          SizedBox(
-            height: 235,
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 5),
-              scrollDirection: Axis.horizontal,
-              itemCount: products.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (_, index) {
-                final product = products[index];
-                return SizedBox(
-                  width: 155,
-                  child: ProductCard(
-                    product: product,
-                    index: index,
-                    wishlisted: widget.controller.isWishlisted(product),
-                    onOpen: () => _open(product),
-                    onWishlist: () => widget.controller.toggleWishlist(product),
-                    onCart: () => widget.controller.addToCart(product),
-                  ),
-                );
-              },
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _sortTabs() {
-    const tabs = <Map<String, String>>[
-      {'id': 'for_you', 'label': 'التوصية'},
-      {'id': 'discount', 'label': 'الأعلى خصمًا'},
-      {'id': 'popular', 'label': 'الأكثر مبيعًا'},
-      {'id': 'rating', 'label': 'الأعلى تقييمًا'},
-      {'id': 'price-low', 'label': 'الأقل سعرًا'},
-    ];
-
-    return SizedBox(
-      height: 42,
-      child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
-        scrollDirection: Axis.horizontal,
-        itemCount: tabs.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 6),
-        itemBuilder: (_, index) {
-          final tab = tabs[index];
-          final active = _sort == tab['id'];
-          return GestureDetector(
-            onTap: () => setState(() => _sort = tab['id']!),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: active ? AppColors.black : AppColors.slate50,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: active ? AppColors.black : AppColors.slate200),
-              ),
-              child: Text(
-                tab['label']!,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w900,
-                  color: active ? Colors.white : AppColors.slate500,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _open(Product product) {
+  void _openBanner(BannerItem b) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ProductDetailsScreen(
+        builder: (_) => ShowcaseScreen(
           controller: widget.controller,
-          product: product,
+          title: b.title,
+          subtitle: b.subtitle,
+          image: b.image,
+          category: b.categoryTarget.isEmpty ? 'all' : b.categoryTarget,
+          subCategory:
+              b.targetType == 'subcategory' ? b.subTarget : null,
+          styleTab: b.targetType == 'styleTab' ? b.styleTarget : null,
+          saleOnly: b.targetType == 'flashSale',
+          trend: b.targetType == 'trend'
+              ? (b.trendTarget.isNotEmpty ? b.trendTarget : null)
+              : null,
+          banner: b,
         ),
       ),
     );
   }
 
-  void _showInfo(BuildContext context, String title, String message) {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(18, 5, 18, 30),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.slate500, fontSize: 10, height: 1.6),
-            ),
-          ],
+  void _openTopCategory(
+    String id,
+    String label,
+    List<Category> categories,
+  ) {
+    setState(() => _topCategory = id);
+
+    if (id == 'all') {
+      widget.controller.selectTab(0);
+      return;
+    }
+
+    if (id == '__new') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ShowcaseScreen(
+            controller: widget.controller,
+            title: label,
+            category: 'all',
+            sort: 'new',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final matched = categories.where((item) => item.id == id).toList();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ShowcaseScreen(
+          controller: widget.controller,
+          title: matched.isEmpty ? label : matched.first.name,
+          category: id,
+          image: matched.isEmpty ? null : matched.first.image,
         ),
       ),
     );
+  }
+
+  String _shape(dynamic raw, {required String fallback}) {
+    final value = (raw ?? fallback).toString().toLowerCase();
+    if (value.contains('circle')) return 'circle';
+    if (value.contains('square')) return 'square';
+    if (value.contains('curv')) return 'curved';
+    if (value.contains('round')) return 'rounded';
+    return fallback;
+  }
+
+  BorderRadius _radius(String shape, double radius) {
+    switch (shape) {
+      case 'circle':
+        return BorderRadius.circular(radius * 2);
+      case 'curved':
+        return BorderRadius.circular(radius);
+      case 'rounded':
+        return BorderRadius.circular(radius * .65);
+      default:
+        return BorderRadius.circular(4);
+    }
   }
 
   Color _parseColor(dynamic raw, Color fallback) {
     final value = raw?.toString() ?? '';
-    if (!value.startsWith('#') || (value.length != 7 && value.length != 9)) return fallback;
-    final hex = value.substring(1);
-    final parsed = int.tryParse(hex, radix: 16);
+    if (!value.startsWith('#') || (value.length != 7 && value.length != 9)) {
+      return fallback;
+    }
+    final parsed = int.tryParse(value.substring(1), radix: 16);
     if (parsed == null) return fallback;
-    return value.length == 9 ? Color(parsed) : Color(0xFF000000 | parsed);
+    return value.length == 9
+        ? Color(parsed)
+        : Color(0xFF000000 | parsed);
   }
+}
+
+class _FeedTab {
+  final String id;
+  final String label;
+  const _FeedTab({required this.id, required this.label});
 }
 
 class _HomeSkeleton extends StatelessWidget {
@@ -809,52 +1074,69 @@ class _HomeSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(10, 12, 10, 20),
+      padding: const EdgeInsets.fromLTRB(10, 12, 10, 28),
       children: [
         const SizedBox(
-          height: 40,
+          height: 250,
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: AppColors.slate100,
-              borderRadius: BorderRadius.all(Radius.circular(20)),
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         const SizedBox(
-          height: 225,
+          height: 116,
           child: DecoratedBox(
-            decoration: BoxDecoration(color: AppColors.slate100),
+            decoration: BoxDecoration(
+              color: AppColors.slate100,
+              borderRadius: BorderRadius.all(Radius.circular(18)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: List.generate(
+            4,
+            (_) => Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: Container(
+                  height: 110,
+                  decoration: BoxDecoration(
+                    color: AppColors.slate100,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 12),
-        for (int row = 0; row < 4; row++)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 5,
+          children: List.generate(
+            10,
+            (_) => const Column(
               children: [
-                Expanded(
-                  child: Container(
-                    height: 220,
-                    decoration: BoxDecoration(
-                      color: AppColors.slate100,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
+                CircleAvatar(
+                  radius: 25,
+                  backgroundColor: AppColors.slate100,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Container(
-                    height: 220,
-                    decoration: BoxDecoration(
-                      color: AppColors.slate100,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
+                SizedBox(height: 5),
+                SizedBox(
+                  width: 45,
+                  height: 9,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(color: AppColors.slate100),
                   ),
                 ),
               ],
             ),
           ),
+        ),
       ],
     );
   }
