@@ -331,7 +331,7 @@ class StoreController extends ChangeNotifier {
     final normalized = value.trim().toUpperCase();
     if (normalized.isEmpty || normalized == currency) return;
     currency = normalized;
-    await cache.writeString('preferred_currency', currency);
+    await cache.saveString('preferred_currency', currency);
     notifyListeners();
   }
 
