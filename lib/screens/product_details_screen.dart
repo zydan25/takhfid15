@@ -82,7 +82,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Future<void> _loadFullProduct() async {
-    if (_detailProduct.gallery.length > 1) return;
     if (_loadingFullProduct) return;
     _loadingFullProduct = true;
     try {
