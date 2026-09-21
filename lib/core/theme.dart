@@ -14,6 +14,7 @@ class AppColors {
   static const page = Color(0xFFF4F4F6);
   static const rose = Color(0xFFE11D48);
   static const roseSoft = Color(0xFFFFF1F2);
+  static const amber = Color(0xFFF59E0B);
   static const emerald = Color(0xFF059669);
   static const white = Color(0xFFFFFFFF);
 }
