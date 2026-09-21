@@ -135,17 +135,24 @@ class SubCategory {
   final String id;
   final String name;
   final String image;
+  final List<String> linkedProductIds;
+
   const SubCategory({
     required this.id,
     required this.name,
     required this.image,
+    this.linkedProductIds = const [],
   });
 
   factory SubCategory.fromJson(Map<String, dynamic> json) {
+    final raw = json['linkedProductIds'] ?? json['productIds'];
     return SubCategory(
       id: (json['id'] ?? '').toString(),
       name: (json['name'] ?? '').toString(),
       image: (json['image'] ?? '').toString(),
+      linkedProductIds: raw is List
+          ? raw.map((value) => value.toString()).toList()
+          : const [],
     );
   }
 }
