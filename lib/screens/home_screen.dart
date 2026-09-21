@@ -1501,6 +1501,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 category: 'all',
                 subCategory: sub.id,
                 image: null,
+                linkedProductIds: sub.linkedProductIds,
               ),
             ),
           ),
