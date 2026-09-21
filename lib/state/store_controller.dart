@@ -332,57 +332,12 @@ class StoreController extends ChangeNotifier {
           final source = byId[product.id];
           if (source == null) return product;
 
-          final sourceGallery = <String>[];
-          for (final key in const [
-            'images',
-            'galleryImages',
-            'gallery',
-            'imageUrls',
-            'photos',
-          ]) {
-            final values = source[key];
-            if (values is List) {
-              sourceGallery.addAll(
-                values
-                    .map((value) => value.toString().trim())
-                    .where((value) => value.isNotEmpty),
-              );
-            }
-          }
-
-          final colorImages = source['colors'];
-          if (colorImages is List) {
-            for (final rawColor in colorImages.whereType<Map>()) {
-              for (final key in const [
-                'image',
-                'imageUrl',
-                'images',
-                'gallery',
-                'galleryImages',
-                'photos',
-                'media',
-              ]) {
-                final values = rawColor[key];
-                if (values is List) {
-                  sourceGallery.addAll(
-                    values
-                        .map((value) => value.toString().trim())
-                        .where((value) => value.isNotEmpty),
-                  );
-                } else if (values != null) {
-                  final value = values.toString().trim();
-                  if (value.isNotEmpty) sourceGallery.add(value);
-                }
-              }
-            }
-          }
-
-          if (sourceGallery.isEmpty) return product;
-          final merged = {
+          // Do not stringify nested media objects here. Product.fromJson owns
+          // media normalization and can recursively read maps/lists/variants.
+          final merged = <String, dynamic>{
+            ...product.serverData,
             ...source,
             'id': product.id,
-            'image': source['image'] ?? product.image,
-            'galleryImages': sourceGallery,
           };
           return Product.fromJson(merged);
         }).toList();
