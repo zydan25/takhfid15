@@ -5,6 +5,7 @@ import '../core/theme.dart';
 import '../models/content.dart';
 import '../models/product.dart';
 import '../state/store_controller.dart';
+import '../widgets/product_card.dart';
 import 'product_details_screen.dart';
 import 'search_screen.dart';
 
