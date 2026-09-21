@@ -1211,6 +1211,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _product(Product product, int index) {
     return ProductCard(
       product: product,
+      currencyLabel: widget.controller.currency,
+      pricing: widget.controller.pricing,
       index: index,
       wishlisted: widget.controller.isWishlisted(product),
       onOpen: () => Navigator.push(
