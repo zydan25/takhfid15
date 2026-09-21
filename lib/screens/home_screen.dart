@@ -184,8 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: tabs.map((tab) {
-                          final active = tab.id == _topCategory ||
-                              (_topCategory == 'all' && tab.categoryId == 'all');
+                          final active = tab.id == _topCategory;
                           return GestureDetector(
                             onTap: () => _openTopCategory(tab),
                             child: Container(
