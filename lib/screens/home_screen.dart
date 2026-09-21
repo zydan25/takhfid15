@@ -528,7 +528,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Text(
                             benefit,
                             style: const TextStyle(
-                              color: AppColors.green,
+                              color: AppColors.emerald,
                               fontSize: 8,
                               fontWeight: FontWeight.w900,
                             ),
@@ -732,10 +732,9 @@ class _HomeScreenState extends State<HomeScreen> {
               : configuredSize == 'large'
                   ? 75.0
                   : 66.0;
-          final dimension = rawDimension.clamp(
-            48.0,
-            (MediaQuery.sizeOf(context).width - 42) / 5,
-          );
+          final dimension = rawDimension
+              .clamp(48.0, (MediaQuery.sizeOf(context).width - 42) / 5)
+              .toDouble();
 
           return GestureDetector(
             onTap: () {
