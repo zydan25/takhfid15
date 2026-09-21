@@ -142,10 +142,12 @@ class _HomeScreenState extends State<HomeScreen> {
               if (banner != null && (banner.title.isNotEmpty || banner.subtitle.isNotEmpty))
                 Positioned(
                   right: 16,
-                  left: 16,
-                  bottom: 30,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  left: 24,
+                  bottom: 34,
+                  child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       if (banner.badge.isNotEmpty)
                         Container(
@@ -208,7 +210,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
 
@@ -246,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Server-driven top category navigation, over the banner.
               if (tabs.isNotEmpty)
                 Positioned(
-                  top: width * .19,
+                  top: width * .245,
                   left: 0,
                   right: 0,
                   child: SizedBox(
@@ -279,24 +282,68 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                               ),
-                              child: Text(
-                                tab.label,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11.5,
-                                  fontWeight: active
-                                      ? FontWeight.w900
-                                      : FontWeight.w800,
-                                  height: 1,
-                                  shadows: const [
-                                    Shadow(
-                                      color: Color(0x70000000),
-                                      blurRadius: 4,
-                                      offset: Offset(0, 1),
+                              child: tab.id == 'all'
+                                  ? Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFF385C),
+                                            borderRadius: BorderRadius.circular(5),
+                                          ),
+                                          child: const Text(
+                                            'شامل',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 6.5,
+                                              fontWeight: FontWeight.w900,
+                                              height: 1,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'كل',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11.5,
+                                            fontWeight: active
+                                                ? FontWeight.w900
+                                                : FontWeight.w800,
+                                            height: 1,
+                                            shadows: const [
+                                              Shadow(
+                                                color: Color(0x70000000),
+                                                blurRadius: 4,
+                                                offset: Offset(0, 1),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Text(
+                                      tab.label,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11.5,
+                                        fontWeight: active
+                                            ? FontWeight.w900
+                                            : FontWeight.w800,
+                                        height: 1,
+                                        shadows: const [
+                                          Shadow(
+                                            color: Color(0x70000000),
+                                            blurRadius: 4,
+                                            offset: Offset(0, 1),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ],
-                                ),
-                              ),
                             ),
                           );
                           }).toList(),
@@ -1414,12 +1461,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           child: SizedBox(
-            width: 59,
+            width: 70,
             child: Column(
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 54,
+                  height: 54,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.slate100,
@@ -1481,7 +1528,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final secondRow = items.skip(5).toList();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 1, 4, 6),
+      padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
       child: Column(
         children: [
           row(firstRow),
