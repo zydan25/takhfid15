@@ -20,38 +20,25 @@ class ShellScreen extends StatelessWidget {
         return Scaffold(
           body: AnnotatedRegion<SystemUiOverlayStyle>(
             value: const SystemUiOverlayStyle(
-              statusBarColor: Colors.transparent,
+              statusBarColor: Colors.white,
               statusBarIconBrightness: Brightness.dark,
               statusBarBrightness: Brightness.light,
               systemNavigationBarColor: Colors.white,
               systemNavigationBarIconBrightness: Brightness.dark,
               systemNavigationBarDividerColor: Colors.white,
             ),
-            child: IndexedStack(
-              index: controller.tabIndex,
-              children: [
-                HomeScreen(controller: controller),
-                SafeArea(
-                  top: true,
-                  bottom: false,
-                  child: CategoriesScreen(controller: controller),
-                ),
-                SafeArea(
-                  top: true,
-                  bottom: false,
-                  child: TrendsScreen(controller: controller),
-                ),
-                SafeArea(
-                  top: true,
-                  bottom: false,
-                  child: CartScreen(controller: controller),
-                ),
-                SafeArea(
-                  top: true,
-                  bottom: false,
-                  child: AccountScreen(controller: controller),
-                ),
-              ],
+            child: SafeArea(
+              bottom: false,
+              child: IndexedStack(
+                index: controller.tabIndex,
+                children: [
+                  HomeScreen(controller: controller),
+                  CategoriesScreen(controller: controller),
+                  TrendsScreen(controller: controller),
+                  CartScreen(controller: controller),
+                  AccountScreen(controller: controller),
+                ],
+              ),
             ),
           ),
           bottomNavigationBar: SafeArea(
