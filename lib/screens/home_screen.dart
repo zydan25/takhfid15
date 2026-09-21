@@ -767,56 +767,81 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _promoStrip() {
     final width = MediaQuery.sizeOf(context).width;
-    Map<String, dynamic> readMap(dynamic value) {
-      if (value is Map) return Map<String, dynamic>.from(value);
-      return <String, dynamic>{};
+
+    Map<String, dynamic> mapOf(dynamic value) {
+      return value is Map
+          ? Map<String, dynamic>.from(value)
+          : <String, dynamic>{};
     }
 
-    var data = widget.controller.announcements.isNotEmpty
-        ? Map<String, dynamic>.from(widget.controller.announcements)
-        : readMap(widget.controller.storeConfig['announcements']);
+    var data = mapOf(widget.controller.announcements);
 
-    // Some server builds nest announcements under content.
-    if (data['screens'] is! List) {
-      final nested = readMap(widget.controller.storeConfig['content']);
-      final nestedAnnouncements = readMap(nested['announcements']);
-      if (nestedAnnouncements.isNotEmpty) {
-        data = nestedAnnouncements;
+    if (data.isEmpty) {
+      data = mapOf(widget.controller.storeConfig['announcements']);
+    }
+
+    if (data.isEmpty) {
+      final content = mapOf(widget.controller.storeConfig['content']);
+      data = mapOf(content['announcements']);
+      if (data.isEmpty) {
+        data = mapOf(content['announcementSettings']);
       }
     }
 
-    if (data.isEmpty || data['isEnabled'] == false) {
+    if (data.isEmpty) {
+      data = <String, dynamic>{
+        'isEnabled': true,
+        'autoFlip': false,
+        'screens': widget.controller.storeConfig['couponScreens'] is List
+            ? widget.controller.storeConfig['couponScreens']
+            : const [],
+      };
+    }
+
+    // Some server deployments return a single coupon list rather than screens.
+    if (data['screens'] is! List && data['coupons'] is List) {
+      data = {
+        ...data,
+        'screens': [
+          {
+            ...data,
+            'isActive': true,
+            'coupons': data['coupons'],
+          },
+        ],
+      };
+    }
+
+    if (data['isEnabled'] == false) {
       return const SizedBox.shrink();
     }
 
-    final rawScreens = data['screens'];
-    final screens = rawScreens is List
-        ? rawScreens
+    final screens = data['screens'] is List
+        ? (data['screens'] as List)
             .whereType<Map>()
             .map((item) => Map<String, dynamic>.from(item))
             .where((item) => item['isActive'] != false)
             .toList()
         : <Map<String, dynamic>>[];
 
-    if (screens.isEmpty) return const SizedBox.shrink();
+    if (screens.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     screens.sort(
-      (a, b) =>
-          ((a['order'] is num) ? a['order'] as num : 0)
-              .compareTo((b['order'] is num) ? b['order'] as num : 0),
+      (a, b) => ((a['order'] is num) ? a['order'] as num : 0)
+          .compareTo((b['order'] is num) ? b['order'] as num : 0),
     );
 
-    final index =
-        data['autoFlip'] == true ? _promoIndex % screens.length : 0;
-    final raw = screens[index];
+    final autoFlip = data['autoFlip'] == true;
+    final screenIndex = autoFlip ? _promoIndex % screens.length : 0;
+    final raw = screens[screenIndex];
 
     if (_promoTimer == null &&
-        screens.length > 1 &&
-        data['autoFlip'] != false) {
+        autoFlip &&
+        screens.length > 1) {
       WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _restartPromoTimer(
-          screens.length,
-        ),
+        (_) => _restartPromoTimer(screens.length),
       );
     }
 
@@ -846,7 +871,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final subtitle =
         (raw['subTitle'] ?? raw['subtitle'] ?? 'عروض جيدة').toString();
 
-    final rawCoupons = raw['coupons'] ?? raw['offers'] ?? raw['discounts'];
+    final rawCoupons =
+        raw['coupons'] ?? raw['offers'] ?? raw['discounts'];
     final coupons = rawCoupons is List
         ? rawCoupons
             .whereType<Map>()
@@ -858,11 +884,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 4),
       child: Container(
-        height: width * .15,
-        padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
+        height: 108,
+        padding: const EdgeInsets.fromLTRB(7, 5, 7, 5),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(13),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: border, width: 1.2),
         ),
         child: Stack(
@@ -875,7 +901,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(
                   width: width * .20,
                   child: Padding(
-                    padding: EdgeInsets.only(top: badge.isNotEmpty ? 11 : 0),
+                    padding: EdgeInsets.only(
+                      top: badge.isNotEmpty ? 11 : 0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -887,11 +915,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           textAlign: TextAlign.right,
                           style: TextStyle(
                             color: textColor,
-                            fontSize: 11.5,
+                            fontSize: 12,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 4),
                         Text(
                           subtitle,
                           maxLines: 1,
@@ -899,7 +927,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           textAlign: TextAlign.right,
                           style: TextStyle(
                             color: textColor.withOpacity(.82),
-                            fontSize: 10.5,
+                            fontSize: 9,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -909,82 +937,88 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(width: 7),
                 Expanded(
-                  child: Row(
+                  child: Directionality(
                     textDirection: TextDirection.rtl,
-                    children: [
-                      for (var i = 0; i < coupons.length; i++) ...[
-                        if (i > 0) const SizedBox(width: 7),
-                        Expanded(
+                    child: Row(
+                      children: coupons.map((coupon) {
+                        final discount =
+                            (coupon['discount'] ??
+                                    coupon['discountText'] ??
+                                    coupon['title'] ??
+                                    '')
+                                .toString();
+                        final minimum =
+                            (coupon['minSpend'] ??
+                                    coupon['minOrder'] ??
+                                    coupon['minimum'] ??
+                                    '')
+                                .toString();
+
+                        return Expanded(
                           child: Container(
-                            height: width * .114,
-                            padding: const EdgeInsets.fromLTRB(6, 7, 6, 5),
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            height: 84,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 7,
+                            ),
                             decoration: BoxDecoration(
                               color: cardBg,
                               borderRadius: BorderRadius.circular(17),
                               border: Border.all(
-                                color: border.withOpacity(.8),
+                                color: border.withOpacity(.82),
                               ),
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  (coupons[i]['discount'] ??
-                                          coupons[i]['discountText'] ??
-                                          '')
-                                      .toString(),
+                                  discount,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: textColor,
-                                    fontSize: 12,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  (coupons[i]['minSpend'] ??
-                                          coupons[i]['minOrder'] ??
-                                          coupons[i]['minimum'] ??
-                                          '')
-                                      .toString(),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: textColor.withOpacity(.82),
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w700,
+                                if (minimum.isNotEmpty) ...[
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    minimum,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: textColor.withOpacity(.84),
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
                           ),
-                        ),
-                      ],
-                    ],
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
               ],
             ),
             if (badge.isNotEmpty)
               Positioned(
-                right: 5,
-                top: -12,
+                right: 7,
+                top: -8,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: badgeBg,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: badgeBg.withOpacity(.18),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(9),
                   ),
                   child: Text(
                     badge,
