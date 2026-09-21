@@ -293,7 +293,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
   }
 
   Widget _statusBadge(String status) {
-    final data = <String, dynamic>{
+    final data = <String, (String, IconData)>{
       'preparing': ('جاري التجهيز بالمستودع', Icons.inventory_2_outlined),
       'in_shipping': ('جاري الشحن والتوصيل', Icons.local_shipping_outlined),
       'delivered': ('تم التوصيل بنجاح', Icons.check_circle_outline_rounded),
@@ -314,13 +314,13 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            value.$2 as IconData,
+            value.$2,
             size: 13,
             color: AppColors.ink,
           ),
           const SizedBox(width: 4),
           Text(
-            value.$1 as String,
+            value.$1,
             style: const TextStyle(
               fontSize: 7.5,
               fontWeight: FontWeight.w900,
