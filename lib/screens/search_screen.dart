@@ -104,6 +104,8 @@ class _SearchScreenState extends State<SearchScreen> {
                     final product = items[index];
                     return ProductCard(
                       product: product,
+      currencyLabel: widget.controller.currency,
+      pricing: widget.controller.pricing,
                       index: index,
                       wishlisted:
                           widget.controller.isWishlisted(product),
