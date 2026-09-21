@@ -112,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         radius: 23,
                         backgroundColor: AppColors.black,
                         child: Text(
-                          firstName.text.isEmpty ? 'أ' : firstName.text.characters.first,
+                          firstName.text.isEmpty ? 'أ' : firstName.text.substring(0, 1),
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
