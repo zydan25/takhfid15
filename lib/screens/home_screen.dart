@@ -559,7 +559,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   : item is SubCategory
                       ? item.image
                       : '';
-              final selected = id == selectedId;
+              final selected = id == selectedId || (item is StyleTab && item.name == selectedId);
 
               return GestureDetector(
                 onTap: () => onTap(item),
