@@ -82,19 +82,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _heroHeader(List<BannerItem> banners, List<Category> categories) {
     final width = MediaQuery.sizeOf(context).width;
-    final bannerHeight = (width * .62).clamp(220.0, 390.0).toDouble();
-    final byId = <String, Category>{
-      for (final category in categories) category.id: category,
-    };
-    final shownTabs = <Map<String, String>>[
-      {'id': 'all', 'label': 'كل شامل'},
-      if (byId.containsKey('women')) {'id': 'women', 'label': 'نساء'},
-      if (byId.containsKey('men')) {'id': 'men', 'label': 'رجال'},
-      {'id': '__new', 'label': 'أحدث'},
-      if (byId.containsKey('bags')) {'id': 'bags', 'label': 'حقائب'},
-      if (byId.containsKey('accessories'))
-        {'id': 'accessories', 'label': 'إكسسوارات'},
-    ];
+    final bannerHeight = (width * .60).clamp(210.0, 370.0).toDouble();
+    final tabs = widget.controller.homeTopTabs;
     final banner = banners.isEmpty
         ? null
         : banners[_bannerIndex.clamp(0, banners.length - 1)];
@@ -109,53 +98,53 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Container(
           color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 7),
           child: _floatingTopBar(),
         ),
-        Container(
-          height: 48,
-          color: Colors.white,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            reverse: true,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              children: shownTabs.map((tab) {
-                final active = tab['id'] == _topCategory;
-                return GestureDetector(
-                  onTap: () => _openTopCategory(
-                    tab['id']!,
-                    tab['label']!,
-                    categories,
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 9),
-                    padding: const EdgeInsets.only(bottom: 8),
-                    decoration: BoxDecoration(
-                      border: active
-                          ? const Border(
-                              bottom: BorderSide(
-                                color: Colors.black,
-                                width: 2.2,
-                              ),
-                            )
-                          : null,
-                    ),
-                    child: Text(
-                      tab['label']!,
-                      style: TextStyle(
-                        color: active ? Colors.black : AppColors.slate500,
-                        fontSize: active ? 14 : 13,
-                        fontWeight:
-                            active ? FontWeight.w900 : FontWeight.w700,
+        // The home navigation is server-driven. The fallback is generated
+        // from server categories inside StoreController.
+        if (tabs.isNotEmpty)
+          Container(
+            height: 45,
+            width: double.infinity,
+            color: Colors.black,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              reverse: true,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 7),
+              child: Row(
+                children: tabs.map((tab) {
+                  final active = tab.id == _topCategory ||
+                      (_topCategory == 'all' && tab.categoryId == 'all');
+                  return GestureDetector(
+                    onTap: () => _openTopCategory(tab),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 7),
+                      padding: const EdgeInsets.fromLTRB(5, 5, 5, 7),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: active ? Colors.white : Colors.transparent,
+                            width: active ? 2.2 : 0,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        tab.label,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: active ? 13 : 12,
+                          fontWeight:
+                              active ? FontWeight.w900 : FontWeight.w700,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
-        ),
         SizedBox(
           height: bannerHeight,
           child: Stack(
@@ -167,8 +156,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: CachedNetworkImage(
                     imageUrl: banner.image,
                     fit: BoxFit.cover,
-                    errorWidget: (_, __, ___) =>
-                        const ColoredBox(color: AppColors.ink),
+                    placeholder: (_, __) => const ColoredBox(
+                      color: AppColors.slate100,
+                    ),
+                    errorWidget: (_, __, ___) => const ColoredBox(
+                      color: AppColors.ink,
+                      child: Center(
+                        child: Icon(
+                          Icons.image_outlined,
+                          color: Colors.white54,
+                          size: 34,
+                        ),
+                      ),
+                    ),
                   ),
                 )
               else
@@ -179,9 +179,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0x18000000),
-                      Color(0x18000000),
-                      Color(0xAA000000),
+                      Color(0x08000000),
+                      Color(0x15000000),
+                      Color(0xB8000000),
                     ],
                   ),
                 ),
@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Positioned(
                   right: 0,
                   left: 0,
-                  bottom: 9,
+                  bottom: 8,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
@@ -199,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       (index) => AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
                         margin: const EdgeInsets.symmetric(horizontal: 2),
-                        width: index == _bannerIndex ? 24 : 6,
+                        width: index == _bannerIndex ? 22 : 5,
                         height: 4,
                         decoration: BoxDecoration(
                           color: index == _bannerIndex
@@ -213,16 +213,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               if (banners.length > 1) ...[
                 Positioned(
-                  left: 9,
-                  top: bannerHeight / 2 - 20,
+                  left: 8,
+                  top: bannerHeight / 2 - 19,
                   child: _bannerArrow(
                     Icons.chevron_left_rounded,
                     () => _changeBanner(-1, banners.length),
                   ),
                 ),
                 Positioned(
-                  right: 9,
-                  top: bannerHeight / 2 - 20,
+                  right: 8,
+                  top: bannerHeight / 2 - 19,
                   child: _bannerArrow(
                     Icons.chevron_right_rounded,
                     () => _changeBanner(1, banners.length),
@@ -380,17 +380,11 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) =>
-                  WishlistScreen(controller: widget.controller),
+              builder: (_) => WishlistScreen(controller: widget.controller),
             ),
           ),
         ),
         const SizedBox(width: 6),
-        _roundAction(
-          icon: Icons.grid_view_rounded,
-          onTap: () => widget.controller.selectTab(1),
-        ),
-        const SizedBox(width: 8),
         Expanded(
           child: Material(
             color: Colors.transparent,
@@ -398,49 +392,45 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      SearchScreen(controller: widget.controller),
+                  builder: (_) => SearchScreen(controller: widget.controller),
                 ),
               ),
-              borderRadius: BorderRadius.circular(17),
+              borderRadius: BorderRadius.circular(24),
               child: Container(
-                height: 56,
-                padding: const EdgeInsets.symmetric(horizontal: 13),
+                height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 11),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.96),
-                  borderRadius: BorderRadius.circular(17),
+                  color: AppColors.slate50,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.slate200),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(.10),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withOpacity(.06),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
                 child: const Row(
                   children: [
-                    Icon(
-                      Icons.search,
-                      size: 26,
-                      color: AppColors.ink,
-                    ),
-                    SizedBox(width: 10),
+                    Icon(Icons.search_rounded, size: 23, color: AppColors.ink),
+                    SizedBox(width: 9),
                     Expanded(
                       child: Text(
-                        'ابحث عن موديل، لون، مقاس...',
+                        'ابحث عن فساتين، أحذية، ملابس أو عروض...',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: AppColors.slate500,
-                          fontSize: 12,
+                          fontSize: 10,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                     Icon(
                       Icons.photo_camera_outlined,
-                      size: 24,
+                      size: 22,
                       color: AppColors.slate500,
                     ),
                   ],
@@ -449,7 +439,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
+        _roundAction(
+          icon: Icons.shopping_bag_outlined,
+          onTap: () => widget.controller.selectTab(3),
+        ),
+        const SizedBox(width: 5),
         _roundAction(
           icon: Icons.notifications_none_rounded,
           onTap: () => Navigator.push(
@@ -487,76 +482,132 @@ class _HomeScreenState extends State<HomeScreen> {
     final data = widget.controller.announcements;
     if (data['isEnabled'] == false) return const SizedBox.shrink();
 
-    final screens = <Map<String, dynamic>>[];
     final rawScreens = data['screens'];
-    if (rawScreens is List) {
-      screens.addAll(
-        rawScreens
+    final screens = rawScreens is List
+        ? rawScreens
             .whereType<Map>()
             .map((item) => Map<String, dynamic>.from(item))
-            .where((item) => item['isActive'] != false),
-      );
-    }
+            .where((item) => item['isActive'] != false)
+            .toList()
+        : <Map<String, dynamic>>[];
 
-    if (screens.isEmpty) {
-      screens.addAll([
-        {
-          'id': 'screen-1-coupons',
-          'badgeText': 'للمستخدمين الجدد فقط',
-          'mainTitle': 'قسائم حصرية',
-          'subTitle': 'عروض جيدة',
-          'coupons': [
-            {
-              'code': 'NEW30',
-              'discount': 'خصم 30%',
-              'minSpend': 'أكثر من SR149',
-            },
-            {
-              'code': 'NEW25',
-              'discount': 'خصم 25%',
-              'minSpend': 'أكثر من SR379',
-            },
-          ],
-          'backgroundColor': '#FEF6EE',
-          'cardBackgroundColor': '#FFF0F2',
-          'textColor': '#9F1239',
-          'badgeBackgroundColor': '#FF385C',
-          'borderColor': '#FED7AA',
-        },
-        {
-          'id': 'screen-2-shipping',
-          'badgeText': 'شحن سريع وآمن ⚡',
-          'mainTitle': 'شحن مجاني',
-          'subTitle': 'تسليم سريع لباب منزلك',
-          'coupons': [
-            {
-              'code': 'FREESHIP',
-              'discount': 'شحن مجاني',
-              'minSpend': 'للطلبات فوق SR199',
-            },
-            {
-              'code': 'FAST48',
-              'discount': 'توصيل خلال 48 س',
-              'minSpend': 'تتبع لحظي مضمون 🛡️',
-            },
-          ],
-          'backgroundColor': '#E2EFDA',
-          'cardBackgroundColor': '#D9EAD3',
-          'textColor': '#1B5E20',
-          'badgeBackgroundColor': '#166534',
-          'borderColor': '#A9D08E',
-        },
-      ]);
-    }
+    if (screens.isEmpty) return const SizedBox.shrink();
 
-    final safeIndex = _promoIndex.clamp(0, screens.length - 1).toInt();
-    if (screens.length > 1 && _promoTimer == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _restartPromoTimer(screens.length));
-    }
-
+    // Compact reference-style offer cards: two columns on one row.
+    final visible = screens.take(2).toList();
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 11, 18, 7),
-      child: _promoCard(screens[safeIndex]),
+      padding: const EdgeInsets.fromLTRB(9, 7, 9, 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < visible.length; i++) ...[
+            if (i > 0) const SizedBox(width: 6),
+            Expanded(child: _promoMiniCard(visible[i])),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _promoMiniCard(Map<String, dynamic> raw) {
+    final bg = _parseColor(
+      raw['backgroundColor'],
+      const Color(0xFFFFF8F1),
+    );
+    final text = _parseColor(
+      raw['textColor'],
+      const Color(0xFF9A2041),
+    );
+    final border = _parseColor(
+      raw['borderColor'],
+      const Color(0xFFF2D6B2),
+    );
+    final badge = (raw['badgeText'] ?? raw['badge'] ?? '').toString();
+    final title = (raw['mainTitle'] ?? raw['title'] ?? '').toString();
+    final couponRaw = raw['coupons'] ?? raw['offers'] ?? raw['discounts'];
+    final coupons = couponRaw is List
+        ? couponRaw.whereType<Map>().toList()
+        : const <Map>[];
+    final firstCoupon = coupons.isEmpty
+        ? const <String, dynamic>{}
+        : Map<String, dynamic>.from(coupons.first);
+    final discount =
+        (firstCoupon['discount'] ?? firstCoupon['discountText'] ?? '').toString();
+    final minSpend =
+        (firstCoupon['minSpend'] ?? firstCoupon['minOrder'] ?? firstCoupon['minimum'] ?? '').toString();
+
+    return Container(
+      height: 92,
+      padding: const EdgeInsets.fromLTRB(8, 7, 8, 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  badge.isEmpty ? title : badge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: text,
+                    fontSize: 8,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const Icon(Icons.local_offer_outlined, size: 13),
+            ],
+          ),
+          const SizedBox(height: 3),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: text,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const Spacer(),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  discount.isEmpty ? 'عرض متاح' : discount,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: text,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              if (minSpend.isNotEmpty)
+                Flexible(
+                  child: Text(
+                    minSpend,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      color: text.withOpacity(.72),
+                      fontSize: 7,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -795,56 +846,46 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _looksSection(StoreController c) {
-    final allMatches = c.categories
-        .where((category) => category.id == 'all')
-        .toList();
+    final allMatches = c.categories.where((x) => x.id == 'all').toList();
     final allCategory = allMatches.isEmpty ? null : allMatches.first;
-
     final source = allCategory?.styleTabs ?? c.homeStyleTabs;
-    const preferred = <String>[
-      'إطلالات يومية',
-      'محتشمة',
-      'عمل',
-      'حفلات',
-    ];
+    if (source.isEmpty) return const SizedBox.shrink();
 
+    final preferred = <String>['إطلالات يومية', 'محتشمة', 'عمل', 'حفلات'];
     final styles = <StyleTab>[];
     for (final name in preferred) {
-      final found = source.where((item) => item.name == name);
+      final found = source.where((x) => x.name == name);
       if (found.isNotEmpty) styles.add(found.first);
     }
     for (final style in source) {
       if (styles.length >= 4) break;
-      if (!styles.any((item) => item.id == style.id)) {
-        styles.add(style);
-      }
+      if (!styles.any((x) => x.id == style.id)) styles.add(style);
     }
 
-    if (styles.isEmpty) return const SizedBox.shrink();
-
     final width = MediaQuery.sizeOf(context).width;
-    final cardWidth = ((width - 100) / 4).clamp(125.0, 154.0).toDouble();
+    final cardWidth = ((width - 92) / 4).clamp(86.0, 112.0).toDouble();
     final shape = _shape(c.styleTabsConfig['shape'], fallback: 'rounded');
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(11, 8, 11, 5),
+      padding: const EdgeInsets.fromLTRB(9, 5, 9, 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(3, 2, 3, 8),
+            padding: EdgeInsets.fromLTRB(3, 2, 3, 6),
             child: Text(
               'إطلالات من أجلك',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
             ),
           ),
           SizedBox(
-            height: 144,
+            height: 126,
             child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 7),
               scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
               itemCount: styles.take(4).length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, __) => const SizedBox(width: 7),
               itemBuilder: (_, index) {
                 final style = styles[index];
                 return GestureDetector(
@@ -862,26 +903,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: SizedBox(
                     width: cardWidth,
-                    height: 140,
+                    height: 120,
                     child: ClipRRect(
-                      borderRadius: _radius(shape, 23),
+                      borderRadius: _radius(shape, 18),
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          if (style.image.isNotEmpty)
-                            CachedNetworkImage(
-                              imageUrl: style.image,
-                              fit: BoxFit.cover,
-                              errorWidget: (_, __, ___) => const ColoredBox(
-                                color: AppColors.slate100,
-                                child: Icon(Icons.image_outlined),
-                              ),
-                            )
-                          else
-                            const ColoredBox(
-                              color: AppColors.slate100,
-                              child: Icon(Icons.auto_awesome_outlined),
-                            ),
+                          style.image.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: style.image,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, __, ___) =>
+                                      const ColoredBox(color: AppColors.slate100),
+                                )
+                              : const ColoredBox(color: AppColors.slate100),
                           const Align(
                             alignment: Alignment.bottomCenter,
                             child: DecoratedBox(
@@ -897,14 +932,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               child: SizedBox(
                                 width: double.infinity,
-                                height: 53,
+                                height: 43,
                               ),
                             ),
                           ),
                           Positioned(
-                            right: 7,
-                            left: 7,
-                            bottom: 9,
+                            right: 5,
+                            left: 5,
+                            bottom: 7,
                             child: Text(
                               style.name,
                               maxLines: 2,
@@ -912,7 +947,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 10,
+                                fontSize: 9,
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
@@ -931,120 +966,124 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _categoriesGrid(StoreController c) {
-    final allMatches = c.categories
-        .where((category) => category.id == 'all')
-        .toList();
-    final allCategory = allMatches.isEmpty ? null : allMatches.first;
-    if (allCategory == null || allCategory.subCategories.isEmpty) {
+    final all = c.categories.where((x) => x.id == 'all').toList();
+    final category = all.isEmpty ? null : all.first;
+    if (category == null || category.subCategories.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final wanted = <Map<String, String>>[
-      {'id': 'all-dresses', 'label': 'فساتين'},
-      {'id': 'all-tops', 'label': 'ملابس علوية'},
-      {'id': 'all-tees', 'label': 'تيشيرتات'},
-      {'id': 'all-blouses', 'label': 'بليزر'},
-      {'id': 'all-suits', 'label': 'بدلات'},
-      {'id': 'all-pants', 'label': 'بناطيل'},
-      {'id': 'all-sweaters', 'label': 'بلايز ثقيلة'},
-      {'id': 'all-jackets', 'label': 'معاطف وجاكيتات'},
-      {'id': 'all-arabic', 'label': 'ملابس عربية'},
-      {'id': 'all-denim', 'label': 'الدنيم'},
-    ];
-
     final lookup = <String, SubCategory>{
-      for (final item in allCategory.subCategories) item.id: item,
+      for (final item in category.subCategories) item.id: item,
     };
-    final items = wanted
-        .where((item) => lookup.containsKey(item['id']))
-        .map((item) {
-          final source = lookup[item['id']]!;
-          return SubCategory(
-            id: source.id,
-            name: item['label']!,
-            image: source.image,
-          );
-        })
+    final wantedIds = <String>[
+      'all-dresses',
+      'all-tops',
+      'all-tees',
+      'all-blouses',
+      'all-suits',
+      'all-pants',
+      'all-sweaters',
+      'all-jackets',
+      'all-arabic',
+      'all-denim',
+    ];
+    final items = wantedIds
+        .where(lookup.containsKey)
+        .map((id) => lookup[id]!)
         .toList();
-
     if (items.isEmpty) return const SizedBox.shrink();
 
-    Widget tile(SubCategory sub) {
-      return GestureDetector(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ShowcaseScreen(
-              controller: c,
-              title: sub.name,
-              category: 'all',
-              subCategory: sub.id,
-              image: sub.image,
+    Widget tile(SubCategory sub) => GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ShowcaseScreen(
+                controller: c,
+                title: sub.name,
+                category: 'all',
+                subCategory: sub.id,
+                image: sub.image,
+              ),
             ),
           ),
-        ),
-        child: SizedBox(
-          width: 74,
-          child: Column(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.slate100,
+          child: SizedBox(
+            width: 69,
+            child: Column(
+              children: [
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.slate100,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: sub.image.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: sub.image,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) =>
+                              const Icon(Icons.category_outlined, color: AppColors.slate400),
+                        )
+                      : const Icon(Icons.category_outlined, color: AppColors.slate400),
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: sub.image.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: sub.image,
-                        fit: BoxFit.cover,
-                      )
-                    : const Icon(
-                        Icons.category_outlined,
-                        color: AppColors.slate400,
-                      ),
-              ),
-              const SizedBox(height: 4),
-              SizedBox(
-                height: 27,
-                child: Text(
-                  sub.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 9,
-                    height: 1.03,
+                const SizedBox(height: 3),
+                SizedBox(
+                  height: 25,
+                  child: Text(
+                    sub.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 8,
+                      height: 1.05,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+
+    Widget row(List<SubCategory> values) => SizedBox(
+          height: 82,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 7),
+            scrollDirection: Axis.horizontal,
+            reverse: true,
+            physics: const BouncingScrollPhysics(),
+            itemCount: values.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 1),
+            itemBuilder: (_, i) => tile(values[i]),
+          ),
+        );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 2, 4, 6),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(5, 1, 5, 3),
+            child: Row(
+              children: [
+                const Text(
+                  'التصنيفات',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
+                ),
+                const Spacer(),
+                Text(
+                  'اسحب للتصفح',
+                  style: TextStyle(
+                    fontSize: 8,
+                    color: AppColors.slate400,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      );
-    }
-
-    Widget row(List<SubCategory> values) {
-      return SizedBox(
-        height: 98,
-        child: ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          scrollDirection: Axis.horizontal,
-          reverse: true,
-          physics: const BouncingScrollPhysics(),
-          itemCount: values.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 3),
-          itemBuilder: (_, index) => tile(values[index]),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(5, 4, 5, 9),
-      child: Column(
-        children: [
           row(items.take(5).toList()),
           if (items.length > 5) row(items.skip(5).take(5).toList()),
         ],
@@ -1211,26 +1250,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _openTopCategory(
-    String id,
-    String label,
-    List<Category> categories,
-  ) {
-    setState(() => _topCategory = id);
+  void _openTopCategory(HomeTopTab tab) {
+    setState(() => _topCategory = tab.id);
 
-    if (id == 'all') {
-      widget.controller.selectTab(0);
-      return;
-    }
-
-    if (id == '__new') {
+    if (tab.targetType == 'new' || tab.id == '__new') {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => ShowcaseScreen(
             controller: widget.controller,
-            title: label,
-            category: 'all',
+            title: tab.label,
+            category: tab.categoryId.isEmpty ? 'all' : tab.categoryId,
             sort: 'new',
           ),
         ),
@@ -1238,14 +1268,50 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    final matched = categories.where((item) => item.id == id).toList();
+    if (tab.targetType == 'style') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ShowcaseScreen(
+            controller: widget.controller,
+            title: tab.label,
+            category: tab.categoryId,
+            styleTab: tab.styleTab.isEmpty ? tab.label : tab.styleTab,
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (tab.targetType == 'trend') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ShowcaseScreen(
+            controller: widget.controller,
+            title: tab.label,
+            category: tab.categoryId.isEmpty ? 'all' : tab.categoryId,
+            trend: tab.trend.isEmpty ? null : tab.trend,
+          ),
+        ),
+      );
+      return;
+    }
+
+    final categoryId =
+        tab.categoryId.isEmpty ? tab.id : tab.categoryId;
+    final matched = widget.controller.categories
+        .where((item) => item.id == categoryId)
+        .toList();
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ShowcaseScreen(
           controller: widget.controller,
-          title: label,
-          category: id,
+          title: tab.label,
+          category: categoryId,
+          subCategory: tab.subCategoryId.isEmpty ? null : tab.subCategoryId,
           image: matched.isEmpty ? null : matched.first.image,
         ),
       ),
