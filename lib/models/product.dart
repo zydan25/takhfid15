@@ -23,6 +23,8 @@ class Product {
   final String? videoUrl;
   final List<String> trends;
   final String sku;
+  /// Full server payload preserved so new backend fields never get discarded.
+  final Map<String, dynamic> serverData;
 
   const Product({
     required this.id,
@@ -49,6 +51,7 @@ class Product {
     required this.videoUrl,
     this.trends = const [],
     required this.sku,
+    this.serverData = const {},
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -112,26 +115,41 @@ class Product {
     ];
 
     final gallery = <String>[];
-    for (final candidate in galleryCandidates) {
+
+    void addMedia(dynamic candidate) {
       if (candidate is List) {
         for (final item in candidate) {
-          if (item is Map) {
-            final value = item['url'] ??
-                item['image'] ??
-                item['imageUrl'] ??
-                item['src'];
-            final normalized = cleanImage(value);
-            if (normalized.isNotEmpty && !gallery.contains(normalized)) {
-              gallery.add(normalized);
-            }
-          } else {
-            final normalized = cleanImage(item);
-            if (normalized.isNotEmpty && !gallery.contains(normalized)) {
-              gallery.add(normalized);
-            }
+          addMedia(item);
+        }
+        return;
+      }
+      if (candidate is Map) {
+        // API variants commonly expose nested images under these names.
+        for (final key in const [
+          'url',
+          'image',
+          'imageUrl',
+          'src',
+          'original',
+          'thumbnail',
+          'images',
+          'media',
+        ]) {
+          final value = candidate[key];
+          if (value != null) {
+            addMedia(value);
           }
         }
+        return;
       }
+      final normalized = cleanImage(candidate);
+      if (normalized.isNotEmpty && !gallery.contains(normalized)) {
+        gallery.add(normalized);
+      }
+    }
+
+    for (final candidate in galleryCandidates) {
+      addMedia(candidate);
     }
 
     final category =
@@ -171,13 +189,24 @@ class Product {
 
     if (json['colors'] is List) {
       for (final rawColor in (json['colors'] as List).whereType<Map>()) {
-        final value = rawColor['image'] ?? rawColor['imageUrl'];
-        final normalized = cleanImage(value);
-        if (normalized.isNotEmpty && !gallery.contains(normalized)) {
-          gallery.add(normalized);
+        for (final key in const [
+          'image',
+          'imageUrl',
+          'images',
+          'gallery',
+          'galleryImages',
+          'photos',
+          'media',
+        ]) {
+          addMedia(rawColor[key]);
         }
       }
     }
+
+    // A few API payloads only expose a gallery, without a dedicated cover image.
+    final effectiveImage = image.isNotEmpty
+        ? image
+        : (gallery.isNotEmpty ? gallery.first : '');
 
     return Product(
       id: (json['id'] ?? '').toString(),
@@ -187,7 +216,7 @@ class Product {
       subCategory: (json['subCategory'] ?? json['subcategory'] ?? 'عام').toString(),
       subCategories: subCategories,
       styleTabs: styleTabs,
-      image: image,
+      image: effectiveImage,
       gallery: gallery.isEmpty
           ? (image.isEmpty ? const [] : [image])
           : gallery,
@@ -215,6 +244,7 @@ class Product {
           ? (json['trends'] as List).map((e) => e.toString()).toList()
           : const [],
       sku: (json['sku'] ?? '').toString(),
+      serverData: Map<String, dynamic>.from(json),
     );
   }
 }
@@ -223,18 +253,70 @@ class ProductColor {
   final String name;
   final String hex;
   final String? image;
+  final List<String> images;
 
   const ProductColor({
     required this.name,
     required this.hex,
     this.image,
+    this.images = const [],
   });
 
   factory ProductColor.fromJson(Map<String, dynamic> json) {
+    String normalize(dynamic value) {
+      if (value is Map) {
+        value = value['url'] ??
+            value['src'] ??
+            value['image'] ??
+            value['imageUrl'] ??
+            value['original'] ??
+            value['thumbnail'];
+      }
+      var url = value?.toString().trim() ?? '';
+      if (url.isEmpty) return '';
+      if (url.startsWith('//')) return 'https:$url';
+      if (url.startsWith('http://') ||
+          url.startsWith('https://') ||
+          url.startsWith('data:') ||
+          url.startsWith('blob:')) {
+        return url;
+      }
+      if (url.startsWith('/')) return 'https://whats.alattab.site$url';
+      return 'https://whats.alattab.site/$url';
+    }
+
+    final images = <String>[];
+
+    void collect(dynamic value) {
+      if (value is List) {
+        for (final item in value) {
+          collect(item);
+        }
+        return;
+      }
+      final url = normalize(value);
+      if (url.isNotEmpty && !images.contains(url)) {
+        images.add(url);
+      }
+    }
+
+    for (final key in const [
+      'image',
+      'imageUrl',
+      'images',
+      'gallery',
+      'galleryImages',
+      'photos',
+      'media',
+    ]) {
+      collect(json[key]);
+    }
+
     return ProductColor(
       name: (json['name'] ?? json['label'] ?? 'أساسي').toString(),
       hex: (json['hex'] ?? json['color'] ?? '#111827').toString(),
-      image: json['image']?.toString() ?? json['imageUrl']?.toString(),
+      image: images.isNotEmpty ? images.first : null,
+      images: images,
     );
   }
 }
