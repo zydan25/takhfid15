@@ -732,13 +732,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _promoStrip() {
     final width = MediaQuery.sizeOf(context).width;
-    final data = widget.controller.announcements.isNotEmpty
-        ? widget.controller.announcements
-        : (widget.controller.storeConfig['announcements'] is Map
-            ? Map<String, dynamic>.from(
-                widget.controller.storeConfig['announcements'] as Map,
-              )
-            : <String, dynamic>{});
+    Map<String, dynamic> readMap(dynamic value) {
+      if (value is Map) return Map<String, dynamic>.from(value);
+      return <String, dynamic>{};
+    }
+
+    var data = widget.controller.announcements.isNotEmpty
+        ? Map<String, dynamic>.from(widget.controller.announcements)
+        : readMap(widget.controller.storeConfig['announcements']);
+
+    // Some server builds nest announcements under content.
+    if (data['screens'] is! List) {
+      final nested = readMap(widget.controller.storeConfig['content']);
+      final nestedAnnouncements = readMap(nested['announcements']);
+      if (nestedAnnouncements.isNotEmpty) {
+        data = nestedAnnouncements;
+      }
+    }
 
     if (data.isEmpty || data['isEnabled'] == false) {
       return const SizedBox.shrink();
