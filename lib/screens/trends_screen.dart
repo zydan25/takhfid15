@@ -55,7 +55,6 @@ class _TrendsScreenState extends State<TrendsScreen> {
             SliverToBoxAdapter(child: _hero(campaign))
           else
             const SliverToBoxAdapter(child: SizedBox(height: 250)),
-          SliverToBoxAdapter(child: _campaignsStrip(campaigns)),
           SliverToBoxAdapter(child: _hashtags()),
           SliverToBoxAdapter(child: _filters(filtered.length)),
           if (filtered.isEmpty)
@@ -445,39 +444,87 @@ class _TrendsScreenState extends State<TrendsScreen> {
 
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
-      child: SizedBox(
-        height: 38,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          itemCount: tags.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 5),
-          itemBuilder: (_, index) {
-            final tag = tags[index];
-            final active = tag == selectedHash;
-            return ChoiceChip(
-              selected: active,
-              selectedColor: Colors.black,
-              side: BorderSide(
-                color: active ? Colors.black : const Color(0xFFE1E1E3),
+      padding: const EdgeInsets.fromLTRB(9, 12, 9, 9),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          const Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              Icon(
+                Icons.circle,
+                color: Color(0xFFB65CE6),
+                size: 11,
               ),
-              label: Text(
-                tag,
-                style: TextStyle(
-                  color: active ? Colors.white : AppColors.ink,
-                  fontSize: 8.5,
-                  fontWeight: FontWeight.w800,
+              SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  'مختارات رائعة',
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
-              onSelected: (_) => setState(() {
-                selectedHash = active ? '' : tag;
-              }),
-            );
-          },
-        ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          SizedBox(
+            height: 40,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              reverse: true,
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              itemCount: tags.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 5),
+              itemBuilder: (_, index) {
+                final tag = tags[index];
+                final active = tag == selectedHash ||
+                    (selectedHash.isEmpty && index == 0);
+
+                return GestureDetector(
+                  onTap: () => setState(
+                    () => selectedHash = active ? '' : tag,
+                  ),
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 86),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 13,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: active
+                          ? const Color(0xFFEBD7FA)
+                          : const Color(0xFFF1F3F7),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: active
+                            ? const Color(0xFFDDB8F4)
+                            : const Color(0xFFE7E9ED),
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      tag,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: active
+                            ? const Color(0xFF8A2DBB)
+                            : const Color(0xFF59616F),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
