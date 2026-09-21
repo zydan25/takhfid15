@@ -186,6 +186,64 @@ class StoreController extends ChangeNotifier {
         ..sort((a, b) => a.order.compareTo(b.order));
     }
 
+    // Some deployments return the rich seed catalog under /store while
+    // /products may expose only a compact card payload. Merge the server
+    // catalog media by product id so detail pages retain all gallery images.
+    final rawStoreProducts = content['products'];
+    if (rawStoreProducts is List && products.isNotEmpty) {
+      final byId = <String, Map<String, dynamic>>{};
+      for (final raw in rawStoreProducts.whereType<Map>()) {
+        final map = Map<String, dynamic>.from(raw);
+        final id = map['id']?.toString() ?? '';
+        if (id.isNotEmpty) byId[id] = map;
+      }
+
+      if (byId.isNotEmpty) {
+        products = products.map((product) {
+          final source = byId[product.id];
+          if (source == null) return product;
+
+          final sourceGallery = <String>[];
+          for (final key in const [
+            'images',
+            'galleryImages',
+            'gallery',
+            'imageUrls',
+            'photos',
+          ]) {
+            final values = source[key];
+            if (values is List) {
+              sourceGallery.addAll(
+                values
+                    .map((value) => value.toString().trim())
+                    .where((value) => value.isNotEmpty),
+              );
+            }
+          }
+
+          final colorImages = source['colors'];
+          if (colorImages is List) {
+            for (final rawColor in colorImages.whereType<Map>()) {
+              final image =
+                  (rawColor['image'] ?? rawColor['imageUrl'])?.toString().trim();
+              if (image != null && image.isNotEmpty) {
+                sourceGallery.add(image);
+              }
+            }
+          }
+
+          if (sourceGallery.isEmpty) return product;
+          final merged = {
+            ...source,
+            'id': product.id,
+            'image': source['image'] ?? product.image,
+            'galleryImages': sourceGallery,
+          };
+          return Product.fromJson(merged);
+        }).toList();
+      }
+    }
+
     final rawCategories = content['categories'];
     if (rawCategories is List) {
       categories = rawCategories.whereType<Map>().map((raw) {
