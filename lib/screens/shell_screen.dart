@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../state/store_controller.dart';
 import '../widgets/bottom_nav.dart';
 import 'account_screen.dart';
@@ -17,16 +18,39 @@ class ShellScreen extends StatelessWidget {
       animation: controller,
       builder: (context, _) {
         return Scaffold(
-          body: SafeArea(
-            bottom: false,
+          body: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark,
+              statusBarBrightness: Brightness.light,
+              systemNavigationBarColor: Colors.white,
+              systemNavigationBarIconBrightness: Brightness.dark,
+              systemNavigationBarDividerColor: Colors.white,
+            ),
             child: IndexedStack(
               index: controller.tabIndex,
               children: [
                 HomeScreen(controller: controller),
-                CategoriesScreen(controller: controller),
-                TrendsScreen(controller: controller),
-                CartScreen(controller: controller),
-                AccountScreen(controller: controller),
+                SafeArea(
+                  top: true,
+                  bottom: false,
+                  child: CategoriesScreen(controller: controller),
+                ),
+                SafeArea(
+                  top: true,
+                  bottom: false,
+                  child: TrendsScreen(controller: controller),
+                ),
+                SafeArea(
+                  top: true,
+                  bottom: false,
+                  child: CartScreen(controller: controller),
+                ),
+                SafeArea(
+                  top: true,
+                  bottom: false,
+                  child: AccountScreen(controller: controller),
+                ),
               ],
             ),
           ),
