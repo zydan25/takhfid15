@@ -20,6 +20,8 @@ class StoreController extends ChangeNotifier {
 
   List<Product> products = [];
   List<Category> categories = [];
+  List<SideCategory> sideCategories = [];
+  List<HomeTopTab> homeTopTabs = [];
   List<BannerItem> banners = [];
   List<TrendCampaign> campaigns = [];
   List<String> hashtags = [];
@@ -60,6 +62,7 @@ class StoreController extends ChangeNotifier {
       _restoreProfile().then((_) => profile != null),
       _restoreOrders().then((_) => orders.isNotEmpty),
       _restoreNotifications().then((_) => notifications.isNotEmpty),
+      _restorePreferences(),
     ]);
     await _restoreCartAndWishlist();
 
@@ -158,12 +161,82 @@ class StoreController extends ChangeNotifier {
 
     currency = (storeConfig['currency'] ?? currency).toString().toUpperCase();
 
+
+    final rawSideCategories = content['sideCategories'] ?? content['sidebarCategories'];
+    if (rawSideCategories is List) {
+      sideCategories = rawSideCategories
+          .whereType<Map>()
+          .map((raw) => SideCategory.fromJson(Map<String, dynamic>.from(raw)))
+          .where((item) => item.id.isNotEmpty && item.name.isNotEmpty)
+          .toList();
+    }
+
+    final rawTopTabs = content['homeTopTabs'] ??
+        content['topTabs'] ??
+        content['navigationTabs'] ??
+        content['homeNavigationTabs'] ??
+        (categoryTabsConfig['tabs'] is List ? categoryTabsConfig['tabs'] : null);
+
+    if (rawTopTabs is List) {
+      homeTopTabs = rawTopTabs
+          .whereType<Map>()
+          .map((raw) => HomeTopTab.fromJson(Map<String, dynamic>.from(raw)))
+          .where((tab) => tab.isActive && tab.label.isNotEmpty)
+          .toList()
+        ..sort((a, b) => a.order.compareTo(b.order));
+    }
+
     final rawCategories = content['categories'];
     if (rawCategories is List) {
       categories = rawCategories.whereType<Map>().map((raw) {
         return Category.fromJson(Map<String, dynamic>.from(raw));
       }).toList();
     }
+
+    if (homeTopTabs.isEmpty && categories.isNotEmpty) {
+      HomeTopTab? fromCategory(String id) {
+        for (final category in categories) {
+          if (category.id == id) {
+            return HomeTopTab(
+              id: category.id,
+              label: category.name,
+              categoryId: category.id,
+            );
+          }
+        }
+        return null;
+      }
+
+      final generated = <HomeTopTab>[];
+      final all = fromCategory('all');
+      if (all != null) generated.add(all);
+
+      final preferredIds = <String>['women', 'men', 'bags', 'accessories'];
+      var order = 1;
+      for (final id in preferredIds) {
+        final tab = fromCategory(id);
+        if (tab != null) {
+          generated.add(HomeTopTab(
+            id: tab.id,
+            label: tab.label,
+            categoryId: tab.categoryId,
+            order: order++,
+          ));
+        }
+      }
+
+      // Keep the reference application's "أحدث" tab while allowing the
+      // server to replace the complete strip by supplying homeTopTabs.
+      generated.add(const HomeTopTab(
+        id: '__new',
+        label: 'أحدث',
+        targetType: 'new',
+        categoryId: 'all',
+        order: 50,
+      ));
+      homeTopTabs = generated;
+    }
+
 
     final rawBanners = content['banners'];
     if (rawBanners is List) {
@@ -243,6 +316,49 @@ class StoreController extends ChangeNotifier {
     }
 
     lastOtpNeedsProfile = false;
+    notifyListeners();
+  }
+
+
+  Future<void> _restorePreferences() async {
+    final savedCurrency = await cache.readString('preferred_currency');
+    if (savedCurrency != null && savedCurrency.trim().isNotEmpty) {
+      currency = savedCurrency.trim().toUpperCase();
+    }
+  }
+
+  Future<void> setCurrency(String value) async {
+    final normalized = value.trim().toUpperCase();
+    if (normalized.isEmpty || normalized == currency) return;
+    currency = normalized;
+    await cache.writeString('preferred_currency', currency);
+    notifyListeners();
+  }
+
+  Future<void> updateProfile({
+    required String firstName,
+    String? secondName,
+    String? thirdName,
+    String? lastName,
+    required String governorate,
+  }) async {
+    final result = await api.updateProfile(
+      firstName: firstName,
+      secondName: secondName,
+      thirdName: thirdName,
+      lastName: lastName,
+      governorate: governorate,
+    );
+
+    if (result['user'] is Map) {
+      profile = Map<String, dynamic>.from(result['user']);
+    } else {
+      profile = await api.currentUser();
+    }
+
+    if (profile != null) {
+      await cache.writeJson('profile', profile!);
+    }
     notifyListeners();
   }
 
