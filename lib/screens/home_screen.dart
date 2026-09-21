@@ -1318,7 +1318,6 @@ class _HomeScreenState extends State<HomeScreen> {
       if (found.isNotEmpty) styles.add(found.first);
     }
     for (final style in source) {
-      if (styles.length >= 4) break;
       if (!styles.any((x) => x.id == style.id)) styles.add(style);
     }
 
