@@ -9,6 +9,10 @@ on:
     branches:
       - new
 
+concurrency:
+  group: takhfid-flutter-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
