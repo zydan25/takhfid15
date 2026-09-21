@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:image_picker/image_picker.dart';
 
 import '../models/content.dart';
@@ -194,7 +192,7 @@ class StoreApi {
     String sessionId,
     XFile file,
   ) async {
-    final bytes = await File(file.path).readAsBytes();
+    final bytes = await file.readAsBytes();
     final raw = await client.multipart(
       '/chat/sessions/$sessionId/media/upload',
       fieldName: 'file',
