@@ -62,13 +62,27 @@ class Product {
       return int.tryParse(value?.toString() ?? '') ?? 0;
     }
 
+    dynamic imageValue(dynamic value) {
+      if (value is Map) {
+        return value['url'] ??
+            value['src'] ??
+            value['image'] ??
+            value['imageUrl'] ??
+            value['original'] ??
+            value['thumbnail'];
+      }
+      return value;
+    }
+
     String cleanImage(dynamic value) {
-      var url = value?.toString().trim() ?? '';
+      final extracted = imageValue(value);
+      var url = extracted?.toString().trim() ?? '';
       if (url.isEmpty) return '';
       if (url.startsWith('//')) return 'https:$url';
       if (url.startsWith('http://') ||
           url.startsWith('https://') ||
-          url.startsWith('data:')) {
+          url.startsWith('data:') ||
+          url.startsWith('blob:')) {
         return url;
       }
       if (url.startsWith('/')) return 'https://whats.alattab.site$url';
@@ -78,8 +92,13 @@ class Product {
     final image = cleanImage(
       json['image'] ??
           json['imageUrl'] ??
+          json['mainImage'] ??
+          json['coverImage'] ??
+          json['cover_image'] ??
           json['thumbnail'] ??
-          json['thumbnailUrl'],
+          json['thumbnailUrl'] ??
+          json['image_url'] ??
+          json['imageUrlHttps'],
     );
 
     final galleryCandidates = <dynamic>[
@@ -89,6 +108,7 @@ class Product {
       json['imageUrls'],
       json['photos'],
       json['media'],
+      json['mediaItems'],
     ];
 
     final gallery = <String>[];
