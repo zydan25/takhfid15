@@ -38,7 +38,7 @@ class ProductCard extends StatelessWidget {
         ? value(data['sarToYerRateNorth'] ?? data['sarRate'])
         : currency == 'USD'
             ? value(data['usdToYerRateNorth'] ?? data['usdRate'])
-            : 1;
+            : 1.0;
 
     if (direct > 0) return direct;
 
@@ -48,7 +48,7 @@ class ProductCard extends StatelessWidget {
           ? value(sanaa['sarToYerRate'] ?? sanaa['sarRate'])
           : currency == 'USD'
               ? value(sanaa['usdToYerRate'] ?? sanaa['usdRate'])
-              : 1;
+              : 1.0;
       if (nested > 0) return nested;
     }
 
