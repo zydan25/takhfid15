@@ -161,6 +161,42 @@ class StoreController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Map<String, dynamic>? _findAnnouncements(dynamic node) {
+    if (node is! Map) return null;
+
+    final map = Map<String, dynamic>.from(node);
+    for (final key in const [
+      'announcements',
+      'announcementSettings',
+      'couponSettings',
+      'promoSettings',
+      'promotions',
+    ]) {
+      final candidate = map[key];
+      if (candidate is Map) {
+        final value = Map<String, dynamic>.from(candidate);
+        final screens = value['screens'];
+        final hasScreenCoupons = screens is List &&
+            screens.any(
+              (item) => item is Map &&
+                  ((item['coupons'] is List && (item['coupons'] as List).isNotEmpty) ||
+                      item['discount'] != null ||
+                      item['discountText'] != null),
+            );
+        if (hasScreenCoupons || value.containsKey('isEnabled')) {
+          return value;
+        }
+      }
+    }
+
+    for (final value in map.values) {
+      final found = _findAnnouncements(value);
+      if (found != null) return found;
+    }
+
+    return null;
+  }
+
   void _applyStore(Map<String, dynamic> store) {
     storeConfig = Map<String, dynamic>.from(
       store['store'] is Map ? store['store'] : const {},
@@ -245,7 +281,9 @@ class StoreController extends ChangeNotifier {
     final announcementSource = content['announcements'] ??
         content['announcementSettings'] ??
         store['announcements'] ??
-        store['announcementSettings'];
+        store['announcementSettings'] ??
+        _findAnnouncements(store) ??
+        _findAnnouncements(content);
 
     announcements = announcementSource is Map
         ? Map<String, dynamic>.from(announcementSource as Map)
