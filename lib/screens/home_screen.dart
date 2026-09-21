@@ -1298,11 +1298,11 @@ class _HomeScreenState extends State<HomeScreen> {
       'all-tees',
       'all-blouses',
       'all-suits',
-      'all-bottoms',
-      'all-knit',
-      'all-jackets',
-      'all-arabic',
       'all-denim',
+      'all-arabic',
+      'all-jackets',
+      'all-knit',
+      'all-bottoms',
     ];
 
     final items = <SubCategory>[
