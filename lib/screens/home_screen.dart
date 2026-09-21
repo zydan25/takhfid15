@@ -82,8 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _heroHeader(List<BannerItem> banners, List<Category> categories) {
     final width = MediaQuery.sizeOf(context).width;
-    final height = (width * .68).clamp(255.0, 490.0).toDouble();
-
+    final bannerHeight = (width * .62).clamp(220.0, 390.0).toDouble();
     final byId = <String, Category>{
       for (final category in categories) category.id: category,
     };
@@ -101,119 +100,276 @@ class _HomeScreenState extends State<HomeScreen> {
         : banners[_bannerIndex.clamp(0, banners.length - 1)];
 
     if (banner != null && _bannerTimer == null && banners.length > 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _restartBannerTimer(banners.length));
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _restartBannerTimer(banners.length),
+      );
     }
 
-    return SizedBox(
-      height: height,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (banner != null)
-            GestureDetector(
-              onTap: () => _openBanner(banner),
-              child: CachedNetworkImage(
-                imageUrl: banner.image,
-                fit: BoxFit.cover,
-                errorWidget: (_, __, ___) =>
-                    const ColoredBox(color: AppColors.ink),
-              ),
-            )
-          else
-            const ColoredBox(color: AppColors.ink),
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0x42000000),
-                  Color(0x12000000),
-                  Color(0x12000000),
-                  Color(0x50000000),
-                ],
-              ),
+    return Column(
+      children: [
+        Container(
+          color: Colors.white,
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+          child: _floatingTopBar(),
+        ),
+        Container(
+          height: 48,
+          color: Colors.white,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            reverse: true,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              children: shownTabs.map((tab) {
+                final active = tab['id'] == _topCategory;
+                return GestureDetector(
+                  onTap: () => _openTopCategory(
+                    tab['id']!,
+                    tab['label']!,
+                    categories,
+                  ),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 9),
+                    padding: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      border: active
+                          ? const Border(
+                              bottom: BorderSide(
+                                color: Colors.black,
+                                width: 2.2,
+                              ),
+                            )
+                          : null,
+                    ),
+                    child: Text(
+                      tab['label']!,
+                      style: TextStyle(
+                        color: active ? Colors.black : AppColors.slate600,
+                        fontSize: active ? 14 : 13,
+                        fontWeight:
+                            active ? FontWeight.w900 : FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ),
-          Positioned(
-            top: 78,
-            right: 12,
-            left: 12,
-            child: _floatingTopBar(),
-          ),
-          Positioned(
-            top: 180,
-            right: 10,
-            left: 10,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: shownTabs.map((tab) {
-                  final active = tab['id'] == _topCategory;
-                  return GestureDetector(
-                    onTap: () => _openTopCategory(
-                      tab['id']!,
-                      tab['label']!,
-                      categories,
-                    ),
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      padding: const EdgeInsets.only(bottom: 7),
-                      decoration: BoxDecoration(
-                        border: active
-                            ? const Border(
-                                bottom: BorderSide(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                              )
-                            : null,
-                      ),
-                      child: Text(
-                        tab['label']!,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: active ? 14 : 12,
-                          fontWeight: active ? FontWeight.w900 : FontWeight.w600,
-                          shadows: const [
-                            Shadow(color: Colors.black54, blurRadius: 4),
-                          ],
+        ),
+        SizedBox(
+          height: bannerHeight,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (banner != null)
+                GestureDetector(
+                  onTap: () => _openBanner(banner),
+                  child: CachedNetworkImage(
+                    imageUrl: banner.image,
+                    fit: BoxFit.cover,
+                    errorWidget: (_, __, ___) =>
+                        const ColoredBox(color: AppColors.ink),
+                  ),
+                )
+              else
+                const ColoredBox(color: AppColors.ink),
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0x18000000),
+                      Color(0x18000000),
+                      Color(0xAA000000),
+                    ],
+                  ),
+                ),
+              ),
+              if (banner != null) _bannerContent(banner),
+              if (banners.length > 1)
+                Positioned(
+                  right: 0,
+                  left: 0,
+                  bottom: 9,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      banners.length.clamp(1, 7),
+                      (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        width: index == _bannerIndex ? 24 : 6,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: index == _bannerIndex
+                              ? Colors.white
+                              : Colors.white54,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-          if (banners.length > 1)
-            Positioned(
-              right: 0,
-              left: 0,
-              bottom: 11,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  banners.length.clamp(1, 7),
-                  (index) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    width: index == _bannerIndex ? 26 : 7,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: index == _bannerIndex
-                          ? Colors.white
-                          : Colors.white54,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
                   ),
                 ),
+              if (banners.length > 1) ...[
+                Positioned(
+                  left: 9,
+                  top: bannerHeight / 2 - 20,
+                  child: _bannerArrow(
+                    Icons.chevron_left_rounded,
+                    () => _changeBanner(-1, banners.length),
+                  ),
+                ),
+                Positioned(
+                  right: 9,
+                  top: bannerHeight / 2 - 20,
+                  child: _bannerArrow(
+                    Icons.chevron_right_rounded,
+                    () => _changeBanner(1, banners.length),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _bannerContent(BannerItem banner) {
+    return Positioned(
+      right: 18,
+      left: 18,
+      bottom: 24,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (banner.badge.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(.72),
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Text(
+                banner.badge,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          if (banner.title.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 7),
+              child: Text(
+                banner.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  shadows: [Shadow(color: Colors.black87, blurRadius: 5)],
+                ),
+              ),
+            ),
+          if (banner.subtitle.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: Text(
+                banner.subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  height: 1.35,
+                  shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
+                ),
+              ),
+            ),
+          if (banner.code.isNotEmpty || banner.buttonText.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 9),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (banner.buttonText.isNotEmpty)
+                    ElevatedButton(
+                      onPressed: () => _openBanner(banner),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: AppColors.ink,
+                        minimumSize: const Size(0, 38),
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        banner.buttonText,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  if (banner.code.isNotEmpty) ...[
+                    const SizedBox(width: 7),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(.58),
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      child: Text(
+                        'كود \${banner.code}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
         ],
       ),
     );
+  }
+
+  Widget _bannerArrow(IconData icon, VoidCallback onTap) {
+    return Material(
+      color: Colors.black.withOpacity(.38),
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: Icon(icon, color: Colors.white, size: 27),
+        ),
+      ),
+    );
+  }
+
+  void _changeBanner(int delta, int count) {
+    if (count < 2) return;
+    _bannerTimer?.cancel();
+    setState(() {
+      _bannerIndex = (_bannerIndex + delta + count) % count;
+    });
+    _restartBannerTimer(count);
   }
 
   Widget _floatingTopBar() {
