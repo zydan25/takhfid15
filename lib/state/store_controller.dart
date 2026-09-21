@@ -90,65 +90,64 @@ class StoreController extends ChangeNotifier {
 
     try {
       final store = await api.fetchStore();
+      var mergedStore = store;
       if (store.isNotEmpty) {
         _applyStore(store);
+      }
 
-        // The legacy web client exposes content through dedicated endpoints.
-        // Hydrate anything missing from /store so banners, coupons, categories,
-        // tabs and pricing are never silently lost.
-        var mergedStore = store;
-        if (categories.isEmpty || banners.isEmpty || announcements.isEmpty) {
-          try {
-            final content = await api.fetchContent();
-            if (content.isNotEmpty) {
-              _applyStore({
-                ...store,
-                'content': {
-                  ...(store['content'] is Map
-                      ? Map<String, dynamic>.from(store['content'] as Map)
-                      : <String, dynamic>{}),
-                  ...content,
-                },
-              });
-              mergedStore = {
-                ...store,
-                'content': {
-                  ...(store['content'] is Map
-                      ? Map<String, dynamic>.from(store['content'] as Map)
-                      : <String, dynamic>{}),
-                  ...content,
-                },
-              };
-            }
-          } catch (_) {}
-        }
+      // Always hydrate the legacy content endpoint when any major section is
+      // missing. This guarantees announcements/coupons, categories and trend
+      // campaigns are available even when /store returns a compact payload.
+      if (categories.isEmpty ||
+          banners.isEmpty ||
+          announcements.isEmpty ||
+          campaigns.isEmpty ||
+          homeTopTabs.isEmpty) {
+        try {
+          final content = await api.fetchContent();
+          if (content.isNotEmpty) {
+            mergedStore = {
+              ...store,
+              'content': {
+                ...(store['content'] is Map
+                    ? Map<String, dynamic>.from(store['content'] as Map)
+                    : <String, dynamic>{}),
+                ...content,
+              },
+            };
+            _applyStore(mergedStore);
+          }
+        } catch (_) {}
+      }
 
-        if (categories.isEmpty) {
-          try {
-            final rawCategories = await api.fetchCategories();
-            if (rawCategories.isNotEmpty) {
-              _applyStore({
-                ...mergedStore,
-                'content': {
-                  ...(mergedStore['content'] is Map
-                      ? Map<String, dynamic>.from(mergedStore['content'] as Map)
-                      : <String, dynamic>{}),
-                  'categories': rawCategories,
-                },
-              });
-            }
-          } catch (_) {}
-        }
+      if (categories.isEmpty) {
+        try {
+          final rawCategories = await api.fetchCategories();
+          if (rawCategories.isNotEmpty) {
+            mergedStore = {
+              ...mergedStore,
+              'content': {
+                ...(mergedStore['content'] is Map
+                    ? Map<String, dynamic>.from(mergedStore['content'] as Map)
+                    : <String, dynamic>{}),
+                'categories': rawCategories,
+              },
+            };
+            _applyStore(mergedStore);
+          }
+        } catch (_) {}
+      }
 
-        if (pricing.isEmpty) {
-          try {
-            final rawPricing = await api.fetchPricing();
-            if (rawPricing.isNotEmpty) {
-              pricing = rawPricing;
-            }
-          } catch (_) {}
-        }
+      if (pricing.isEmpty) {
+        try {
+          final rawPricing = await api.fetchPricing();
+          if (rawPricing.isNotEmpty) {
+            pricing = rawPricing;
+          }
+        } catch (_) {}
+      }
 
+      if (mergedStore.isNotEmpty) {
         await cache.writeJson('store', mergedStore);
       }
     } catch (_) {}
@@ -818,6 +817,22 @@ class StoreController extends ChangeNotifier {
         if (id == wanted || name == wanted) {
           resolved.add(id);
           resolved.add(name);
+
+          // Collect same-named subcategories across departments so the
+          // "all" department can correctly find women/men-specific product IDs.
+          for (final category in categories) {
+            for (final sub in category.subCategories) {
+              final subId = sub.id.trim().toLowerCase();
+              final subName = sub.name.trim().toLowerCase();
+              if (subId == wanted ||
+                  subName == wanted ||
+                  subName == name ||
+                  subId == id) {
+                resolved.add(subId);
+                resolved.add(subName);
+              }
+            }
+          }
         }
       }
 
@@ -866,6 +881,16 @@ class StoreController extends ChangeNotifier {
           aliases
             ..add(item.id.toLowerCase())
             ..add(item.name.toLowerCase());
+
+          for (final category in categories) {
+            for (final sibling in category.subCategories) {
+              if (sibling.name.toLowerCase() == item.name.toLowerCase()) {
+                aliases
+                  ..add(sibling.id.toLowerCase())
+                  ..add(sibling.name.toLowerCase());
+              }
+            }
+          }
         }
       }
 
