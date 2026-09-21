@@ -25,12 +25,15 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _bannerController = PageController();
   Timer? _bannerTimer;
   int _bannerIndex = 0;
+  Timer? _promoTimer;
+  int _promoIndex = 0;
   String _topCategory = 'all';
   String _feedTab = 'for_you';
 
   @override
   void dispose() {
     _bannerTimer?.cancel();
+    _promoTimer?.cancel();
     _bannerController.dispose();
     super.dispose();
   }
@@ -67,18 +70,18 @@ class _HomeScreenState extends State<HomeScreen> {
     final width = MediaQuery.sizeOf(context).width;
     final height = (width * .68).clamp(255.0, 490.0).toDouble();
 
-    final tabs = <Map<String, String>>[
+    final byId = <String, Category>{
+      for (final category in categories) category.id: category,
+    };
+    final shownTabs = <Map<String, String>>[
       {'id': 'all', 'label': 'كل شامل'},
-      ...categories
-          .where((item) => item.id.isNotEmpty && item.id != 'all')
-          .map((item) => {'id': item.id, 'label': item.name}),
+      if (byId.containsKey('women')) {'id': 'women', 'label': 'نساء'},
+      if (byId.containsKey('men')) {'id': 'men', 'label': 'رجال'},
+      {'id': '__new', 'label': 'أحدث'},
+      if (byId.containsKey('bags')) {'id': 'bags', 'label': 'حقائب'},
+      if (byId.containsKey('accessories'))
+        {'id': 'accessories', 'label': 'إكسسوارات'},
     ];
-
-    if (!tabs.any((item) => item['label'] == 'أحدث')) {
-      tabs.insert(tabs.length > 2 ? 3 : tabs.length, {'id': '__new', 'label': 'أحدث'});
-    }
-
-    final shownTabs = tabs.take(6).toList();
     final banner = banners.isEmpty
         ? null
         : banners[_bannerIndex.clamp(0, banners.length - 1)];
@@ -119,18 +122,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Positioned(
-            top: 12,
+            top: 78,
             right: 12,
             left: 12,
             child: _floatingTopBar(),
           ),
           Positioned(
-            top: 117,
-            right: 12,
-            left: 12,
+            top: 180,
+            right: 10,
+            left: 10,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              reverse: true,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: shownTabs.map((tab) {
@@ -316,38 +318,87 @@ class _HomeScreenState extends State<HomeScreen> {
     if (data['isEnabled'] == false) return const SizedBox.shrink();
 
     final screens = <Map<String, dynamic>>[];
-    for (final key in const ['screens', 'cards', 'items', 'strips', 'banners']) {
-      final raw = data[key];
-      if (raw is List) {
-        screens.addAll(
-          raw.whereType<Map>().map(
-            (item) => Map<String, dynamic>.from(item),
-          ),
-        );
-      }
-    }
-
-    if (screens.isEmpty && _looksLikePromo(data)) {
-      screens.add(Map<String, dynamic>.from(data));
+    final rawScreens = data['screens'];
+    if (rawScreens is List) {
+      screens.addAll(
+        rawScreens.whereType<Map>().map(
+          (item) => Map<String, dynamic>.from(item),
+        ),
+      );
     }
 
     if (screens.isEmpty) {
-      screens.add({
-        'badgeText': 'للمستخدمين الجدد فقط',
-        'mainTitle': 'عروض جديدة',
-        'subTitle': 'خصومات حصرية للطلب الأول',
-        'coupons': [
-          {'discount': 'خصم 30%', 'minOrder': 'أكثر من SR149'},
-          {'discount': 'خصم 25%', 'minOrder': 'أكثر من SR379'},
-        ],
-      });
+      screens.addAll([
+        {
+          'id': 'screen-1-coupons',
+          'badgeText': 'للمستخدمين الجدد فقط',
+          'mainTitle': 'قسائم حصرية',
+          'subTitle': 'عروض جيدة',
+          'coupons': [
+            {
+              'code': 'NEW30',
+              'discount': 'خصم 30%',
+              'minSpend': 'أكثر من SR149',
+            },
+            {
+              'code': 'NEW25',
+              'discount': 'خصم 25%',
+              'minSpend': 'أكثر من SR379',
+            },
+          ],
+          'backgroundColor': '#FEF6EE',
+          'cardBackgroundColor': '#FFF0F2',
+          'textColor': '#9F1239',
+          'badgeBackgroundColor': '#FF385C',
+          'borderColor': '#FED7AA',
+        },
+        {
+          'id': 'screen-2-shipping',
+          'badgeText': 'شحن سريع وآمن ⚡',
+          'mainTitle': 'شحن مجاني',
+          'subTitle': 'تسليم سريع لباب منزلك',
+          'coupons': [
+            {
+              'code': 'FREESHIP',
+              'discount': 'شحن مجاني',
+              'minSpend': 'للطلبات فوق SR199',
+            },
+            {
+              'code': 'FAST48',
+              'discount': 'توصيل خلال 48 س',
+              'minSpend': 'تتبع لحظي مضمون 🛡️',
+            },
+          ],
+          'backgroundColor': '#E2EFDA',
+          'cardBackgroundColor': '#D9EAD3',
+          'textColor': '#1B5E20',
+          'badgeBackgroundColor': '#166534',
+          'borderColor': '#A9D08E',
+        },
+      ]);
+    }
+
+    final safeIndex = _promoIndex.clamp(0, screens.length - 1).toInt();
+    if (screens.length > 1 && _promoTimer == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _restartPromoTimer(screens.length));
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(13, 11, 13, 6),
-      child: Column(
-        children: screens.take(2).map(_promoCard).toList(),
-      ),
+      padding: const EdgeInsets.fromLTRB(18, 11, 18, 7),
+      child: _promoCard(screens[safeIndex]),
+    );
+  }
+
+  void _restartPromoTimer(int count) {
+    _promoTimer?.cancel();
+    if (count < 2) return;
+    _promoTimer = Timer(
+      const Duration(seconds: 4),
+      () {
+        if (!mounted) return;
+        setState(() => _promoIndex = (_promoIndex + 1) % count);
+        _promoTimer = null;
+      },
     );
   }
 
@@ -548,7 +599,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.rose,
+                  color: _parseColor(raw['badgeBackgroundColor'], AppColors.rose),
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
@@ -573,36 +624,45 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _looksSection(StoreController c) {
-    var styles = c.homeStyleTabs;
-    if (styles.isEmpty) {
-      final seen = <String>{};
-      final collected = <StyleTab>[];
-      for (final category in c.categories) {
-        for (final style in category.styleTabs) {
-          final key = style.id.isNotEmpty ? style.id : style.name;
-          if (seen.add(key)) collected.add(style);
-        }
+    final allCategory = c.categories
+        .where((category) => category.id == 'all')
+        .cast<Category?>()
+        .firstOrNull;
+
+    var styles = allCategory?.styleTabs ?? c.homeStyleTabs;
+    final preferred = <String>[
+      'إطلالات يومية',
+      'محتشمة',
+      'عمل',
+      'حفلات',
+    ];
+
+    final ordered = <StyleTab>[];
+    for (final name in preferred) {
+      final matches = styles.where((item) => item.name == name);
+      if (matches.isNotEmpty) ordered.add(matches.first);
+    }
+    for (final style in styles) {
+      if (!ordered.any((item) => item.id == style.id)) {
+        ordered.add(style);
       }
-      styles = collected;
     }
 
-    styles = styles.take(4).toList();
-    if (styles.isEmpty) return const SizedBox.shrink();
+    final visible = ordered.take(4).toList();
+    if (visible.isEmpty) return const SizedBox.shrink();
 
     final shape = _shape(
-      c.styleTabsConfig.isNotEmpty
-          ? c.styleTabsConfig['shape']
-          : c.categoryTabsConfig['styleShape'],
+      c.styleTabsConfig['shape'],
       fallback: 'rounded',
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: const EdgeInsets.fromLTRB(11, 7, 11, 5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(2, 3, 2, 7),
+            padding: EdgeInsets.fromLTRB(3, 3, 3, 8),
             child: Text(
               'إطلالات من أجلك',
               style: TextStyle(
@@ -611,90 +671,95 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: styles.length,
-            gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 8,
-              childAspectRatio: .92,
-            ),
-            itemBuilder: (_, index) {
-              final style = styles[index];
-              return GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ShowcaseScreen(
-                      controller: widget.controller,
-                      title: style.name,
-                      category: 'all',
-                      styleTab: style.id.isNotEmpty ? style.id : style.name,
-                      image: style.image,
+          SizedBox(
+            height: 170,
+            child: Row(
+              children: List.generate(visible.length, (index) {
+                final style = visible[index];
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: index == 0 ? 0 : 4,
+                      right: index == visible.length - 1 ? 0 : 4,
+                    ),
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ShowcaseScreen(
+                            controller: c,
+                            title: style.name,
+                            category: 'all',
+                            styleTab: style.id.isNotEmpty
+                                ? style.id
+                                : style.name,
+                            image: style.image,
+                          ),
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: _radius(shape, 22),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (style.image.isNotEmpty)
+                              CachedNetworkImage(
+                                imageUrl: style.image,
+                                fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) =>
+                                    const ColoredBox(
+                                  color: AppColors.slate100,
+                                  child: Icon(Icons.image_outlined),
+                                ),
+                              )
+                            else
+                              const ColoredBox(
+                                color: AppColors.slate100,
+                                child: Icon(Icons.auto_awesome_outlined),
+                              ),
+                            const Align(
+                              alignment: Alignment.bottomCenter,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Color(0xE6000000),
+                                    ],
+                                  ),
+                                ),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: 52,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              right: 5,
+                              left: 5,
+                              bottom: 8,
+                              child: Text(
+                                style.name,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                child: ClipRRect(
-                  borderRadius: _radius(shape, 24),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      if (style.image.isNotEmpty)
-                        CachedNetworkImage(
-                          imageUrl: style.image,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => const ColoredBox(
-                            color: AppColors.slate100,
-                            child: Icon(Icons.image_outlined),
-                          ),
-                        )
-                      else
-                        const ColoredBox(
-                          color: AppColors.slate100,
-                          child: Icon(Icons.auto_awesome_outlined),
-                        ),
-                      const Align(
-                        alignment: Alignment.bottomCenter,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Color(0xDE000000),
-                              ],
-                            ),
-                          ),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 45,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        right: 6,
-                        left: 6,
-                        bottom: 7,
-                        child: Text(
-                          style.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+                );
+              }),
+            ),
           ),
         ],
       ),
@@ -702,76 +767,84 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _categoriesGrid(StoreController c) {
-    final categories =
-        c.categories.where((item) => item.id != 'all').take(10).toList();
-    if (categories.isEmpty) return const SizedBox.shrink();
+    final allCategory = c.categories
+        .where((category) => category.id == 'all')
+        .cast<Category?>()
+        .firstOrNull;
+    if (allCategory == null || allCategory.subCategories.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-    final configuredShape = _shape(
-      c.categoryTabsConfig['shape'],
-      fallback: 'circle',
-    );
-    final configuredSize = (c.categoryTabsConfig['size'] ?? 'medium').toString();
+    final wanted = <Map<String, String>>[
+      {'id': 'all-dresses', 'label': 'فساتين'},
+      {'id': 'all-tops', 'label': 'ملابس علوية'},
+      {'id': 'all-tees', 'label': 'تيشيرتات'},
+      {'id': 'all-blouses', 'label': 'بليزر'},
+      {'id': 'all-suits', 'label': 'بدلات'},
+      {'id': 'all-pants', 'label': 'بناطيل'},
+      {'id': 'all-sweaters', 'label': 'بلايز ثقيلة'},
+      {'id': 'all-jackets', 'label': 'معاطف وجاكيتات'},
+      {'id': 'all-arabic', 'label': 'ملابس عربية'},
+      {'id': 'all-denim', 'label': 'الدنيم'},
+    ];
+
+    final lookup = <String, SubCategory>{
+      for (final item in allCategory.subCategories) item.id: item,
+    };
+    final items = wanted
+        .where((item) => lookup.containsKey(item['id']))
+        .map((item) {
+          final source = lookup[item['id']]!;
+          return SubCategory(
+            id: source.id,
+            name: item['label']!,
+            image: source.image,
+          );
+        })
+        .toList();
+
+    if (items.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+      padding: const EdgeInsets.fromLTRB(9, 7, 9, 7),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: categories.length,
-        gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(
+        itemCount: items.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 5,
+          crossAxisSpacing: 1,
           mainAxisSpacing: 7,
-          crossAxisSpacing: 2,
-          childAspectRatio: .9,
+          childAspectRatio: .82,
         ),
         itemBuilder: (_, index) {
-          final category = categories[index];
-          final rawDimension = configuredSize == 'small'
-              ? 55.0
-              : configuredSize == 'large'
-                  ? 75.0
-                  : 66.0;
-          final dimension = rawDimension
-              .clamp(48.0, (MediaQuery.sizeOf(context).width - 42) / 5)
-              .toDouble();
-
+          final sub = items[index];
           return GestureDetector(
-            onTap: () {
-              _topCategory = category.id;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ShowcaseScreen(
-                    controller: widget.controller,
-                    title: category.name,
-                    category: category.id,
-                    image: category.image,
-                  ),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ShowcaseScreen(
+                  controller: c,
+                  title: sub.name,
+                  category: 'all',
+                  subCategory: sub.id,
+                  image: sub.image,
                 ),
-              );
-            },
+              ),
+            ),
             child: Column(
               children: [
                 Container(
-                  width: dimension,
-                  height: dimension,
-                  decoration: BoxDecoration(
+                  width: 66,
+                  height: 66,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
                     color: AppColors.slate100,
-                    shape: configuredShape == 'circle'
-                        ? BoxShape.circle
-                        : BoxShape.rectangle,
-                    borderRadius: configuredShape == 'circle'
-                        ? null
-                        : _radius(configuredShape, 18),
-                    border: Border.all(
-                      color: AppColors.slate200,
-                    ),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: category.image.isNotEmpty
+                  child: sub.image.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: category.image,
+                          imageUrl: sub.image,
                           fit: BoxFit.cover,
                         )
                       : const Icon(
@@ -780,18 +853,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                 ),
                 const SizedBox(height: 4),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  child: Text(
-                    category.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 9,
-                      height: 1.08,
-                      fontWeight: FontWeight.w700,
-                    ),
+                Text(
+                  sub.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    height: 1.05,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1017,7 +1087,7 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(
         builder: (_) => ShowcaseScreen(
           controller: widget.controller,
-          title: matched.isEmpty ? label : matched.first.name,
+          title: label,
           category: id,
           image: matched.isEmpty ? null : matched.first.image,
         ),
