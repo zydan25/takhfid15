@@ -429,6 +429,35 @@ class StoreController extends ChangeNotifier {
       });
     }
 
+    if (!homeTopTabs.any((tab) => tab.id == 'all')) {
+      homeTopTabs.insert(
+        0,
+        const HomeTopTab(
+          id: 'all',
+          label: 'كل',
+          categoryId: 'all',
+          order: -1,
+        ),
+      );
+    } else {
+      homeTopTabs = homeTopTabs.map((tab) {
+        return tab.id == 'all'
+            ? HomeTopTab(
+                id: tab.id,
+                label: 'كل',
+                targetType: tab.targetType,
+                categoryId: tab.categoryId.isEmpty ? 'all' : tab.categoryId,
+                subCategoryId: tab.subCategoryId,
+                styleTab: tab.styleTab,
+                trend: tab.trend,
+                isActive: tab.isActive,
+                order: -1,
+              )
+            : tab;
+      }).toList()
+        ..sort((a, b) => a.order.compareTo(b.order));
+    }
+
     if (homeTopTabs.isEmpty && categories.isNotEmpty) {
       HomeTopTab? fromCategory(String id, {String? label}) {
         for (final category in categories) {
@@ -805,11 +834,26 @@ class StoreController extends ChangeNotifier {
 
     if (category != 'all') {
       final wanted = category.trim().toLowerCase();
+      final resolved = <String>{wanted};
 
-      bool matchesValue(String value) =>
-          value.trim().toLowerCase() == wanted ||
-          value.trim().toLowerCase().contains(wanted) ||
-          wanted.contains(value.trim().toLowerCase());
+      for (final item in categories) {
+        final id = item.id.trim().toLowerCase();
+        final name = item.name.trim().toLowerCase();
+        if (id == wanted || name == wanted) {
+          resolved.add(id);
+          resolved.add(name);
+        }
+      }
+
+      bool matchesValue(String value) {
+        final normalized = value.trim().toLowerCase();
+        return resolved.any(
+          (candidate) =>
+              normalized == candidate ||
+              normalized.contains(candidate) ||
+              candidate.contains(normalized),
+        );
+      }
 
       list = list.where((p) {
         final values = <String>[
