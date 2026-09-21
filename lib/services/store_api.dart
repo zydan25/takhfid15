@@ -40,7 +40,12 @@ dynamic _normalizeProductMap(dynamic raw) {
       item['cover_image'] ??
       item['thumbnail'] ??
       item['thumbnailUrl'] ??
-      item['image_url'];
+      item['image_url'] ??
+      item['src'] ??
+      item['photo'] ??
+      item['photoUrl'] ??
+      item['cover'] ??
+      item['coverUrl'];
   if ((item['image'] ?? '').toString().trim().isEmpty && imageCandidate != null) {
     item['image'] = _assetUrl(imageCandidate);
   } else if (item['image'] != null) {
