@@ -303,6 +303,7 @@ class RecommendationTab {
 
 class TrendCampaign {
   final String id;
+  final String hashtag;
   final String title;
   final String subtitle;
   final String image;
@@ -314,6 +315,7 @@ class TrendCampaign {
 
   const TrendCampaign({
     required this.id,
+    this.hashtag = '',
     required this.title,
     required this.subtitle,
     required this.image,
@@ -327,6 +329,7 @@ class TrendCampaign {
   factory TrendCampaign.fromJson(Map<String, dynamic> json) {
     return TrendCampaign(
       id: (json['id'] ?? '').toString(),
+      hashtag: (json['hashtag'] ?? json['tag'] ?? json['trend'] ?? '').toString(),
       title: (json['title'] ?? '').toString(),
       subtitle: (json['subtitle'] ?? '').toString(),
       image: (json['image'] ?? '').toString(),
