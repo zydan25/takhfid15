@@ -70,8 +70,6 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
     } else {
       final mappedSub = _resolveSubCategory(widget.subCategory);
 
-      // If the selected subcategory itself declares product IDs, use those
-      // before falling back to text/category matching.
       final subLinked = _subcategoryLinkedIds(mappedSub);
       if (subLinked.isNotEmpty) {
         items = widget.controller.productsByIds(subLinked);
@@ -85,6 +83,24 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
           saleOnly: widget.saleOnly,
           sort: widget.saleOnly ? 'discount' : _sort,
         );
+
+        // Last-resort matching against the original server payload. This is
+        // needed for deployments where category IDs and names live in
+        // different fields but the product itself still carries both.
+        if (items.isEmpty) {
+          items = _serverMatchProducts(
+            category: widget.category,
+            subCategory: mappedSub,
+            styleTab: widget.styleTab,
+            trend: widget.trend,
+          );
+          if (widget.saleOnly) {
+            items = items
+                .where((item) => item.discountPercentage > 0)
+                .toList();
+          }
+          items = _sortProducts(items);
+        }
       }
     }
 
@@ -375,6 +391,88 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
         ),
       ),
     );
+  }
+
+  List<Product> _serverMatchProducts({
+    String? category,
+    String? subCategory,
+    String? styleTab,
+    String? trend,
+  }) {
+    final categoryWanted = (category ?? 'all').trim().toLowerCase();
+    final subWanted = (subCategory ?? '').trim().toLowerCase();
+    final styleWanted = (styleTab ?? '').trim().toLowerCase();
+    final trendWanted = (trend ?? '').trim().toLowerCase();
+
+    String normalize(String value) =>
+        value.trim().replaceAll(' ', '').toLowerCase();
+
+    bool containsAny(List<String> values, String wanted) {
+      if (wanted.isEmpty) return true;
+      final w = normalize(wanted);
+      return values.any((value) {
+        final v = normalize(value);
+        return v == w || v.contains(w) || w.contains(v);
+      });
+    }
+
+    return widget.controller.products.where((product) {
+      final server = product.serverData;
+
+      final categoryValues = <String>[
+        product.category,
+        ...product.categories,
+        server['category']?.toString() ?? '',
+        server['categoryId']?.toString() ?? '',
+        server['department']?.toString() ?? '',
+      ];
+      final rawCategories = server['categories'];
+      if (rawCategories is List) {
+        categoryValues.addAll(rawCategories.map((e) => e.toString()));
+      }
+
+      if (categoryWanted != 'all' && !containsAny(categoryValues, categoryWanted)) {
+        return false;
+      }
+
+      if (subWanted.isNotEmpty) {
+        final subValues = <String>[
+          product.subCategory,
+          ...product.subCategories,
+          server['subCategory']?.toString() ?? '',
+          server['subcategory']?.toString() ?? '',
+        ];
+        final rawSubs = server['subCategories'];
+        if (rawSubs is List) {
+          subValues.addAll(rawSubs.map((e) => e.toString()));
+        }
+        if (!containsAny(subValues, subWanted)) return false;
+      }
+
+      if (styleWanted.isNotEmpty) {
+        final styles = <String>[
+          ...product.styleTabs,
+          server['styleTab']?.toString() ?? '',
+          server['style']?.toString() ?? '',
+        ];
+        if (!containsAny(styles, styleWanted) &&
+            !normalize(product.name).contains(normalize(styleWanted))) {
+          return false;
+        }
+      }
+
+      if (trendWanted.isNotEmpty) {
+        final trends = <String>[
+          ...product.trends,
+          server['trend']?.toString() ?? '',
+          server['trendTag']?.toString() ?? '',
+          product.name,
+        ];
+        if (!containsAny(trends, trendWanted)) return false;
+      }
+
+      return true;
+    }).toList();
   }
 
   List<String> _subcategoryLinkedIds(String? subCategory) {
