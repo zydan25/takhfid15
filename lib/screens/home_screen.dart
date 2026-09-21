@@ -162,19 +162,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 top: 0,
                 left: 0,
                 right: 0,
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(13, 10, 13, 0),
-                    child: _floatingTopBar(),
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(13, 76, 13, 0),
+                  child: _floatingTopBar(),
                 ),
               ),
 
               // Server-driven top category navigation, over the banner.
               if (tabs.isNotEmpty)
                 Positioned(
-                  top: 112,
+                  top: 174,
                   left: 0,
                   right: 0,
                   child: SizedBox(
