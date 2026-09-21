@@ -125,14 +125,29 @@ class CartScreen extends StatelessWidget {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.fromLTRB(10, 5, 10, 9),
-      child: Row(
-        children: [
-          _pill('جميع', active: true),
-          const SizedBox(width: 7),
-          Expanded(child: _pill('الكمية على وشك الانتهاء 🔥')),
-          const SizedBox(width: 7),
-          _pill('حسب الفئة', icon: Icons.keyboard_arrow_down_rounded),
-        ],
+      child: SizedBox(
+        width: double.infinity,
+        height: 34,
+        child: Row(
+          children: [
+            SizedBox(
+              width: 78,
+              child: _pill('جميع', active: true),
+            ),
+            const SizedBox(width: 7),
+            Expanded(
+              child: _pill('الكمية على وشك الانتهاء 🔥'),
+            ),
+            const SizedBox(width: 7),
+            SizedBox(
+              width: 88,
+              child: _pill(
+                'حسب الفئة',
+                icon: Icons.keyboard_arrow_down_rounded,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
