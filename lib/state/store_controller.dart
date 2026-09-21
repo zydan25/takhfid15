@@ -344,7 +344,7 @@ class StoreController extends ChangeNotifier {
 
     final rawBanners = content['banners'];
     if (rawBanners is List) {
-      final ordered = rawBanners
+      final active = rawBanners
           .whereType<Map>()
           .map((raw) => Map<String, dynamic>.from(raw))
           .where((raw) => raw['isActive'] != false)
@@ -355,7 +355,17 @@ class StoreController extends ChangeNotifier {
                   .compareTo((b['order'] is num) ? b['order'] as num : 0),
         );
 
-      banners = ordered
+      final homeBanners = active.where((raw) {
+        final categoryId =
+            (raw['categoryId'] ?? raw['category'] ?? 'all').toString().trim();
+        return categoryId.isEmpty || categoryId == 'all';
+      }).toList();
+
+      // The home page uses general banners first. If a deployment does not tag
+      // banners by category, all active banners remain eligible.
+      final selected = homeBanners.isNotEmpty ? homeBanners : active;
+
+      banners = selected
           .map(BannerItem.fromJson)
           .where((item) => item.image.isNotEmpty)
           .toList();
