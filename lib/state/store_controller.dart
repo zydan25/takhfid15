@@ -370,6 +370,9 @@ class StoreController extends ChangeNotifier {
         {'id': '__new', 'label': 'أحدث'},
         {'id': 'bags', 'label': 'حقائب'},
         {'id': 'accessories', 'label': 'إكسسوارات'},
+        {'id': 'shoes', 'label': 'أحذية'},
+        {'id': 'girls', 'label': 'مقاسات كبيرة'},
+        {'id': 'perfumes', 'label': 'لانجري وملابس النوم'},
       ];
 
       final generated = <HomeTopTab>[];
