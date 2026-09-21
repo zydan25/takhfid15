@@ -405,12 +405,31 @@ class StoreController extends ChangeNotifier {
     }
 
     if (subCategory != null && subCategory.isNotEmpty) {
-      final needle = subCategory.toLowerCase();
+      final requested = subCategory.toLowerCase();
+      final aliases = <String>{requested};
+
+      for (final categoryItem in categories) {
+        final matched = categoryItem.subCategories.where(
+          (item) =>
+              item.id.toLowerCase() == requested ||
+              item.name.toLowerCase() == requested,
+        );
+        for (final item in matched) {
+          aliases
+            ..add(item.id.toLowerCase())
+            ..add(item.name.toLowerCase());
+        }
+      }
+
       list = list.where((p) {
-        return p.subCategory.toLowerCase() == needle ||
-            p.subCategories.any((item) => item.toLowerCase() == needle) ||
-            p.subCategories.any((item) => item.toLowerCase().contains(needle)) ||
-            p.name.toLowerCase().contains(needle);
+        final primary = p.subCategory.toLowerCase();
+        final labels = p.subCategories.map((item) => item.toLowerCase());
+        return aliases.contains(primary) ||
+            labels.any(aliases.contains) ||
+            labels.any(
+              (item) => aliases.any((alias) => item.contains(alias)),
+            ) ||
+            aliases.any((alias) => p.name.toLowerCase().contains(alias));
       }).toList();
     }
 
