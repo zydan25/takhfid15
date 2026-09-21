@@ -113,7 +113,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  Widget _selectedCategory(Category category) {
+  Widget _buildSelectedCategory(Category category) {
     final shape = (widget.controller.categoryTabsConfig['shape'] ?? 'circle').toString();
     final radius = shape == 'circle'
         ? 100.0
