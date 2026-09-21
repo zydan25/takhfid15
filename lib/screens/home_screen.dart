@@ -1765,6 +1765,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openBanner(BannerItem b) {
+    final matchedCampaign = b.targetType == 'trend'
+        ? widget.controller.campaigns.where(
+            (campaign) =>
+                b.trendTarget.isNotEmpty &&
+                (campaign.id == b.trendTarget ||
+                    campaign.hashtag == b.trendTarget ||
+                    campaign.tag == b.trendTarget),
+          ).toList()
+        : const <TrendCampaign>[];
+
+    final linkedIds =
+        matchedCampaign.isNotEmpty ? matchedCampaign.first.productIds : const <String>[];
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -1781,6 +1794,7 @@ class _HomeScreenState extends State<HomeScreen> {
           trend: b.targetType == 'trend'
               ? (b.trendTarget.isNotEmpty ? b.trendTarget : null)
               : null,
+          linkedProductIds: linkedIds,
           banner: b,
         ),
       ),
