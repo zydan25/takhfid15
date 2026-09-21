@@ -194,12 +194,12 @@ class StoreController extends ChangeNotifier {
     }
 
     if (homeTopTabs.isEmpty && categories.isNotEmpty) {
-      HomeTopTab? fromCategory(String id) {
+      HomeTopTab? fromCategory(String id, {String? label}) {
         for (final category in categories) {
           if (category.id == id) {
             return HomeTopTab(
               id: category.id,
-              label: category.name,
+              label: label ?? category.name,
               categoryId: category.id,
             );
           }
@@ -207,36 +207,44 @@ class StoreController extends ChangeNotifier {
         return null;
       }
 
-      final generated = <HomeTopTab>[];
-      final all = fromCategory('all');
-      if (all != null) generated.add(all);
+      // The reference top strip is six text-only tabs. Their labels/order
+      // are derived from the server categories, so the server remains the
+      // source of category existence and routing.
+      const specs = <Map<String, String>>[
+        {'id': 'all', 'label': 'كل شامل'},
+        {'id': 'women', 'label': 'نساء'},
+        {'id': 'men', 'label': 'رجال'},
+        {'id': '__new', 'label': 'أحدث'},
+        {'id': 'bags', 'label': 'حقائب'},
+        {'id': 'accessories', 'label': 'إكسسوارات'},
+      ];
 
-      final preferredIds = <String>['women', 'men', 'bags', 'accessories'];
-      var order = 1;
-      for (final id in preferredIds) {
-        final tab = fromCategory(id);
+      final generated = <HomeTopTab>[];
+      for (var i = 0; i < specs.length; i++) {
+        final id = specs[i]['id']!;
+        final label = specs[i]['label']!;
+        if (id == '__new') {
+          generated.add(HomeTopTab(
+            id: id,
+            label: label,
+            targetType: 'new',
+            categoryId: 'all',
+            order: i,
+          ));
+          continue;
+        }
+        final tab = fromCategory(id, label: label);
         if (tab != null) {
           generated.add(HomeTopTab(
             id: tab.id,
-            label: tab.label,
+            label: label,
             categoryId: tab.categoryId,
-            order: order++,
+            order: i,
           ));
         }
       }
-
-      // Keep the reference application's "أحدث" tab while allowing the
-      // server to replace the complete strip by supplying homeTopTabs.
-      generated.add(const HomeTopTab(
-        id: '__new',
-        label: 'أحدث',
-        targetType: 'new',
-        categoryId: 'all',
-        order: 50,
-      ));
       homeTopTabs = generated;
     }
-
 
     final rawBanners = content['banners'];
     if (rawBanners is List) {
