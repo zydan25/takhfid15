@@ -51,7 +51,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           if (categories.isNotEmpty)
             SliverToBoxAdapter(child: _categorySelector(categories)),
           if (selected != null)
-            SliverToBoxAdapter(child: _selectedCategory(selected)),
+            SliverToBoxAdapter(child: _buildSelectedCategory(selected)),
           const SliverToBoxAdapter(child: SizedBox(height: 20)),
         ],
       ),
