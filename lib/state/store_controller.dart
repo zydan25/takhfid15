@@ -243,11 +243,32 @@ class StoreController extends ChangeNotifier {
       homeStyleTabs = [];
     }
 
-    announcements = content['announcements'] is Map
-        ? Map<String, dynamic>.from(content['announcements'])
-        : (store['announcements'] is Map
-            ? Map<String, dynamic>.from(store['announcements'] as Map)
-            : <String, dynamic>{});
+    final announcementSource = content['announcements'] ??
+        content['announcementSettings'] ??
+        store['announcements'] ??
+        store['announcementSettings'];
+
+    announcements = announcementSource is Map
+        ? Map<String, dynamic>.from(announcementSource as Map)
+        : <String, dynamic>{};
+
+    if (announcements['screens'] is List) {
+      final screens = (announcements['screens'] as List)
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .where((item) => item['isActive'] != false)
+          .toList()
+        ..sort(
+          (a, b) =>
+              ((a['order'] is num) ? a['order'] as num : 0)
+                  .compareTo((b['order'] is num) ? b['order'] as num : 0),
+        );
+
+      announcements = <String, dynamic>{
+        ...announcements,
+        'screens': screens,
+      };
+    }
     // Mirror announcements at store root for cached/offline readers.
     storeConfig['announcements'] = announcements;
     recommendationTabs = content['recommendationTabs'] is List
