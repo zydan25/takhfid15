@@ -163,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 left: 0,
                 right: 0,
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(13, width * .105, 13, 0),
+                  padding: EdgeInsets.fromLTRB(13, width * .115, 13, 0),
                   child: _floatingTopBar(),
                 ),
               ),
@@ -171,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Server-driven top category navigation, over the banner.
               if (tabs.isNotEmpty)
                 Positioned(
-                  top: width * .235,
+                  top: width * .26,
                   left: 0,
                   right: 0,
                   child: SizedBox(
@@ -427,7 +427,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _floatingTopBar() {
     final width = MediaQuery.sizeOf(context).width;
-    final searchWidth = math.min(width * .62, 255.0);
+    final searchWidth = math.min(width * .615, 255.0);
 
     final searchHeight = width * .098;
     final actionWidth = width * .068;
@@ -445,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 12),
         SizedBox(
           width: searchWidth,
           height: searchHeight,
@@ -516,7 +516,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 7),
+        const SizedBox(width: 16),
         _headerAction(
           icon: Icons.calendar_month_outlined,
           onTap: () => Navigator.push(
@@ -535,7 +535,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         _headerAction(
           icon: Icons.mail_outline_rounded,
           onTap: () => Navigator.push(
@@ -1186,7 +1186,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final width = MediaQuery.sizeOf(context).width;
-    final cardWidth = ((width - 92) / 4).clamp(86.0, 112.0).toDouble();
+    final cardWidth = (width * .202).clamp(62.0, 112.0).toDouble();
     final shape = _shape(c.styleTabsConfig['shape'], fallback: 'rounded');
 
     return Padding(
@@ -1198,11 +1198,11 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: EdgeInsets.fromLTRB(3, 2, 3, 6),
             child: Text(
               'إطلالات من أجلك',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
             ),
           ),
           SizedBox(
-            height: 112,
+            height: 104,
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 7),
               scrollDirection: Axis.horizontal,
@@ -1226,7 +1226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: SizedBox(
                     width: cardWidth,
-                    height: 108,
+                    height: 98,
                     child: ClipRRect(
                       borderRadius: _radius(shape, 18),
                       child: Stack(
@@ -1340,12 +1340,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           child: SizedBox(
-            width: 69,
+            width: 59,
             child: Column(
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 42,
+                  height: 42,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.slate100,
@@ -1387,7 +1387,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
 
     Widget row(List<SubCategory> values) => SizedBox(
-          height: 74,
+          height: 76,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 7),
             scrollDirection: Axis.horizontal,
