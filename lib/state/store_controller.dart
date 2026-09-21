@@ -411,7 +411,18 @@ class StoreController extends ChangeNotifier {
         );
       }
 
-      homeTopTabs.sort((a, b) => a.order.compareTo(b.order));
+      homeTopTabs.sort((a, b) {
+        int rank(HomeTopTab tab) {
+          if (tab.id == 'all') return 0;
+          if (tab.id == 'women') return 1;
+          if (tab.id == 'men') return 2;
+          if (tab.id == '__new') return 3;
+          return 4;
+        }
+
+        final byRank = rank(a).compareTo(rank(b));
+        return byRank != 0 ? byRank : a.order.compareTo(b.order);
+      });
     }
 
     if (homeTopTabs.isEmpty && categories.isNotEmpty) {
