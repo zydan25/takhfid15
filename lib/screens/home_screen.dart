@@ -46,10 +46,12 @@ class _HomeScreenState extends State<HomeScreen> {
       return const _HomeSkeleton();
     }
 
-    return RefreshIndicator(
-      color: AppColors.black,
-      onRefresh: c.refresh,
-      child: CustomScrollView(
+    return ColoredBox(
+      color: Colors.white,
+      child: RefreshIndicator(
+        color: AppColors.black,
+        onRefresh: c.refresh,
+        child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(child: _heroHeader(c.banners, c.categories)),
@@ -61,7 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.fromLTRB(10, 9, 10, 28),
             sliver: _productGrid(_feedProducts(c)),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
