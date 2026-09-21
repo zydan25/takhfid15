@@ -448,7 +448,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     setState(() => _color = value);
                     final colorImage = value.image;
                     if (colorImage != null && colorImage.isNotEmpty) {
-                      final target = images.indexOf(colorImage);
+                      final target = _images.indexOf(colorImage);
                       if (target >= 0) {
                         _galleryController.animateToPage(
                           target,
