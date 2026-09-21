@@ -66,34 +66,9 @@ dynamic _normalizeProductMap(dynamic raw) {
     item['image'] = _assetUrl(item['image']);
   }
 
-  for (final key in const [
-    'images',
-    'gallery',
-    'galleryImages',
-    'imageUrls',
-    'photos',
-    'media',
-    'mediaItems',
-    'productImages',
-  ]) {
-    final value = item[key];
-    if (value is List) {
-      item[key] = value
-          .map(_assetUrl)
-          .where((x) => x.isNotEmpty)
-          .toList();
-    }
-  }
-
-  final colors = item['colors'];
-  if (colors is List) {
-    item['colors'] = colors.whereType<Map>().map((rawColor) {
-      final color = Map<String, dynamic>.from(rawColor);
-      final image = color['image'] ?? color['imageUrl'];
-      if (image != null) color['image'] = _assetUrl(image);
-      return color;
-    }).toList();
-  }
+  // Preserve raw media arrays and nested color/variant objects. Converting
+  // them to a single URL here can discard additional images for a color.
+  // Product.fromJson recursively normalizes them without data loss.
 
   return item;
 }
