@@ -191,21 +191,74 @@ class Product {
       addMedia(candidate);
     }
 
-    final category =
-        (json['categoryId'] ?? json['category'] ?? 'all').toString();
+    String firstNonEmptyString(List<dynamic> values, {String fallback = ''}) {
+      for (final value in values) {
+        final text = value?.toString().trim() ?? '';
+        if (text.isNotEmpty && text != 'null') return text;
+      }
+      return fallback;
+    }
+
+    // Keep both category and categoryId: some server responses identify the
+    // department with one while the product relation uses the other.
+    final category = firstNonEmptyString(
+      [json['category'], json['categoryId'], json['department']],
+      fallback: 'all',
+    );
+
+    final categoryValues = <String>[];
     final rawCategories = json['categories'];
-    final categories = rawCategories is List && rawCategories.isNotEmpty
-        ? rawCategories.map((e) => e.toString()).toList()
-        : <String>['all', category];
+    if (rawCategories is List) {
+      for (final value in rawCategories) {
+        final text = value.toString().trim();
+        if (text.isNotEmpty && !categoryValues.contains(text)) {
+          categoryValues.add(text);
+        }
+      }
+    }
+    for (final value in [
+      json['category'],
+      json['categoryId'],
+      json['department'],
+    ]) {
+      final text = value?.toString().trim() ?? '';
+      if (text.isNotEmpty && !categoryValues.contains(text)) {
+        categoryValues.add(text);
+      }
+    }
+    if (categoryValues.isEmpty) {
+      categoryValues.add('all');
+    }
+    if (!categoryValues.contains(category)) {
+      categoryValues.add(category);
+    }
+    if (!categoryValues.contains('all')) {
+      categoryValues.add('all');
+    }
+    final categories = categoryValues;
 
     final rawSubCategories = json['subCategories'];
     final subCategories = rawSubCategories is List
-        ? rawSubCategories.map((e) => e.toString()).where((e) => e.isNotEmpty).toList()
+        ? rawSubCategories
+            .map(
+              (e) => e is Map
+                  ? (e['id'] ?? e['name'] ?? e['label'] ?? '').toString()
+                  : e.toString(),
+            )
+            .where((e) => e.isNotEmpty)
+            .toList()
         : <String>[];
 
     final rawStyles = json['styleTabs'] ?? json['styleTabIds'] ?? json['styles'];
     final styleTabs = rawStyles is List
-        ? rawStyles.map((e) => e.toString()).toList()
+        ? rawStyles
+            .map(
+              (e) => e is Map
+                  ? (e['id'] ?? e['name'] ?? e['label'] ?? '').toString()
+                  : e.toString(),
+            )
+            .where((e) => e.isNotEmpty)
+            .toList()
         : <String>[];
 
     final rawColorMaps = <Map<String, dynamic>>[];
