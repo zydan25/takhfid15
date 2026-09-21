@@ -79,6 +79,7 @@ class BannerItem {
   final String categoryTarget;
   final String subTarget;
   final String styleTarget;
+  final String trendTarget;
   final int slideDuration;
   final List<BannerSubTab> subScreenTabs;
 
@@ -91,6 +92,7 @@ class BannerItem {
     required this.categoryTarget,
     required this.subTarget,
     required this.styleTarget,
+    this.trendTarget = '',
     required this.slideDuration,
     this.subScreenTabs = const [],
   });
@@ -108,7 +110,8 @@ class BannerItem {
       categoryTarget:
           (json['categoryTarget'] ?? json['categoryId'] ?? 'all').toString(),
       subTarget: (json['targetSubCategory'] ?? '').toString(),
-      styleTarget: (json['targetStyleTab'] ?? '').toString(),
+      styleTarget: (json['targetStyleTab'] ?? json['style'] ?? '').toString(),
+      trendTarget: (json['targetTrend'] ?? json['trend'] ?? '').toString(),
       slideDuration: duration.clamp(2, 20),
       subScreenTabs: json['subScreenTabs'] is List
           ? (json['subScreenTabs'] as List).whereType<Map>().map((e) =>
