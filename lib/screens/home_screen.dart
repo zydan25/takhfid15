@@ -144,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       tab['label']!,
                       style: TextStyle(
-                        color: active ? Colors.black : AppColors.slate600,
+                        color: active ? Colors.black : AppColors.slate500,
                         fontSize: active ? 14 : 13,
                         fontWeight:
                             active ? FontWeight.w900 : FontWeight.w700,
