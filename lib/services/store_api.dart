@@ -57,8 +57,19 @@ class StoreApi {
   StoreApi({ApiClient? client}) : client = client ?? ApiClient();
 
   Future<Map<String, dynamic>> fetchStore() async {
-    final raw = await client.get('/store');
-    return Map<String, dynamic>.from(raw as Map);
+    try {
+      // This is the same endpoint used by the legacy storefront.
+      final raw = await client.get('/content');
+      return raw is Map
+          ? Map<String, dynamic>.from(raw)
+          : <String, dynamic>{};
+    } on ApiException {
+      // Keep compatibility with deployments that expose the newer /store alias.
+      final raw = await client.get('/store');
+      return raw is Map
+          ? Map<String, dynamic>.from(raw)
+          : <String, dynamic>{};
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchAllProductMaps() async {
