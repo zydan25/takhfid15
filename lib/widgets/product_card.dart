@@ -12,6 +12,7 @@ class ProductCard extends StatelessWidget {
   final VoidCallback onCart;
   final int index;
   final String currencyLabel;
+  final Map<String, dynamic>? pricing;
 
   const ProductCard({
     super.key,
@@ -22,7 +23,48 @@ class ProductCard extends StatelessWidget {
     required this.onCart,
     this.index = 0,
     this.currencyLabel = 'YER',
+    this.pricing,
   });
+
+  double _rate(String currency) {
+    final data = pricing ?? const <String, dynamic>{};
+
+    double value(dynamic raw) {
+      if (raw is num) return raw.toDouble();
+      return double.tryParse(raw?.toString() ?? '') ?? 0;
+    }
+
+    final direct = currency == 'SAR'
+        ? value(data['sarToYerRateNorth'] ?? data['sarRate'])
+        : currency == 'USD'
+            ? value(data['usdToYerRateNorth'] ?? data['usdRate'])
+            : 1;
+
+    if (direct > 0) return direct;
+
+    final sanaa = data['صنعاء'];
+    if (sanaa is Map) {
+      final nested = currency == 'SAR'
+          ? value(sanaa['sarToYerRate'] ?? sanaa['sarRate'])
+          : currency == 'USD'
+              ? value(sanaa['usdToYerRate'] ?? sanaa['usdRate'])
+              : 1;
+      if (nested > 0) return nested;
+    }
+
+    return currency == 'SAR' ? 140 : currency == 'USD' ? 535 : 1;
+  }
+
+  String _displayPrice(double yerAmount) {
+    switch (currencyLabel.toUpperCase()) {
+      case 'SAR':
+        return '${(yerAmount / _rate('SAR')).toStringAsFixed(2)} ر.س';
+      case 'USD':
+        return '${(yerAmount / _rate('USD')).toStringAsFixed(2)}';
+      default:
+        return '${yerAmount.toStringAsFixed(0)} ر.ي';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +247,7 @@ class ProductCard extends StatelessWidget {
                       if (product.originalPrice > product.discountPrice)
                         Expanded(
                           child: Text(
-                            '${product.originalPrice.toStringAsFixed(0)} $currencyLabel',
+                            _displayPrice(product.originalPrice),
                             style: const TextStyle(
                               color: AppColors.slate400,
                               decoration: TextDecoration.lineThrough,
@@ -221,7 +263,7 @@ class ProductCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '${product.discountPrice.toStringAsFixed(2)} $currencyLabel',
+                        _displayPrice(product.discountPrice),
                         style: const TextStyle(
                           color: AppColors.rose,
                           fontSize: 14,
