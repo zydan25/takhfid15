@@ -38,19 +38,28 @@ dynamic _normalizeProductMap(dynamic raw) {
   if (raw is! Map) return raw;
   final item = Map<String, dynamic>.from(raw);
 
-  final imageCandidate = item['image'] ??
-      item['imageUrl'] ??
-      item['mainImage'] ??
-      item['coverImage'] ??
-      item['cover_image'] ??
-      item['thumbnail'] ??
-      item['thumbnailUrl'] ??
-      item['image_url'] ??
-      item['src'] ??
-      item['photo'] ??
-      item['photoUrl'] ??
-      item['cover'] ??
-      item['coverUrl'];
+  dynamic imageCandidate;
+  for (final value in [
+    item['image'],
+    item['imageUrl'],
+    item['mainImage'],
+    item['coverImage'],
+    item['cover_image'],
+    item['thumbnail'],
+    item['thumbnailUrl'],
+    item['image_url'],
+    item['src'],
+    item['photo'],
+    item['photoUrl'],
+    item['cover'],
+    item['coverUrl'],
+  ]) {
+    final normalized = _assetUrl(value);
+    if (normalized.isNotEmpty) {
+      imageCandidate = normalized;
+      break;
+    }
+  }
   if ((item['image'] ?? '').toString().trim().isEmpty && imageCandidate != null) {
     item['image'] = _assetUrl(imageCandidate);
   } else if (item['image'] != null) {
