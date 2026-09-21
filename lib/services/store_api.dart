@@ -341,7 +341,16 @@ class StoreApi {
   Future<List<Map<String, dynamic>>> fetchOrderMaps() async {
     final raw = await client.get('/orders');
     final map = raw is Map ? Map<String, dynamic>.from(raw) : const {};
-    final list = map['orders'] is List ? map['orders'] as List : const [];
+    final list = map['orders'] is List
+        ? map['orders'] as List
+        : map['data'] is List
+            ? map['data'] as List
+            : map['items'] is List
+                ? map['items'] as List
+                : raw is List
+                    ? raw
+                    : const [];
+
     return list.whereType<Map>().map((item) {
       return Map<String, dynamic>.from(item);
     }).toList();
@@ -367,7 +376,8 @@ class StoreApi {
         if (orderId != null && orderId.isNotEmpty) 'orderId': orderId,
       },
     );
-    return Map<String, dynamic>.from(raw as Map);
+    if (raw is Map) return Map<String, dynamic>.from(raw);
+    return <String, dynamic>{};
   }
 
   Future<List<Map<String, dynamic>>> chatMessages(
