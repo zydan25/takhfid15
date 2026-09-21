@@ -322,11 +322,10 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
   }
 
   List<SubCategory> _categorySubcategories() {
-    final category = widget.controller.categories
-        .where((item) => item.id == widget.category)
-        .cast<Category?>()
-        .firstWhere((item) => item != null, orElse: () => null);
-    return category?.subCategories ?? const <SubCategory>[];
+    for (final category in widget.controller.categories) {
+      if (category.id == widget.category) return category.subCategories;
+    }
+    return const <SubCategory>[];
   }
 
   String? _resolveSubCategory(String? value) {
