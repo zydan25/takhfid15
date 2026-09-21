@@ -35,8 +35,8 @@ class _TrendsScreenState extends State<TrendsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final campaigns = widget.controller.campaigns.toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
+    // Controller preserves the server order field; do not re-sort by ID.
+    final campaigns = widget.controller.campaigns.toList();
 
     final campaign = campaigns.isEmpty
         ? null
