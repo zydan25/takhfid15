@@ -88,9 +88,7 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
               SliverToBoxAdapter(child: _plainHeader()),
             if (bannerTabs.isNotEmpty)
               SliverToBoxAdapter(child: _bannerSubTabs(bannerTabs)),
-            if (related.isNotEmpty &&
-                widget.subCategory == null &&
-                _selectedSubTab == null)
+            if (related.isNotEmpty && _selectedSubTab == null)
               SliverToBoxAdapter(child: _relatedStrip(related)),
             SliverToBoxAdapter(child: _sortBar()),
             SliverToBoxAdapter(
@@ -364,11 +362,30 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
   }
 
   List<SubCategory> _relatedItems() {
-    if (widget.category.isEmpty || widget.category == 'all') return const [];
-    final category = widget.controller.categories
-        .where((item) => item.id == widget.category)
+    // For a subcategory opened from the home screen, locate its parent on the
+    // server so the category page still shows the complete circular browser.
+    if (widget.category.isNotEmpty && widget.category != 'all') {
+      final category = widget.controller.categories
+          .where((item) => item.id == widget.category)
+          .toList();
+      return category.isEmpty ? const [] : category.first.subCategories;
+    }
+
+    if (widget.subCategory != null && widget.subCategory!.isNotEmpty) {
+      for (final category in widget.controller.categories) {
+        if (category.subCategories.any(
+          (sub) =>
+              sub.id == widget.subCategory || sub.name == widget.subCategory,
+        )) {
+          return category.subCategories;
+        }
+      }
+    }
+
+    final all = widget.controller.categories
+        .where((item) => item.id == 'all')
         .toList();
-    return category.isEmpty ? const [] : category.first.subCategories;
+    return all.isEmpty ? const [] : all.first.subCategories;
   }
 
   Widget _relatedStrip(List<SubCategory> items) {
@@ -423,7 +440,7 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 8,
+                      fontSize: 9.5,
                       fontWeight: FontWeight.w800,
                       height: 1.1,
                     ),
