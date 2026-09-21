@@ -176,6 +176,8 @@ class StoreController extends ChangeNotifier {
         ? Map<String, dynamic>.from(store['content'] as Map)
         : <String, dynamic>{};
     final content = <String, dynamic>{...nestedContent};
+    // Keep the full server content accessible to presentation screens.
+    storeConfig['content'] = content;
 
     // The legacy web client and the current API have both returned parts of
     // the catalog at the /store root. Prefer nested content, but transparently
@@ -246,6 +248,8 @@ class StoreController extends ChangeNotifier {
         : (store['announcements'] is Map
             ? Map<String, dynamic>.from(store['announcements'] as Map)
             : <String, dynamic>{});
+    // Mirror announcements at store root for cached/offline readers.
+    storeConfig['announcements'] = announcements;
     recommendationTabs = content['recommendationTabs'] is List
         ? content['recommendationTabs'].whereType<Map>().map((raw) =>
             RecommendationTab.fromJson(Map<String, dynamic>.from(raw)))
