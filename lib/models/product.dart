@@ -169,6 +169,36 @@ class Product {
         ? rawStyles.map((e) => e.toString()).toList()
         : <String>[];
 
+    final rawColorMaps = <Map<String, dynamic>>[];
+
+    final rawColors = json['colors'];
+    if (rawColors is List) {
+      rawColorMaps.addAll(
+        rawColors.whereType<Map>().map(
+          (item) => Map<String, dynamic>.from(item),
+        ),
+      );
+    }
+
+    final rawVariants = json['variants'];
+    if (rawVariants is List) {
+      for (final rawVariant in rawVariants.whereType<Map>()) {
+        final variant = Map<String, dynamic>.from(rawVariant);
+        final color = variant['color'];
+        if (color is Map) {
+          final merged = <String, dynamic>{
+            ...Map<String, dynamic>.from(color),
+            ...variant,
+          };
+          rawColorMaps.add(merged);
+        } else if (variant['colorName'] != null ||
+            variant['colorHex'] != null ||
+            variant['colorCode'] != null) {
+          rawColorMaps.add(variant);
+        }
+      }
+    }
+
     final price = number(json['price']);
     final compare = number(json['compareAtPrice'] ?? json['originalPrice']);
     final discountValue = number(json['discountValue']);
@@ -187,8 +217,8 @@ class Product {
             ? (((compare - calculated) / compare) * 100).round()
             : 0;
 
-    if (json['colors'] is List) {
-      for (final rawColor in (json['colors'] as List).whereType<Map>()) {
+    if (rawColorMaps.isNotEmpty) {
+      for (final rawColor in rawColorMaps) {
         for (final key in const [
           'image',
           'imageUrl',
@@ -225,11 +255,9 @@ class Product {
       discountPercentage: effectiveDiscount,
       rating: number(json['rating']),
       reviewsCount: integer(json['reviewsCount'] ?? json['reviewCount']),
-      colors: json['colors'] is List
-          ? (json['colors'] as List).whereType<Map>().map((e) {
-              return ProductColor.fromJson(Map<String, dynamic>.from(e));
-            }).toList()
-          : const [],
+      colors: rawColorMaps
+          .map(ProductColor.fromJson)
+          .toList(),
       sizes: json['sizes'] is List
           ? (json['sizes'] as List).map((e) => e.toString()).toList()
           : const [],
@@ -313,8 +341,18 @@ class ProductColor {
     }
 
     return ProductColor(
-      name: (json['name'] ?? json['label'] ?? 'أساسي').toString(),
-      hex: (json['hex'] ?? json['color'] ?? '#111827').toString(),
+      name: (json['name'] ??
+              json['label'] ??
+              json['colorName'] ??
+              json['title'] ??
+              'أساسي')
+          .toString(),
+      hex: (json['hex'] ??
+              json['colorHex'] ??
+              json['colorCode'] ??
+              json['color'] ??
+              '#111827')
+          .toString(),
       image: images.isNotEmpty ? images.first : null,
       images: images,
     );
