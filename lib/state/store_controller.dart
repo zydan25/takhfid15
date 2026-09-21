@@ -92,7 +92,64 @@ class StoreController extends ChangeNotifier {
       final store = await api.fetchStore();
       if (store.isNotEmpty) {
         _applyStore(store);
-        await cache.writeJson('store', store);
+
+        // The legacy web client exposes content through dedicated endpoints.
+        // Hydrate anything missing from /store so banners, coupons, categories,
+        // tabs and pricing are never silently lost.
+        var mergedStore = store;
+        if (categories.isEmpty || banners.isEmpty || announcements.isEmpty) {
+          try {
+            final content = await api.fetchContent();
+            if (content.isNotEmpty) {
+              _applyStore({
+                ...store,
+                'content': {
+                  ...(store['content'] is Map
+                      ? Map<String, dynamic>.from(store['content'] as Map)
+                      : <String, dynamic>{}),
+                  ...content,
+                },
+              });
+              mergedStore = {
+                ...store,
+                'content': {
+                  ...(store['content'] is Map
+                      ? Map<String, dynamic>.from(store['content'] as Map)
+                      : <String, dynamic>{}),
+                  ...content,
+                },
+              };
+            }
+          } catch (_) {}
+        }
+
+        if (categories.isEmpty) {
+          try {
+            final rawCategories = await api.fetchCategories();
+            if (rawCategories.isNotEmpty) {
+              _applyStore({
+                ...mergedStore,
+                'content': {
+                  ...(mergedStore['content'] is Map
+                      ? Map<String, dynamic>.from(mergedStore['content'] as Map)
+                      : <String, dynamic>{}),
+                  'categories': rawCategories,
+                },
+              });
+            }
+          } catch (_) {}
+        }
+
+        if (pricing.isEmpty) {
+          try {
+            final rawPricing = await api.fetchPricing();
+            if (rawPricing.isNotEmpty) {
+              pricing = rawPricing;
+            }
+          } catch (_) {}
+        }
+
+        await cache.writeJson('store', mergedStore);
       }
     } catch (_) {}
 
