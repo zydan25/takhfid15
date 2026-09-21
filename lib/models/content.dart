@@ -1,3 +1,102 @@
+
+class HomeTopTab {
+  final String id;
+  final String label;
+  final String targetType;
+  final String categoryId;
+  final String subCategoryId;
+  final String styleTab;
+  final String trend;
+  final bool isActive;
+  final int order;
+
+  const HomeTopTab({
+    required this.id,
+    required this.label,
+    this.targetType = 'category',
+    this.categoryId = 'all',
+    this.subCategoryId = '',
+    this.styleTab = '',
+    this.trend = '',
+    this.isActive = true,
+    this.order = 0,
+  });
+
+  factory HomeTopTab.fromJson(Map<String, dynamic> json) {
+    return HomeTopTab(
+      id: (json['id'] ?? json['key'] ?? '').toString(),
+      label: (json['label'] ?? json['name'] ?? '').toString(),
+      targetType: (json['targetType'] ?? 'category').toString(),
+      categoryId: (json['categoryId'] ?? json['category'] ?? 'all').toString(),
+      subCategoryId:
+          (json['subCategoryId'] ?? json['subCategory'] ?? '').toString(),
+      styleTab: (json['styleTab'] ?? json['style'] ?? '').toString(),
+      trend: (json['trend'] ?? json['targetTrend'] ?? '').toString(),
+      isActive: json['isActive'] != false,
+      order: json['order'] is num ? (json['order'] as num).toInt() : 0,
+    );
+  }
+}
+
+class SideCategoryItem {
+  final String id;
+  final String name;
+  final String image;
+  final String categoryId;
+  final String sideCategoryId;
+
+  const SideCategoryItem({
+    required this.id,
+    required this.name,
+    required this.image,
+    required this.categoryId,
+    required this.sideCategoryId,
+  });
+
+  factory SideCategoryItem.fromJson(Map<String, dynamic> json) {
+    return SideCategoryItem(
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      image: (json['image'] ?? '').toString(),
+      categoryId: (json['categoryId'] ?? 'all').toString(),
+      sideCategoryId: (json['sideCategoryId'] ?? '').toString(),
+    );
+  }
+}
+
+class SideCategory {
+  final String id;
+  final String name;
+  final String iconName;
+  final String badge;
+  final List<SideCategoryItem> subCategories;
+
+  const SideCategory({
+    required this.id,
+    required this.name,
+    this.iconName = '',
+    this.badge = '',
+    this.subCategories = const [],
+  });
+
+  factory SideCategory.fromJson(Map<String, dynamic> json) {
+    final raw = json['subCategories'];
+    return SideCategory(
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      iconName: (json['iconName'] ?? '').toString(),
+      badge: (json['badge'] ?? '').toString(),
+      subCategories: raw is List
+          ? raw.whereType<Map>().map((e) {
+              return SideCategoryItem.fromJson(
+                Map<String, dynamic>.from(e),
+              );
+            }).toList()
+          : const [],
+    );
+  }
+}
+
 class Category {
   final String id;
   final String name;
