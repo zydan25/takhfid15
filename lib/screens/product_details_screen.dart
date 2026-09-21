@@ -46,18 +46,39 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   List<String> get _images {
-    final base = _detailProduct.gallery.where((x) => x.isNotEmpty).toList();
+    final result = <String>[];
 
-    if (_color?.image != null && _color!.image!.isNotEmpty) {
-      final colorImage = _color!.image!;
-      base.remove(colorImage);
-      base.insert(0, colorImage);
+    void add(String value) {
+      final image = value.trim();
+      if (image.isNotEmpty && !result.contains(image)) {
+        result.add(image);
+      }
     }
 
-    if (base.isEmpty && _detailProduct.image.isNotEmpty) {
-      return [_detailProduct.image];
+    for (final image in _detailProduct.gallery) {
+      add(image);
     }
-    return base;
+
+    final color = _color;
+    if (color != null) {
+      for (final image in color.images) {
+        add(image);
+      }
+      if (color.image != null) {
+        add(color.image!);
+      }
+    }
+
+    add(_detailProduct.image);
+
+    if (color != null && color.images.isNotEmpty) {
+      return <String>[
+        ...color.images.where(result.contains),
+        ...result.where((image) => !color.images.contains(image)),
+      ];
+    }
+
+    return result;
   }
 
   Future<void> _loadFullProduct() async {
@@ -200,6 +221,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             SliverToBoxAdapter(child: _sizeSelector(p)),
           SliverToBoxAdapter(child: _quantitySelector()),
           SliverToBoxAdapter(child: _shippingCard()),
+          SliverToBoxAdapter(child: _serverDetailsCard(p)),
           SliverToBoxAdapter(child: _reviewsCard(p)),
           if (related.isNotEmpty)
             SliverToBoxAdapter(child: _related(related)),
@@ -446,7 +468,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 return GestureDetector(
                   onTap: () {
                     setState(() => _color = value);
-                    final colorImage = value.image;
+                    final colorImage = value.images.isNotEmpty
+                        ? value.images.first
+                        : value.image;
                     if (colorImage != null && colorImage.isNotEmpty) {
                       final target = _images.indexOf(colorImage);
                       if (target >= 0) {
@@ -581,6 +605,37 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Widget _shippingCard() {
+    final data = widget.controller.pricing;
+    final profile = widget.controller.profile;
+    final governorate = (profile?['governorate'] ?? 'صنعاء').toString();
+
+    Map<String, dynamic> productShipping() {
+      for (final key in const ['shipping', 'delivery', 'deliveryInfo']) {
+        final value = _detailProduct.serverData[key];
+        if (value is Map) {
+          return Map<String, dynamic>.from(value);
+        }
+      }
+      return const {};
+    }
+
+    final productData = productShipping();
+    final governors = data['governorates'];
+    final region = governors is Map && governors[governorate] is Map
+        ? Map<String, dynamic>.from(governors[governorate] as Map)
+        : const <String, dynamic>{};
+
+    final free = productData['freeDelivery'] ??
+        productData['freeShipping'] ??
+        region['freeDeliveryIncluded'];
+    final note = productData['note'] ??
+        productData['deliveryNote'] ??
+        region['deliveryNote'] ??
+        'تكلفة الشحن وموعد التوصيل بحسب المحافظة وإعدادات المتجر الحالية.';
+    final fee = productData['fee'] ??
+        productData['deliveryFee'] ??
+        data['defaultDeliveryFee'];
+
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 12, 12, 6),
       padding: const EdgeInsets.all(12),
@@ -594,15 +649,186 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         children: [
           const Row(
             children: [
-              Icon(Icons.local_shipping_outlined, size: 18, color: AppColors.ink),
+              Icon(
+                Icons.local_shipping_outlined,
+                size: 18,
+                color: AppColors.ink,
+              ),
               SizedBox(width: 7),
-              Text('الشحن والتوصيل', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+              Text(
+                'الشحن والتوصيل',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+              ),
             ],
           ),
-          const SizedBox(height: 5),
-          Text(
-            'تكلفة الشحن وموعد التوصيل بحسب المحافظة وإعدادات المتجر الحالية.',
-            style: const TextStyle(fontSize: 9, color: AppColors.slate500, height: 1.55),
+          const SizedBox(height: 7),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  note.toString(),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: AppColors.slate500,
+                    height: 1.55,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 7),
+              if (free == true)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2EFDA),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: const Text(
+                    'شحن مجاني',
+                    style: TextStyle(
+                      color: Color(0xFF166534),
+                      fontSize: 8,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                )
+              else if (fee != null)
+                Text(
+                  fee.toString(),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.ink,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _serverDetailsCard(Product p) {
+    final raw = p.serverData;
+    final entries = <(String, String)>[];
+
+    void add(String label, dynamic value) {
+      if (value == null) return;
+      if (value is String && value.trim().isEmpty) return;
+      if (value is List && value.isEmpty) return;
+      if (value is Map && value.isEmpty) return;
+
+      String valueText;
+      if (value is List) {
+        valueText = value
+            .map(
+              (item) => item is Map
+                  ? (item['name'] ?? item['label'] ?? item['value'] ?? item)
+                      .toString()
+                  : item.toString(),
+            )
+            .join('، ');
+      } else if (value is Map) {
+        valueText =
+            value.entries.map((item) => item.key.toString() + ': ' + item.value.toString()).join(' • ');
+      } else {
+        valueText = value.toString();
+      }
+
+      if (valueText.trim().isNotEmpty) {
+        entries.add((label, valueText));
+      }
+    }
+
+    const labels = <String, String>{
+      'salesText': 'المبيعات',
+      'storeBadgeTag': 'المتجر',
+      'couponTag': 'القسيمة',
+      'stockUrgency': 'المخزون',
+      'sellersCount': 'عدد البائعين',
+      'material': 'الخامة',
+      'fabric': 'القماش',
+      'ageGroup': 'الفئة العمرية',
+      'productType': 'نوع المنتج',
+      'trendTag': 'الترند',
+      'priceDropBadge': 'تنبيه السعر',
+      'badgeText': 'شارة المنتج',
+    };
+
+    for (final item in labels.entries) {
+      add(item.value, raw[item.key]);
+    }
+
+    for (final key in const [
+      'features',
+      'specifications',
+      'attributes',
+      'shipping',
+      'delivery',
+    ]) {
+      final value = raw[key];
+      if (value != null) {
+        add(
+          key == 'shipping' || key == 'delivery' ? 'تفاصيل الشحن' : 'المواصفات',
+          value,
+        );
+      }
+    }
+
+    if (entries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: AppColors.slate200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'تفاصيل المنتج',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 7),
+          ...entries.map(
+            (entry) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 88,
+                    child: Text(
+                      entry.$1,
+                      style: const TextStyle(
+                        fontSize: 8.5,
+                        color: AppColors.slate500,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      entry.$2,
+                      style: const TextStyle(
+                        fontSize: 9,
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w800,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
