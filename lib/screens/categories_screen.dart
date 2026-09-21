@@ -237,7 +237,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       height: 1.15,
                       color: selected
                           ? AppColors.ink
-                          : AppColors.slate600,
+                          : AppColors.slate500,
                       fontWeight: selected
                           ? FontWeight.w900
                           : FontWeight.w700,
