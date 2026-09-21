@@ -61,8 +61,8 @@ class StoreController extends ChangeNotifier {
     ]);
     await _restoreCartAndWishlist();
 
-    final hasCachedData = restored.any((value) => value);
-    loading = !hasCachedData;
+    final hasCachedContent = products.isNotEmpty || categories.isNotEmpty || banners.isNotEmpty;
+    loading = !hasCachedContent;
     notifyListeners();
 
     _startPoller();
