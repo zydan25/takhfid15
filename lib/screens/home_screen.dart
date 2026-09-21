@@ -1338,7 +1338,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 7),
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              itemCount: styles.take(4).length,
+              itemCount: styles.length,
               separatorBuilder: (_, __) => const SizedBox(width: 7),
               itemBuilder: (_, index) {
                 final style = styles[index];
@@ -1466,7 +1466,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: sub.name,
                 category: 'all',
                 subCategory: sub.id,
-                image: sub.image,
+                image: null,
               ),
             ),
           ),
