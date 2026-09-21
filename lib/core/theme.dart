@@ -41,7 +41,7 @@ ThemeData buildTakhfidTheme() {
         fontWeight: FontWeight.w900,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
