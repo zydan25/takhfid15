@@ -662,6 +662,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 width: 158,
                 child: ProductCard(
                   product: product,
+      currencyLabel: widget.controller.currency,
+      pricing: widget.controller.pricing,
                   index: index,
                   wishlisted: widget.controller.isWishlisted(product),
                   onOpen: () => Navigator.push(
