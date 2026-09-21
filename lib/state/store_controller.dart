@@ -921,13 +921,26 @@ class StoreController extends ChangeNotifier {
   Future<String?> ensureChat({String? orderId}) async {
     if (profile == null) return null;
 
-    final result =
-        await api.createChatSession(orderId: orderId);
-    final session = result['session'];
+    final result = await api.createChatSession(orderId: orderId);
 
-    return session is Map
-        ? session['id']?.toString()
-        : null;
+    final direct = result['chatSessionId'] ??
+        result['sessionId'] ??
+        result['conversationId'];
+    if (direct != null && direct.toString().isNotEmpty) {
+      return direct.toString();
+    }
+
+    final session = result['session'] ??
+        result['chatSession'] ??
+        result['conversation'];
+    if (session is Map) {
+      final id = session['id'] ?? session['sessionId'] ?? session['conversationId'];
+      if (id != null && id.toString().isNotEmpty) {
+        return id.toString();
+      }
+    }
+
+    return null;
   }
 
   Future<List<Map<String, dynamic>>> fetchChatMessages(
