@@ -50,7 +50,6 @@ class _TrendsScreenState extends State<TrendsScreen> {
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          SliverToBoxAdapter(child: _topBar(campaign)),
           if (campaign != null)
             SliverToBoxAdapter(child: _hero(campaign))
           else
@@ -196,210 +195,244 @@ class _TrendsScreenState extends State<TrendsScreen> {
 
   Widget _hero(TrendCampaign campaign) {
     final width = MediaQuery.sizeOf(context).width;
-    final height = width * 706 / 1080;
+    final height = (width * .93).clamp(470.0, 690.0).toDouble();
+    final linked = widget.controller.productsByIds(campaign.productIds);
+    final preview = (linked.isNotEmpty ? linked : widget.controller.products)
+        .take(3)
+        .toList();
 
-    return SizedBox(
-      height: height,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          CachedNetworkImage(
-            imageUrl: campaign.bgImage.isNotEmpty ? campaign.bgImage : campaign.image,
-            fit: BoxFit.cover,
-            errorWidget: (_, __, ___) =>
-                const ColoredBox(color: AppColors.ink),
-          ),
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0x22000000),
-                  Color(0x10000000),
-                  Color(0xB5000000),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            right: 15,
-            left: 15,
-            bottom: 18,
-            child: Directionality(
-              textDirection: TextDirection.rtl,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (campaign.badge.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: Text(
-                        campaign.badge,
-                        style: const TextStyle(
-                          fontSize: 8,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  if (campaign.title.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: Text(
-                        campaign.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          height: 1.12,
-                          fontWeight: FontWeight.w900,
-                          shadows: [
-                            Shadow(
-                              color: Color(0x99000000),
-                              blurRadius: 5,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  if (campaign.subtitle.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 3),
-                      child: Text(
-                        campaign.subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          height: 1.35,
-                          fontWeight: FontWeight.w700,
-                          shadows: [
-                            Shadow(
-                              color: Color(0x99000000),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 7),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (campaign.hashtag.isNotEmpty)
-                          Text(
-                            campaign.hashtag,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        if (campaign.hashtag.isNotEmpty &&
-                            campaign.daysLeft.isNotEmpty)
-                          const SizedBox(width: 10),
-                        if (campaign.daysLeft.isNotEmpty)
-                          Text(
-                            campaign.daysLeft,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 8.5,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _campaignsStrip(List<TrendCampaign> campaigns) {
-    if (campaigns.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      color: const Color(0xFFFAF7F2),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 9),
+    return GestureDetector(
+      onTap: () => _openCampaign(campaign),
       child: SizedBox(
-        height: 78,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          reverse: true,
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          itemCount: campaigns.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 10),
-          itemBuilder: (_, index) {
-            final item = campaigns[index];
-            final active = index == campaignIndex;
-
-            return GestureDetector(
-              onTap: () => setState(() {
-                campaignIndex = index;
-                selectedHash = item.hashtag;
-              }),
-              child: SizedBox(
-                width: 72,
-                child: Column(
+        height: height,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CachedNetworkImage(
+              imageUrl: campaign.bgImage.isNotEmpty
+                  ? campaign.bgImage
+                  : campaign.image,
+              fit: BoxFit.cover,
+              errorWidget: (_, __, ___) =>
+                  const ColoredBox(color: AppColors.ink),
+            ),
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0x28000000),
+                    Color(0x08000000),
+                    Color(0xD0000000),
+                  ],
+                ),
+              ),
+            ),
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+                child: Row(
+                  textDirection: TextDirection.ltr,
                   children: [
-                    Container(
-                      width: 54,
-                      height: 54,
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
+                    IconButton(
+                      onPressed: _openSearch,
+                      icon: const Icon(
+                        Icons.search_rounded,
                         color: Colors.white,
-                        border: Border.all(
-                          color: active
-                              ? Colors.black
-                              : const Color(0xFFD6D3D1),
-                          width: active ? 2 : 1,
-                        ),
-                      ),
-                      child: ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: item.bgImage.isNotEmpty
-                              ? item.bgImage
-                              : item.image,
-                          fit: BoxFit.cover,
-                        ),
+                        size: 29,
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      item.hashtag.isNotEmpty ? item.hashtag : item.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
+                    const Spacer(),
+                    const Text(
+                      'ترندات',
+                      textDirection: TextDirection.rtl,
                       style: TextStyle(
-                        fontSize: 7.5,
-                        fontWeight:
-                            active ? FontWeight.w900 : FontWeight.w700,
+                        color: Colors.white,
+                        fontSize: 27,
+                        fontWeight: FontWeight.w900,
+                        shadows: [
+                          Shadow(
+                            color: Color(0x80000000),
+                            blurRadius: 5,
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          },
+            ),
+            Positioned(
+              left: 11,
+              right: 11,
+              bottom: 15,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(11, 11, 11, 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xCE171713),
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(.28),
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x60000000),
+                      blurRadius: 18,
+                      offset: Offset(0, 7),
+                    ),
+                  ],
+                ),
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          if (campaign.daysLeft.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF8B20DD),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Text(
+                                campaign.daysLeft,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          const Spacer(),
+                          Flexible(
+                            child: Text(
+                              campaign.hashtag + ' ' + campaign.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (campaign.subtitle.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            campaign.subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      if (preview.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 9),
+                          child: SizedBox(
+                            height: 208,
+                            child: Row(
+                              children: preview.map((product) {
+                                final image = _primaryImage(product);
+                                return Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 3,
+                                    ),
+                                    child: GestureDetector(
+                                      onTap: () => _openProduct(product),
+                                      child: Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          6,
+                                          6,
+                                          6,
+                                          5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Expanded(
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                child: image.isEmpty
+                                                    ? const ColoredBox(
+                                                        color:
+                                                            AppColors.slate100,
+                                                        child: Center(
+                                                          child: Icon(
+                                                            Icons.image_outlined,
+                                                            color:
+                                                                AppColors.slate400,
+                                                          ),
+                                                        ),
+                                                      )
+                                                    : CachedNetworkImage(
+                                                        imageUrl: image,
+                                                        fit: BoxFit.cover,
+                                                        width:
+                                                            double.infinity,
+                                                      ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 5),
+                                            Text(
+                                              product.brand.isEmpty
+                                                  ? 'SHEIN'
+                                                  : product.brand,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              product.discountPrice
+                                                      .toStringAsFixed(2) +
+                                                  ' ' +
+                                                  widget.controller.currency,
+                                              style: const TextStyle(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
