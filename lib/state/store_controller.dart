@@ -30,6 +30,8 @@ class StoreController extends ChangeNotifier {
   Map<String, dynamic> storeConfig = {};
   Map<String, dynamic> pricing = {};
   Map<String, dynamic> categoryTabsConfig = {'shape': 'circle', 'size': 'medium', 'isSquareRatio': true};
+  Map<String, dynamic> styleTabsConfig = {'shape': 'rounded', 'size': 'large'};
+  List<StyleTab> homeStyleTabs = [];
   Map<String, dynamic> announcements = {};
   List<RecommendationTab> recommendationTabs = [];
   String currency = 'YER';
@@ -119,6 +121,21 @@ class StoreController extends ChangeNotifier {
             'size': 'medium',
             'isSquareRatio': true,
           };
+    styleTabsConfig = content['styleTabsConfig'] is Map
+        ? Map<String, dynamic>.from(content['styleTabsConfig'])
+        : <String, dynamic>{'shape': 'rounded', 'size': 'large'};
+
+    final rawHomeStyles = content['homeStyleTabs'] ??
+        content['styleTabs'] ??
+        content['looks'] ??
+        content['homeLooks'];
+    if (rawHomeStyles is List) {
+      homeStyleTabs = rawHomeStyles.whereType<Map>().map((raw) =>
+          StyleTab.fromJson(Map<String, dynamic>.from(raw))).toList();
+    } else {
+      homeStyleTabs = [];
+    }
+
     announcements = content['announcements'] is Map
         ? Map<String, dynamic>.from(content['announcements'])
         : <String, dynamic>{};
@@ -130,6 +147,10 @@ class StoreController extends ChangeNotifier {
     recommendationTabs.sort((a, b) => a.order.compareTo(b.order));
 
     storeConfig['categoryTabsConfig'] = categoryTabsConfig;
+    storeConfig['styleTabsConfig'] = styleTabsConfig;
+    storeConfig['homeStyleTabs'] = homeStyleTabs
+        .map((x) => {'id': x.id, 'name': x.name, 'image': x.image})
+        .toList();
     storeConfig['announcements'] = announcements;
     storeConfig['recommendationTabs'] = recommendationTabs
         .map((x) => {'id': x.id, 'label': x.label})
