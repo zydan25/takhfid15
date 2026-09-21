@@ -1,36 +1,22 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalCache {
-  Future<Directory> get _directory async {
-    final root = await getApplicationDocumentsDirectory();
-    final directory = Directory(root.path + '/takhfid_cache');
-    if (!directory.existsSync()) {
-      await directory.create(recursive: true);
-    }
-    return directory;
-  }
-
-  Future<File> _file(String key) async {
-    return File((await _directory).path + '/' + key + '.json');
-  }
+  String _key(String key) => 'takhfid_cache_$key';
 
   Future<void> writeJson(String key, Object value) async {
-    final file = await _file(key);
-    final temp = File(file.path + '.tmp');
-    await temp.writeAsString(jsonEncode(value), flush: true);
-    if (file.existsSync()) await file.delete();
-    await temp.rename(file.path);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_key(key), jsonEncode(value));
+    } catch (_) {}
   }
 
   Future<dynamic> readJson(String key) async {
     try {
-      final file = await _file(key);
-      if (!file.existsSync()) return null;
-      final raw = await file.readAsString();
-      if (raw.trim().isEmpty) return null;
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_key(key));
+      if (raw == null || raw.trim().isEmpty) return null;
       return jsonDecode(raw);
     } catch (_) {
       return null;
@@ -39,14 +25,12 @@ class LocalCache {
 
   Future<void> delete(String key) async {
     try {
-      final file = await _file(key);
-      if (file.existsSync()) await file.delete();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_key(key));
     } catch (_) {}
   }
 
-  Future<void> saveString(String key, String value) async {
-    await writeJson(key, value);
-  }
+  Future<void> saveString(String key, String value) => writeJson(key, value);
 
   Future<String?> readString(String key) async {
     final value = await readJson(key);
