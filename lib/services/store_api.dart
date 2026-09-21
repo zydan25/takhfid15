@@ -73,19 +73,71 @@ class StoreApi {
   StoreApi({ApiClient? client}) : client = client ?? ApiClient();
 
   Future<Map<String, dynamic>> fetchStore() async {
+    Map<String, dynamic> store = {};
+    Map<String, dynamic> content = {};
+
     try {
-      // This is the same endpoint used by the legacy storefront.
-      final raw = await client.get('/content');
-      return raw is Map
-          ? Map<String, dynamic>.from(raw)
-          : <String, dynamic>{};
-    } on ApiException {
-      // Keep compatibility with deployments that expose the newer /store alias.
       final raw = await client.get('/store');
-      return raw is Map
-          ? Map<String, dynamic>.from(raw)
-          : <String, dynamic>{};
+      if (raw is Map) {
+        store = Map<String, dynamic>.from(raw);
+      }
+    } catch (_) {}
+
+    try {
+      final raw = await client.get('/content');
+      if (raw is Map) {
+        final root = Map<String, dynamic>.from(raw);
+        content = root['content'] is Map
+            ? Map<String, dynamic>.from(root['content'] as Map)
+            : root;
+      }
+    } catch (_) {}
+
+    final merged = <String, dynamic>{...store};
+
+    // Prefer explicit /content values only when /store did not provide them.
+    for (final key in const [
+      'categories',
+      'banners',
+      'campaigns',
+      'announcements',
+      'recommendationTabs',
+      'sideCategories',
+      'sidebarCategories',
+      'homeTopTabs',
+      'topTabs',
+      'navigationTabs',
+      'homeNavigationTabs',
+      'homeStyleTabs',
+      'styleTabs',
+      'looks',
+      'homeLooks',
+      'categoryTabsConfig',
+      'styleTabsConfig',
+      'hashtags',
+      'trendHashtags',
+      'products',
+      'pricingSettings',
+    ]) {
+      final existing = merged[key];
+      final missing = existing == null ||
+          (existing is List && existing.isEmpty) ||
+          (existing is Map && existing.isEmpty);
+      if (missing && content[key] != null) {
+        merged[key] = content[key];
+      }
     }
+
+    final existingNested = merged['content'];
+    final nested = existingNested is Map
+        ? Map<String, dynamic>.from(existingNested as Map)
+        : <String, dynamic>{};
+    nested.addAll(content);
+    if (nested.isNotEmpty) {
+      merged['content'] = nested;
+    }
+
+    return merged;
   }
 
   Future<List<Map<String, dynamic>>> fetchAllProductMaps() async {
