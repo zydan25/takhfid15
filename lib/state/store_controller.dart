@@ -346,6 +346,39 @@ class StoreController extends ChangeNotifier {
       }).toList();
     }
 
+    if (categories.isNotEmpty && homeTopTabs.isNotEmpty) {
+      final existing = <String>{for (final tab in homeTopTabs) tab.id};
+      final missingOrder = homeTopTabs.isEmpty
+          ? 0
+          : homeTopTabs.map((e) => e.order).reduce((a, b) => a > b ? a : b) + 1;
+
+      final additions = <String>[
+        'shoes',
+        'girls',
+        'perfumes',
+      ];
+
+      var order = missingOrder;
+      for (final id in additions) {
+        if (existing.contains(id)) continue;
+        final matches = categories.where((item) => item.id == id);
+        if (matches.isEmpty) continue;
+        final item = matches.first;
+        homeTopTabs.add(
+          HomeTopTab(
+            id: item.id,
+            label: id == 'girls'
+                ? 'مقاسات كبيرة'
+                : id == 'perfumes'
+                    ? 'لانجري وملابس النوم'
+                    : item.name,
+            categoryId: item.id,
+            order: order++,
+          ),
+        );
+      }
+    }
+
     if (homeTopTabs.isEmpty && categories.isNotEmpty) {
       HomeTopTab? fromCategory(String id, {String? label}) {
         for (final category in categories) {
