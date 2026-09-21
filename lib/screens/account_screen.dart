@@ -5,6 +5,7 @@ import 'auth_screen.dart';
 import 'order_status_screen.dart';
 import 'wishlist_screen.dart';
 import 'chat_screen.dart';
+import 'settings_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   final StoreController controller;
@@ -77,8 +78,17 @@ class AccountScreen extends StatelessWidget {
         const SizedBox(height: 5),
         _row(context, 'خيارات الدفع', Icons.credit_card_outlined,
             () => _sheet(context, 'خيارات الدفع', 'الحسابات والمحافظ المعتمدة لإتمام الدفع وإرسال السند.')),
-        _row(context, 'إدارة حسابي', Icons.manage_accounts_outlined,
-            () => _sheet(context, 'إدارة حسابي', 'بيانات الحساب تحفظ في الخادم وتُعرض محلياً بعد المصادقة.')),
+        _row(
+          context,
+          'إدارة حسابي',
+          Icons.manage_accounts_outlined,
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SettingsScreen(controller: controller),
+            ),
+          ),
+        ),
         _row(
           context,
           'موقع • ' + (profile?['governorate'] ?? 'صنعاء').toString(),
@@ -87,8 +97,31 @@ class AccountScreen extends StatelessWidget {
         ),
         _row(context, 'اللغة • العربية', Icons.language_outlined,
             () => _sheet(context, 'اللغة', 'العربية مفعلة مثل النسخة المرجعية.')),
-        _row(context, 'عملة • SAR', Icons.currency_exchange_outlined,
-            () => _sheet(context, 'عملة الأسعار', 'أسعار التحويل تأتي من إعدادات الخادم.')),
+        _row(
+          context,
+          'الإعدادات',
+          Icons.settings_outlined,
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SettingsScreen(controller: controller),
+            ),
+          ),
+        ),
+        _row(
+          context,
+          'عملة • ' + controller.currency,
+          Icons.currency_exchange_outlined,
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SettingsScreen(
+                controller: controller,
+                openCurrency: true,
+              ),
+            ),
+          ),
+        ),
         _row(
           context,
           'المفضلة • ' + controller.wishlistIds.length.toString(),
