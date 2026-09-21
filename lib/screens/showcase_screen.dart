@@ -21,6 +21,7 @@ class ShowcaseScreen extends StatefulWidget {
   final bool saleOnly;
   final String sort;
   final BannerItem? banner;
+  final List<String> linkedProductIds;
 
   const ShowcaseScreen({
     super.key,
@@ -35,6 +36,7 @@ class ShowcaseScreen extends StatefulWidget {
     this.saleOnly = false,
     this.sort = 'for_you',
     this.banner,
+    this.linkedProductIds = const [],
   });
 
   @override
@@ -58,18 +60,32 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
         bannerTabs.where((item) => item.id == _selectedSubTab).toList();
 
     List<Product> items;
-    if (selected.isNotEmpty && selected.first.linkedProductIds.isNotEmpty) {
-      items = widget.controller.productsByIds(selected.first.linkedProductIds);
+    final directIds = selected.isNotEmpty
+        ? selected.first.linkedProductIds
+        : widget.linkedProductIds;
+
+    if (directIds.isNotEmpty) {
+      items = widget.controller.productsByIds(directIds);
+      items = _sortProducts(items);
     } else {
       final mappedSub = _resolveSubCategory(widget.subCategory);
-      items = widget.controller.filtered(
-        category: widget.category.isEmpty ? 'all' : widget.category,
-        subCategory: mappedSub,
-        styleTab: widget.styleTab,
-        trend: widget.trend,
-        saleOnly: widget.saleOnly,
-        sort: widget.saleOnly ? 'discount' : _sort,
-      );
+
+      // If the selected subcategory itself declares product IDs, use those
+      // before falling back to text/category matching.
+      final subLinked = _subcategoryLinkedIds(mappedSub);
+      if (subLinked.isNotEmpty) {
+        items = widget.controller.productsByIds(subLinked);
+        items = _sortProducts(items);
+      } else {
+        items = widget.controller.filtered(
+          category: widget.category.isEmpty ? 'all' : widget.category,
+          subCategory: mappedSub,
+          styleTab: widget.styleTab,
+          trend: widget.trend,
+          saleOnly: widget.saleOnly,
+          sort: widget.saleOnly ? 'discount' : _sort,
+        );
+      }
     }
 
     final related = _relatedItems();
@@ -361,6 +377,56 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
     );
   }
 
+  List<String> _subcategoryLinkedIds(String? subCategory) {
+    if (subCategory == null || subCategory.isEmpty) return const [];
+
+    for (final category in widget.controller.categories) {
+      for (final sub in category.subCategories) {
+        if (sub.id == subCategory || sub.name == subCategory) {
+          if (sub.linkedProductIds.isNotEmpty) {
+            return sub.linkedProductIds;
+          }
+
+          // Match same-named subcategory in another department.
+          for (final siblingCategory in widget.controller.categories) {
+            for (final sibling in siblingCategory.subCategories) {
+              if (sibling.name == sub.name &&
+                  sibling.linkedProductIds.isNotEmpty) {
+                return sibling.linkedProductIds;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return const [];
+  }
+
+  List<Product> _sortProducts(List<Product> input) {
+    final result = input.toList();
+    switch (_sort) {
+      case 'discount':
+        result.sort(
+          (a, b) => b.discountPercentage.compareTo(a.discountPercentage),
+        );
+        break;
+      case 'popular':
+        result.sort((a, b) => b.soldCount.compareTo(a.soldCount));
+        break;
+      case 'rating':
+        result.sort((a, b) => b.rating.compareTo(a.rating));
+        break;
+      case 'price-low':
+        result.sort((a, b) => a.discountPrice.compareTo(b.discountPrice));
+        break;
+      case 'price-high':
+        result.sort((a, b) => b.discountPrice.compareTo(a.discountPrice));
+        break;
+    }
+    return result;
+  }
+
   List<SubCategory> _relatedItems() {
     // For a subcategory opened from the home screen, locate its parent on the
     // server so the category page still shows the complete circular browser.
@@ -408,6 +474,7 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
                   category: widget.category,
                   subCategory: sub.id.isEmpty ? sub.name : sub.id,
                   image: sub.image,
+                  linkedProductIds: sub.linkedProductIds,
                 ),
               ),
             ),
