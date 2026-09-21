@@ -9,6 +9,7 @@ import '../widgets/product_card.dart';
 import 'product_details_screen.dart';
 import 'search_screen.dart';
 import 'wishlist_screen.dart';
+import 'showcase_screen.dart';
 
 class TrendsScreen extends StatefulWidget {
   final StoreController controller;
@@ -835,6 +836,37 @@ class _TrendsScreenState extends State<TrendsScreen> {
       }
     }
     return values.toSet().toList()..sort();
+  }
+
+  void _openProduct(Product product) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProductDetailsScreen(
+          controller: widget.controller,
+          product: product,
+        ),
+      ),
+    );
+  }
+
+  void _openCampaign(TrendCampaign campaign) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ShowcaseScreen(
+          controller: widget.controller,
+          title: campaign.title,
+          subtitle: campaign.subtitle,
+          image: campaign.bgImage.isNotEmpty
+              ? campaign.bgImage
+              : campaign.image,
+          category: 'all',
+          trend: campaign.hashtag,
+          linkedProductIds: campaign.productIds,
+        ),
+      ),
+    );
   }
 
   void _openSearch() {
