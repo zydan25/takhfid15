@@ -162,25 +162,15 @@ class StoreController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Map<String, dynamic>? contentPricing(Map<String, dynamic> source) {
-    final value = source['content'];
-    if (value is Map && value['pricingSettings'] is Map) {
-      return Map<String, dynamic>.from(value['pricingSettings'] as Map);
-    }
-    return null;
-  }
-
   void _applyStore(Map<String, dynamic> store) {
     storeConfig = Map<String, dynamic>.from(
       store['store'] is Map ? store['store'] : const {},
     );
-    pricing = Map<String, dynamic>.from(
-      store['pricing'] is Map
-          ? store['pricing']
-          : (store['pricingSettings'] is Map
-              ? store['pricingSettings']
-              : (contentPricing(store) ?? const {})),
-    );
+    pricing = store['pricing'] is Map
+        ? Map<String, dynamic>.from(store['pricing'] as Map)
+        : store['pricingSettings'] is Map
+            ? Map<String, dynamic>.from(store['pricingSettings'] as Map)
+            : <String, dynamic>{};
 
     final nestedContent = store['content'] is Map
         ? Map<String, dynamic>.from(store['content'] as Map)
@@ -211,6 +201,7 @@ class StoreController extends ChangeNotifier {
       'hashtags',
       'trendHashtags',
       'products',
+      'pricingSettings',
     ]) {
       final current = content[key];
       final root = store[key];
@@ -220,6 +211,12 @@ class StoreController extends ChangeNotifier {
       if (currentEmpty && root != null) {
         content[key] = root;
       }
+    }
+
+    if (pricing.isEmpty && content['pricingSettings'] is Map) {
+      pricing = Map<String, dynamic>.from(
+        content['pricingSettings'] as Map,
+      );
     }
 
     categoryTabsConfig = content['categoryTabsConfig'] is Map
