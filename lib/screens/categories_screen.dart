@@ -419,7 +419,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     if (v.contains('user')) return Icons.person_outline;
     if (v.contains('flame')) return Icons.local_fire_department_outlined;
     if (v.contains('gem')) return Icons.diamond_outlined;
-    if (v.contains('foot')) return Icons.footprint_outlined;
+    if (v.contains('foot')) return Icons.directions_walk_outlined;
     if (v.contains('heart')) return Icons.favorite_border;
     return Icons.grid_view_rounded;
   }
