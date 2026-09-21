@@ -105,17 +105,37 @@ class ProductCard extends StatelessWidget {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(AppColors.slate300),
+                            valueColor: AlwaysStoppedAnimation(
+                              AppColors.slate300,
+                            ),
                           ),
                         ),
                       ),
-                      errorWidget: (_, __, ___) => const Center(
-                        child: Icon(
-                          Icons.image_outlined,
-                          size: 40,
-                          color: AppColors.slate400,
-                        ),
-                      ),
+                      errorWidget: (_, __, ___) {
+                        final fallback = product.gallery
+                            .where((image) => image.isNotEmpty && image != product.image)
+                            .toList();
+                        if (fallback.isEmpty) {
+                          return const Center(
+                            child: Icon(
+                              Icons.image_outlined,
+                              size: 40,
+                              color: AppColors.slate400,
+                            ),
+                          );
+                        }
+                        return CachedNetworkImage(
+                          imageUrl: fallback.first,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => const Center(
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              size: 38,
+                              color: AppColors.slate400,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   if (product.discountPercentage > 0)
                     Positioned(
