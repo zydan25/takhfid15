@@ -329,7 +329,7 @@
     // 1. PRODUCTS API
     fetchProducts: async function() {
       try {
-        var res = await fetch(getBaseUrl() + '/products?limit=200');
+        var res = await fetch(getBaseUrl() + '/products');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = await res.json();
         var rawList = Array.isArray(data) ? data : (data.products || []);
@@ -339,7 +339,7 @@
       } catch (err) {
         console.warn('[Bridge] fetchProducts failed, falling back to direct remote:', err);
         try {
-          var r2 = await fetch(DIRECT_REMOTE_BASE + '/products?limit=200');
+          var r2 = await fetch(DIRECT_REMOTE_BASE + '/products');
           if (!r2.ok) throw new Error('HTTP ' + r2.status);
           var d2 = await r2.json();
           var rawList2 = Array.isArray(d2) ? d2 : (d2.products || []);
@@ -875,7 +875,10 @@
         var prodsLoaded = false;
         var finalProdCount = 0;
         if (Array.isArray(serverProducts) && serverProducts.length > 0) {
-          var normProds = serverProducts.map(normalizeProduct).filter(Boolean);
+          // fetchProducts() already normalizes the server payload. Do not normalize it again:
+          // the response is large (images can be embedded as base64), so a second full pass
+          // unnecessarily doubles JSON-object processing on mobile WebViews.
+          var normProds = serverProducts;
           if (normProds.length > 0) {
             console.log('[Bridge] Loaded & normalized ' + normProds.length + ' products directly from server');
             if (hooks.setProducts) hooks.setProducts(normProds);

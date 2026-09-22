@@ -1,0 +1,52 @@
+name: Takhfid Admin CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify server-authoritative admin and production bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: TypeScript check
+        run: npm run lint
+
+      - name: Syntax check shipped JavaScript assets
+        run: |
+          node --check public/assets/index-Co2L1R-b.js
+          node --check public/assets/takhfid-bridge.js
+
+      - name: Production build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ vars.TAKHFID_API_BASE_URL || 'https://whats.alattab.site' }}
+          VITE_API_TIMEOUT_MS: ${{ vars.TAKHFID_API_TIMEOUT_MS || '20000' }}
+          VITE_API_RETRY_COUNT: ${{ vars.TAKHFID_API_RETRY_COUNT || '1' }}
+          VITE_SERVER_AUTHORITATIVE: ${{ vars.TAKHFID_SERVER_AUTHORITATIVE || 'true' }}
+          VITE_UPLOAD_MAX_MB: ${{ vars.TAKHFID_UPLOAD_MAX_MB || '25' }}
+
+      - name: Verify shipped admin wiring
+        run: node scripts/verify-authoritative-admin.mjs
+
+      - name: Verify APK build script exists
+        run: test -f .github/workflows/build-apk.yml

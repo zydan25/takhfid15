@@ -2,7 +2,9 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "feat/server-authoritative-admin-2026-09" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
@@ -80,8 +82,21 @@ jobs:
             # Capacitor's generated Android resources or launcher activity. Keep the
             # tracked native code/settings while restoring the generated pieces needed
             # by a clean CI build and by Android at runtime.
+            #
+            # Preserve the entire tracked app-specific res/ tree before replacing it
+            # with Capacitor-generated resources. This keeps the custom launcher icon,
+            # colors, strings, styles, network security config, FileProvider paths, etc.
+            rm -rf /tmp/takhfid-ci-preserve-res
+            mkdir -p /tmp/takhfid-ci-preserve-res
+            cp -R android-existing/app/src/main/res/. /tmp/takhfid-ci-preserve-res/
+
             rm -rf android-existing/app/src/main/res
             cp -R android/app/src/main/res android-existing/app/src/main/res
+
+            # Overlay the tracked app-specific resources back on top of generated resources.
+            # Generated Capacitor resources remain available where the tracked project has
+            # no replacement, while all intentionally customized resources win.
+            cp -R /tmp/takhfid-ci-preserve-res/. android-existing/app/src/main/res/
 
             if [ -d android/app/src/main/java ]; then
               mkdir -p android-existing/app/src/main/java
@@ -100,6 +115,11 @@ jobs:
 
       - name: Sync Web Assets to Android Native Project
         run: |
+          # Remove tracked/stale Vite assets first. Capacitor must repopulate the
+          # native web directory from the freshly built dist/www files.
+          if [ -d android/app/src/main/assets/public/assets ]; then
+            rm -rf android/app/src/main/assets/public/assets
+          fi
           npx cap sync android
 
       - name: Make Gradlew Executable
